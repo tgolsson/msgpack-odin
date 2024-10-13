@@ -27,6 +27,10 @@ Packer :: struct {
 	flags: PackerFlags_Set,
 }
 
+write_byte :: proc(p: ^Packer, byte: u8) {
+	append_elem(&p.buf, byte)
+}
+
 write_bytes :: proc(p: ^Packer, bytes: []u8) {
 	append_elems(&p.buf, ..bytes)
 }
@@ -301,6 +305,60 @@ write_timestamp_ext1 :: proc(p: ^Packer, v: time.Time) {
 
 }
 
+import "base:runtime"
+
+begin_map :: proc(p: ^Packer, length: u32) {
+	switch length {
+	case 0..<(1 << 4):
+		write_byte(p, 0b10000000 | u8(length))
+	case (1 << 4)..<(1 << 16):
+		write_byte(p, 0xde)
+		endian.put_u16(p.buf[:], .Big, u16(length))
+	case (1 << 16)..=((1 << 32) - 1):
+		write_byte(p, 0xdf)
+		endian.put_u32(p.buf[:], .Big, length)
+	}
+}
+
+write_any :: proc(p: ^Packer, data: any) {
+
+	ti := runtime.type_info_base(type_info_of(data.id))
+	a := any{data.data, ti.id}
+
+	 #partial switch info in ti.variant {
+	case runtime.Type_Info_Named:
+		unreachable()
+
+	case runtime.Type_Info_Integer:
+		switch ti.id {
+		case i32:
+			write_number(p, a.(i32))
+		}
+	}
+
+
+}
+write_struct :: proc(p: ^Packer, data: ^$T) where intrinsics.type_is_struct(T) {
+	ti := runtime.type_info_base(type_info_of(T))
+	info := ti.variant.(runtime.Type_Info_Struct)
+
+
+	begin_map(p, u32(info.field_count))
+	for name, i in info.names[:info.field_count] {
+		id := info.types[i].id
+		data := rawptr(uintptr(data) + info.offsets[i])
+		the_value := any{data, id}
+		write_str(p, name)
+
+		// if info.usings[i] && name == "_" {
+		// 	write_struct_fields(p, the_value, opt)
+		// } else {
+		write_any(p, the_value)
+	//}
+
+	}
+}
+
 write :: proc {
 	write_number,
 	write_bool,
@@ -314,6 +372,7 @@ write :: proc {
 	write_array_fixed,
 	write_map,
 	write_timestamp_ext1,
+	write_struct,
 }
 
 Nil :: struct {}
