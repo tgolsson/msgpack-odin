@@ -2,8 +2,11 @@ package msgpack
 
 import "base:intrinsics"
 
+import "core:fmt"
+import "core:math"
 import "core:sort"
 import "core:time"
+import "core:encoding/endian"
 
 // @TODO[TSolberg]:
 //   Handle endianness.
@@ -12,7 +15,7 @@ import "core:time"
 
 
 bin :: distinct u8
-binary :: distinct []u8
+binary :: distinct []bin
 
 PackerFlags :: enum {
 	StableMaps = 0,
@@ -41,6 +44,15 @@ write_nil :: proc(p: ^Packer) {
 	write_bytes(p, {0xc0})
 }
 
+// NOTE: TSolberg: this isn't right...
+write_rawptr :: proc(p: ^Packer, n: rawptr) {
+	if n == nil {
+		write_bytes(p, {0xc0})
+	} else {
+		panic("attempting to write rawptr value, don't know how to proceed.")
+	}
+}
+
 write_number :: proc(p: ^Packer, num: $T) where intrinsics.type_is_integer(T) {
 	if num >= 0 {
 		num := u64(num)
@@ -55,7 +67,7 @@ write_number :: proc(p: ^Packer, num: $T) where intrinsics.type_is_integer(T) {
 			write_bytes(p, {0xcd, bytes[1], bytes[0]})
 		case (1 << 16) ..< (1 << 32):
 			write_bytes(p, {0xce, bytes[3], bytes[2], bytes[1], bytes[0]})
-		case u64(1 << 32) ..< u64(1 << 63):
+		case u64(1 << 32) ..= u64(1 << 64 - 1):
 			write_bytes(
 				p,
 				{
@@ -104,8 +116,6 @@ write_number :: proc(p: ^Packer, num: $T) where intrinsics.type_is_integer(T) {
 		}
 	}
 }
-
-import "core:math"
 
 write_generic_float :: proc(p: ^Packer, num: $T) where intrinsics.type_is_float(T) {
 	if abs(num) <= math.F32_MAX {
@@ -263,8 +273,9 @@ write_ext :: proc(p: ^Packer, type: i8, size: u32) {
 	}
 }
 write_timestamp_ext1 :: proc(p: ^Packer, v: time.Time) {
-	sec := u64(v._nsec / 1000_000_000)
-	nsecs := u64(v._nsec) - sec * 1000_000_000
+	unix_nanos := time.time_to_unix_nano(v)
+	sec := u64(unix_nanos / 1000_000_000)
+	nsecs := u64(unix_nanos) - sec * 1000_000_000
 	// before 2514-05-03~?
 	if (sec >> 34) == 0 {
 		data64 := (nsecs << 34) | sec
@@ -294,6 +305,7 @@ write :: proc {
 	write_number,
 	write_bool,
 	write_nil,
+	write_rawptr,
 	write_generic_float,
 	write_str,
 	write_bin,
@@ -335,58 +347,494 @@ Object :: union {
 	Ext,
 }
 
+Unexpected :: struct {
+	wanted, found: string,
+}
+
+Unhandled_Tag :: struct {
+	tag: u8,
+}
+
+Error :: union {
+	Unexpected,
+	Unhandled_Tag
+}
+
 Unpacker :: struct {
 	data:   [^]u8,
 	offset: u64,
 }
 
+read_size :: proc(u: ^Unpacker, width: u64) -> u64 {
+	size: u64 = 0
+	for i in 0 ..< width {
+		size = size << 8 | u64(u.data[u.offset + i])
+	}
 
-read :: proc(u: ^Unpacker) -> Object {
+	u.offset += width
+	return size
+}
+
+read_map :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
+	size: u64 = 0
+	switch {
+	case tag & 0xF0 == 0x80:
+		size = u64(tag & 0x0F)
+	case tag == 0xDE:
+		size = read_size(u, 2)
+	case tag == 0xDF:
+		size = read_size(u, 4)
+	}
+
+
+	out := make(map[ObjectKey]Object)
+	for _ in 0 ..<size {
+		key: ObjectKey
+		value: Object
+		err: Error
+		key, err = read_key(u)
+		if err != nil {
+			delete(out)
+			return nil, err
+		}
+
+		value, err = read(u)
+		if err != nil {
+			delete(out)
+		}
+
+		map_insert(&out, key, value)
+	}
+
+	return out, nil
+}
+
+read_string :: proc(u: ^Unpacker, tag: u8) -> (string, Error) {
+	size: u64 = 0
+
+	switch {
+	case tag & 0xE0 == 0xA0:
+		// fixstr
+		size = u64(tag & 0x1F)
+	case tag == 0xD9:
+		size = read_size(u, 1)
+	case tag == 0xDA:
+		size = read_size(u, 2)
+	case tag == 0xDB:
+		size = read_size(u, 4)
+	}
+
+	bytes := u.data[u.offset:u.offset + size]
+	u.offset += size
+
+	return string(bytes), nil
+}
+
+read_bin :: proc(u: ^Unpacker, tag: u8) -> ([]bin, Error) {
+
+	size: u64 = 0
+
+	switch {
+	case tag == 0xC4:
+		size = read_size(u, 1)
+	case tag == 0xC5:
+		size = read_size(u, 2)
+	case tag == 0xC6:
+		size = read_size(u, 4)
+	}
+
+	bytes := u.data[u.offset:u.offset + size]
+	u.offset += size
+
+	return transmute([]bin)bytes[:], nil
+}
+
+read_array :: proc(u: ^Unpacker, tag: u8) -> ([]Object, Error) {
+	size: u64 = 0
+
+	switch {
+	case tag & 0xF0 == 0x90:
+		size = u64(0x0F & tag)
+	case tag == 0xDC:
+		size = read_size(u, 2)
+	case tag == 0xDD:
+		size = read_size(u, 4)
+	}
+
+	out := make([]Object, size)
+	for i in 0 ..< size {
+		o, err := read(u)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = o
+	}
+
+	return out, nil
+}
+
+
+read_uint :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
+	size: u64 = 0
+
+	switch {
+	case tag == 0xCC:
+		size = read_size(u, 1)
+	case tag == 0xCD:
+		size = read_size(u, 2)
+	case tag == 0xCE:
+		size = read_size(u, 4)
+	case tag == 0xCF:
+		size = read_size(u, 8)
+	}
+
+	return size, nil
+}
+
+read_float :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
+	switch {
+	case tag == 0xCA:
+		bits := read_size(u, 4)
+		return transmute(f32)u32(bits), nil
+	case tag == 0xCB:
+		bits := read_size(u, 8)
+		return transmute(f64)bits, nil
+	}
+
+	return nil, nil
+}
+
+read_sint :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
+	size: Object
+
+	switch {
+	case tag == 0xD0:
+		return i64(transmute(i8)u8(read_size(u, 1))), nil
+	case tag == 0xD1:
+		return i64(transmute(i16)u16(read_size(u, 2))), nil
+	case tag == 0xD2:
+		return i64(transmute(i32)u32(read_size(u, 4))), nil
+	case tag == 0xD3:
+		return transmute(i64)read_size(u, 8), nil
+	}
+
+	// TODO
+	return transmute(i64)size.(u64), nil
+}
+
+read_timestamp_ext1 :: proc(b: []u8) -> time.Time {
+	count := len(b)
+
+	switch count {
+	case 4: // 32-bit unix-seconds
+
+		seconds, _ := endian.get_u32(b[:4], .Big)
+		return time.unix(i64(seconds), 0)
+	case 8:
+		data, _ := endian.get_u64(b[:8], .Big)
+		ns := i64(data >> 34)
+		seconds := i64(data & 0x3FFFFFFFF)
+		return time.unix(seconds, ns)
+	case 12:
+		nsec, _ := endian.get_u32(b, .Big)
+		sec, _ := endian.get_u64(b[4:], .Big)
+		return time.unix(i64(sec), i64(nsec))
+	}
+
+	panic("unreachable")
+}
+
+read_fixext :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
+	size: u64 = 0
+
+	switch tag {
+	case 0xD4:
+		size = 1
+	case 0xD5:
+		size = 2
+	case 0xD6:
+		size = 4
+	case 0xD7:
+		size = 8
+	case 0xD8:
+		size = 16
+	}
+
+	type := u.data[u.offset]
+	u.offset += 1
+
+	bytes := u.data[u.offset:u.offset + size]
+	u.offset += size
+
+	if i8(type) == -1 {
+		return read_timestamp_ext1(bytes), nil
+	} else {
+		return "asd", nil
+	}
+}
+
+
+read_ext :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
+	size: u64 = 0
+
+	switch tag {
+	case 0xc7:
+		size = read_size(u, 1)
+	case 0xc8:
+		size = read_size(u, 2)
+	case 0xc9:
+		size = read_size(u, 3)
+	}
+
+	type := u.data[u.offset]
+	u.offset += 1
+
+	bytes := u.data[u.offset:u.offset + size]
+	u.offset += size
+
+	if i8(type) == -1 {
+		panic("foobar")
+	} else {
+		return "asd", nil
+	}
+}
+
+
+read_key :: proc(u: ^Unpacker) -> (ObjectKey, Error) {
+	// XXXX[TS]: This is mostly copied from below.
 	tag := u.data[u.offset]
 	u.offset += 1
 
 	switch {
-	case tag & 0xE0 == 0xA0:
-		size := u64(tag & 0x1F)
-		bytes := u.data[u.offset:u.offset+size]
-		u.offset += size
+	case tag & 0x80 == 0: // positive fixint
+		return u64(tag & 0x7F), nil
+	case tag & 0xE0 == 0xA0: // fixstr
+		return read_string(u, tag)
 
-		return string(bytes)
+	case tag & 0xF0 == 0x80: // fixmap
+		return nil, Unexpected{"a key-type", "a fixmap"}
 
-	case tag & 0x80 == 0:
-		// positive fixint
-	case tag & 0xE0 == 0xE0:
-		// negative fixint
-	case tag & 0xF0 == 0x90:
-		// fixarray
-	case tag & 0xF0 == 0x80:
-		// fixmap
+
+	case tag & 0xE0 == 0xE0: // negative fixint
+		return i64(-32 - -i8(tag & 0x1F)), nil
+
+	case tag & 0xF0 == 0x90: // fixarray
+		return nil, Unexpected{"a key-type", "a fixarray"}
 	}
 
 	switch tag {
 
 	case 0xC0: // nil
 	case 0xc2, 0xc3:
-	case  0xCC,  0xCD,  0xCE, 0xCF:
-		// unsigned int
-	case  0xD0,  0xD1,  0xD2, 0xD3:
-		// signed int
-	case  0xCA,  0xCB:
-		// float
-	case  0xD9, 0xDA, 0xDB:
-		// str
+	case 0xCC, 0xCD, 0xCE, 0xCF:
+	// unsigned int
+	case 0xD0, 0xD1, 0xD2, 0xD3:
+	// signed int
+	case 0xCA, 0xCB:
+	// float
+	case 0xD9, 0xDA, 0xDB:
+	// str
 	case 0xC4, 0xC5, 0xC6:
-		// bin
+	// bin
 	case 0xDC, 0xDD:
-		// array
+	// array
 	case 0xDE, 0xDF:
-		// map
+	// map
 
 	case 0xD4, 0xD5, 0xD6, 0xD7, 0xD8:
-		// fixext
+	// fixext
 	case 0xC7, 0xC8, 0xC9:
-		// ext
+	// ext
 	}
 
-	return time.Time{}
+	return i64(10), nil
+}
+
+read :: proc(u: ^Unpacker) -> (Object, Error) {
+	tag := u.data[u.offset]
+	u.offset += 1
+
+	// XXXX: we handle these separately in a blanks switch as they
+	// require bitmasking, while the "non-bitmasked" fields below can
+	// use a regular switch.
+	switch {
+	case tag & 0x80 == 0:
+		// positive fixint
+		return u64(tag & 0x7F), nil
+	case tag & 0xE0 == 0xA0:
+		// fixstr
+		return read_string(u, tag)
+
+	case tag & 0xF0 == 0x80:
+		// fixmap
+		return read_map(u, tag)
+
+	case tag & 0xE0 == 0xE0:
+		// negative fixint
+		return i64(-32 - -i8(tag & 0x1F)), nil
+
+	case tag & 0xF0 == 0x90:
+		// fixarray
+		return read_array(u, tag)
+	}
+
+	switch tag {
+	case 0xC0: // nil. XXXX
+		return Nil{}, nil
+
+	case 0xC2:
+		return false, nil
+
+	case 0xC3:
+		return true, nil
+
+	case 0xCC, 0xCD, 0xCE, 0xCF:
+		// unsigned int
+		return read_uint(u, tag)
+
+	case 0xD0, 0xD1, 0xD2, 0xD3:
+		// signed int
+		return read_sint(u, tag)
+
+	case 0xCA, 0xCB:
+		// float
+		return read_float(u, tag)
+
+	case 0xD9, 0xDA, 0xDB:
+		// str
+		return read_string(u, tag)
+
+	case 0xC4, 0xC5, 0xC6:
+		// bin
+		return read_bin(u, tag)
+
+	case 0xDC, 0xDD:
+		// array
+		return read_array(u, tag)
+
+	case 0xDE, 0xDF:
+		// map
+		return read_map(u, tag)
+
+	case 0xD4, 0xD5, 0xD6, 0xD7, 0xD8: // fixext
+		return read_fixext(u, tag)
+
+	case 0xC7, 0xC8, 0xC9: // ext
+		return read_ext(u, tag)
+	}
+
+	return nil, Unhandled_Tag { tag }
+}
+
+object_equals :: proc(left: ^Object, right: ^Object) -> bool {
+	switch l in left {
+	case Nil:
+		_, is_nil := right.(Nil)
+		return is_nil
+
+	case bool:
+		r, is_bool := right.(bool)
+		return is_bool && r == l
+
+	case []bin:
+		r, is_bin := right.([]bin)
+		if !is_bin || len(l) != len(r) do return false
+
+		for idx in 0..<len(l){
+			if l[idx] != r[idx] do return false
+		}
+
+		return true
+
+	case []Object:
+		rl, is_list := right.([]Object)
+		if !is_list || is_list && len(rl) != len(l) {
+			return false
+		}
+
+		for &lo, idx in l {
+			if !object_equals(&lo, &rl[idx]) do return false
+		}
+
+		return true
+
+	case string:
+		rl, is_string := right.(string)
+		if !is_string do return false
+
+		return rl == l
+
+	case u64:
+		rl, is_u64 := right.(u64)
+		if !is_u64 do return false
+
+		return rl == l
+	case i64:
+		rl, is_i64 := right.(i64)
+		if !is_i64 do return false
+
+		return rl == l
+	case f32:
+		rl, is_f32 := right.(f32)
+		if !is_f32 do return false
+
+		return rl == l
+	case f64:
+		rl, is_f64 := right.(f64)
+		if !is_f64 do return false
+
+		return rl == l
+
+	case map[ObjectKey]Object:
+		rl, is_map := right.(map[ObjectKey]Object)
+		if !is_map || len(l) != len(rl) do return false
+
+		for key, &v in l {
+			r, exist := rl[key]
+			if !exist || !object_equals(&v, &r) do return false
+		}
+
+		return true
+
+	case time.Time:
+		r, is_time := right.(time.Time)
+		if !is_time do return false
+
+		return r == l
+
+	case Ext:
+		panic("as")
+	}
+
+	return false
+}
+
+object_delete :: proc(object: Object){
+	switch l in object {
+	case Nil:
+	case bool:
+	case []bin:
+	case []Object:
+		for &lo in l {
+			object_delete(lo)
+		}
+
+		delete(l)
+
+	case string:
+	case u64:
+	case i64:
+	case f32:
+	case f64:
+	case map[ObjectKey]Object:
+		for key, &v in l {
+			// object_key_delete(key)
+			object_delete(v)
+		}
+
+		delete(l)
+
+	case time.Time:
+	case Ext:
+	}
 }

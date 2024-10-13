@@ -17,62 +17,58 @@ def format_bytes(s):
     return "[]m.bin{" + str(list(bytes(s.encode())))[1:-1].format("%x") + "}"
 
 
-def write_test(f, name, value, pack_code, usf=None, flags=""):
-    if usf is None:
-        usf = (
-            isinstance(value, float)
-            and abs(value) < 3.402823466e38
-            or isinstance(value, list)
-            and len(value) > 0
-            and isinstance(value[0], float)
-            and all(abs(v) < 3.402823466e38 for v in value)
-        )
+def write_test_generic(
+    f,
+    name,
+    python_value,
+    odin_value,
+    output_cast,
+    output_value,
+    flags="",
+    usf=False,
+    is_slice_comp=False,
+    is_obj_comp=False,
+    extras="",
+    delete_expected=False,
+):
+    expectation = str(list(msgpack.packb(python_value, use_single_float=usf)))[1:-1]
+    comp = f"testing.expect_value(t, res.({output_cast}), expected)"
 
-    expectation = str(
-        list(msgpack.packb(value, use_single_float=usf, strict_types=True))
-    )
+    if is_slice_comp:
+        comp = f"slice_eq(t, res.({output_cast}), expected)"
+
+    delete = ""
+    if is_obj_comp:
+        comp = 'testing.expectf(t, m.object_equals(&res, &expected), "mismatch: %v !=  %v", res, expected)'
+        delete = "m.object_delete(res)"
+
+    if delete_expected:
+        delete += "; delete(expected.(map[m.ObjectKey]m.Object))"
 
     f.write(
         dedent(
             f"""\
         @(test)
-        test_{name}_output :: proc(t: ^testing.T) {{
-            store := make([dynamic]u8, 0, 10)
+        test_{name}_ser :: proc(t: ^testing.T) {{
+            store := make([dynamic]u8, 0)
             p: m.Packer = {{ store, {{ {flags} }} }}
-            {pack_code}
-
-            slice_eq(t, p.buf[:], []u8{{{expectation[1:-1]}}})
+            {extras}
+            value := {odin_value}
+            m.write(&p, value)
+            {"delete(value)" if 'map' in str(odin_value) else ""}
+            slice_eq(t, p.buf[:], []u8{{{expectation}}})
             delete(p.buf)
         }}\n
-        """
-        )
-    )
 
-
-def write_unpack_test(f, name, value, result, usf=None, flags="", delete=False):
-    if usf is None:
-        usf = (
-            isinstance(value, float)
-            and abs(value) < 3.402823466e38
-            or isinstance(value, list)
-            and len(value) > 0
-            and isinstance(value[0], float)
-            and all(abs(v) < 3.402823466e38 for v in value)
-        )
-
-    input = str(list(msgpack.packb(value, use_single_float=usf, strict_types=True)))
-
-    delete = "delete(res)" if delete else ""
-    f.write(
-        dedent(
-            f"""\
         @(test)
-        test_{name}_output :: proc(t: ^testing.T) {{
-            store := [?]u8{{{input[1:-1]}}}
-            u: m.Unpacker = {{ raw_data(store[:]), 0 }}
-            res := m.read(&u)
+        test_{name}_de :: proc(t: ^testing.T) {{
+            bytes := [?]u8{{{expectation}}}
+            u: m.Unpacker = {{ raw_data(bytes[:]), 0 }}
+            res, err := m.read(&u)
 
-            testing.expect_value(t, res.(string), {result})
+            testing.expect_value(t, err, nil)
+            {output_value}
+            {comp}
             {delete}
         }}\n
         """
@@ -93,7 +89,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
     f.write(
         dedent(
             """\
-    slice_eq :: proc(t: ^testing.T, a: []u8, b: []u8) {
+    slice_eq :: proc(t: ^testing.T, a: []$T, b: []T) {
         testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", a, b)
         for i in 0..<len(a) {
             testing.expectf(t, a[i] == b[i], "%v == %v fails at index %v (%v %v)", a, b, i, a[i], b[i])
@@ -103,142 +99,227 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
         )
     )
 
-    write_test(f, "nil", None, "m.write(&p)")
-    write_test(f, "true", True, "m.write(&p, true)")
-    write_test(f, "false", False, "m.write(&p, false)")
-    for i in range(126, 128):
-        write_test(f, f"varint_{i}", i, f"m.write(&p, {i})")
+    write_test_generic(
+        f,
+        "nil",
+        None,
+        "rawptr(nil)",
+        "m.Nil",
+        "expected := m.Nil{}",
+    )
+
+    write_test_generic(
+        f,
+        "true",
+        True,
+        "true",
+        "bool",
+        "expected := true",
+    )
+
+    write_test_generic(
+        f,
+        "false",
+        False,
+        "false",
+        "bool",
+        "expected := false",
+    )
+
+    for i in range(126, 129):
+        write_test_generic(
+            f,
+            f"fixint_{i}",
+            i,
+            i,
+            "u64",
+            f"expected: u64 = {i}",
+        )
+
+    for i in range(0b00011110, 0b00100010):
+        write_test_generic(
+            f,
+            f"nfixint_{i}",
+            -i,
+            -i,
+            "i64",
+            f"expected: i64 = {-i}",
+        )
 
     for bitsize in [8, 16, 32, 64]:
         for offset in [-2, -1, 0, 1, 2]:
             v = (1 << bitsize) + offset
-            if v > (1 << 64 - 1):
+            if v > ((1 << 64) - 1):
                 continue
-            write_test(
+            write_test_generic(
                 f,
-                f"int_{bitsize}_{'M' if offset < 0 else 'P'}{abs(offset)}",
+                f"int_{v}_{bitsize}_{abs(offset)}",
                 v,
-                f"m.write(&p, {v})",
+                f"u64({v})",
+                "u64",
+                f"expected: u64 = {v}",
             )
 
-    for bitsize in [8, 16, 32, 64]:
+    for bitsize in [7, 15, 31, 63]:
         for offset in [-2, -1, 0, 1, 2]:
             v = -((1 << (bitsize - 1)) + offset)
-            if abs(v) > (1 << 63 - 1):
+            if abs(v) > ((1 << 63) - 1):
                 continue
-            write_test(
+            write_test_generic(
                 f,
-                f"int_{bitsize}_{'M' if v < 0 else 'P'}{abs(v)}",
+                f"sint_{abs(v)}_{bitsize}_{abs(offset)}",
                 v,
-                f"m.write(&p, {v})",
+                f"i64({v})",
+                "i64",
+                f"expected: i64 = {v}",
             )
 
     for i in range(63):
         v = 1 << i
         for x in range(-2, 2):
-            write_test(
-                f,
-                f"int_{i}_{v-x}_offset",
-                v - x,
-                f"m.write(&p, {v-x})",
-            )
-            write_test(
-                f,
-                f"int_{i}_n{v-x}_offset",
-                -(v - x),
-                f"m.write(&p, {-(v - x)})",
-            )
+            if (v + x) >= 0:
+                write_test_generic(
+                    f,
+                    f"int_pow2_{abs(v)}_{'m' if x < 0 else ''}{abs(x)}",
+                    v + x,
+                    str(v + x),
+                    "u64",
+                    f"expected: u64 = {v + x}",
+                )
+
+            if -(v + x) < 0:
+                write_test_generic(
+                    f,
+                    f"sint_pow2_{abs(v)}_{'m' if x < 0 else ''}{abs(x)}",
+                    -(v + x),
+                    str(-(v + x)),
+                    "i64",
+                    f"expected: i64 = {-(v + x)}",
+                )
 
     for i in range(0, 200, 10):
         v = math.e**i
-        write_test(
+        t = "f32" if i < 90 else "f64"
+        write_test_generic(
             f,
             f"float_exp{i}",
             v,
-            f"m.write(&p, {v})",
+            v,
+            t,
+            f"expected: {t} = {v}",
+            usf=i < 90,
         )
-        write_test(
+        write_test_generic(
             f,
             f"float_nexp{i}",
             -v,
-            f"m.write(&p, {-v})",
+            -v,
+            t,
+            f"expected: {t} = {-v}",
+            usf=i < 90,
         )
 
 with open(TESTS_PATH / "string.odin", "w") as f:
     header(f)
-    write_test(
+
+    write_test_generic(
         f,
         "str_less_than_32",
         "hello world",
-        'm.write(&p, "hello world")',
-    )
-    write_unpack_test(
-        f,
-        "unpack_str_less_than_32",
-        "hello world",
         '"hello world"',
+        "string",
+        'expected := "hello world"',
     )
 
-    write_test(
+    v = "hello world" * 10
+    write_test_generic(
         f,
         "str_less_than_256",
-        "hello world" * 10,
-        f'm.write(&p, "{"hello world" * 10}")',
+        v,
+        f'"{v}"',
+        "string",
+        f'expected := "{v}"',
     )
 
-    write_test(
+    v = "hello world" * 25
+    write_test_generic(
         f,
         "str_above_256",
-        "hello world" * 25,
-        f'm.write(&p, "{"hello world" * 25}")',
+        v,
+        f'"{v}"',
+        "string",
+        f'expected := "{v}"',
     )
 
 with open(TESTS_PATH / "bytes.odin", "w") as f:
     header(f)
-    write_test(
+
+    write_test_generic(
         f,
         "bytes_less_than_32",
         bytes(b"hello world"),
-        f'm.write(&p, {format_bytes("hello world")})',
+        format_bytes("hello world"),
+        "[]m.bin",
+        f'expected := {format_bytes("hello world")}',
+        is_slice_comp=True,
     )
 
-    write_test(
+    b = "hello world" * 10
+    write_test_generic(
         f,
         "bytes_less_than_256",
-        bytes(b"hello world" * 10),
-        f'm.write(&p, {format_bytes("hello world" * 10)})',
+        bytes(b.encode()),
+        format_bytes(b),
+        "[]m.bin",
+        f"expected := {format_bytes(b)}",
+        is_slice_comp=True,
     )
 
-    write_test(
+    b = "hello world" * 25
+    write_test_generic(
         f,
         "bytes_above_256",
-        bytes(b"hello world" * 25),
-        f'm.write(&p, {format_bytes("hello world" * 25)})',
+        bytes(b.encode()),
+        format_bytes(b),
+        "[]m.bin",
+        f"expected := {format_bytes(b)}",
+        is_slice_comp=True,
     )
 
 with open(TESTS_PATH / "array.odin", "w") as f:
     header(f)
     for count in (0, 5, 20):
         s = '"x"'
-        write_test(
+
+        write_test_generic(
             f,
             f"str_array_{count}",
             ["x"] * count,
-            f'arg := [{count}]string{{{", ".join([s] * count)}}}; m.write(&p, arg[:])',
+            f'[{count}]string{{{", ".join([s] * count)}}}',
+            "[]m.Object",
+            f'inner := [{count}]m.Object{{{", ".join([s] * count)}}}; expected: m.Object = inner[:]',
+            is_obj_comp=True,
         )
 
-        write_test(
+        write_test_generic(
             f,
             f"u16_array_{count}",
             [1 << 14] * count,
-            f"arg := [{count}]u16{{ {', '.join(str(1<<14) for x in range(count))} }}; m.write(&p, arg[:])",
+            f'[{count}]u16{{{", ".join("1<<14" for _ in range(count))}}}',
+            "[]m.Object",
+            f'inner := [{count}]m.Object{{{", ".join("m.Object(u64(1 << 14))" for _ in range( count))}}}; expected: m.Object = inner[:]',
+            is_obj_comp=True,
         )
 
-        write_test(
+        write_test_generic(
             f,
-            f"float_array_{count}",
+            f"f32_array_{count}",
             [1.5] * count,
-            f"arg := [{count}]f32{{ {', '.join(str(1.5) for x in range(count))} }}; m.write(&p, arg[:])",
+            f'[{count}]f32{{{", ".join("1.5" for _ in range(count))}}}',
+            "[]m.Object",
+            f'inner := [{count}]m.Object{{{", ".join("m.Object(f32(1.5))" for _ in range( count))}}}; expected: m.Object = inner[:]',
+            usf=True,
+            is_obj_comp=True,
         )
 
 
@@ -246,35 +327,53 @@ with open(TESTS_PATH / "map.odin", "w") as f:
     header(f)
     m = {0: 10}
 
-    write_test(
+    write_test_generic(
         f,
         "map_int_to_int",
         m,
-        "arg := map[u8]u8{0  = 10}; m.write(&p, arg); delete(arg)",
+        "map[u8]u8{0  = 10}",
+        "map[m.ObjectKey]m.Object",
+        "expected: m.Object = map[m.ObjectKey]m.Object { u64(0) = u64(10) }",
+        is_obj_comp=True,
+        delete_expected=True,
     )
 
     m = {"foo": "bar"}
-    write_test(
+    write_test_generic(
         f,
-        "map_str_to_str",
+        "map_str_str",
         m,
-        'arg := map[string]string{"foo" = "bar"}; m.write(&p, arg); delete(arg)',
+        'map[string]string{"foo" = "bar"}',
+        "map[m.ObjectKey]m.Object",
+        'expected: m.Object = map[m.ObjectKey]m.Object { "foo" = "bar" }',
+        is_obj_comp=True,
+        delete_expected=True,
     )
 
     m = {"foo": bytes([1, 2, 3])}
-    write_test(
+    write_test_generic(
         f,
-        "map_str_to_bytes",
+        "map_str_bytes",
         m,
-        'arg := map[string][3]m.bin{"foo" = [3]m.bin{1,2,3}}; m.write(&p, arg); delete(arg)',
+        'map[string][]m.bin{"foo" = bd[:]}',
+        "map[m.ObjectKey]m.Object",
+        'bd := [?]m.bin{1, 2, 3}; expected: m.Object = map[m.ObjectKey]m.Object { "foo" = bd[:] }',
+        is_obj_comp=True,
+        extras="bd := [?]m.bin{1, 2, 3}",
+        delete_expected=True,
     )
 
     m = {"foo": [1, 2, 3]}
-    write_test(
+    write_test_generic(
         f,
-        "map_str_to_array",
+        "map_str_array",
         m,
-        'arg := map[string][3]u16{"foo" = [3]u16{1,2,3}}; m.write(&p, arg); delete(arg)',
+        'map[string][]u16{"foo" = bd[:]}',
+        "map[m.ObjectKey]m.Object",
+        'bd := [?]m.Object{u64(1), u64(2), u64(3)}; expected: m.Object = map[m.ObjectKey]m.Object { "foo" = bd[:] }',
+        is_obj_comp=True,
+        extras="bd := [?]u16{1, 2, 3}",
+        delete_expected=True,
     )
 
     def fmt(m):
@@ -284,33 +383,53 @@ with open(TESTS_PATH / "map.odin", "w") as f:
 
         return out + "}"
 
+    def fmt2(m):
+        out = "map[m.ObjectKey]m.Object {"
+        for k, v in m.items():
+            out += f'"{k}" = f32({v}), '
+
+        return out + "}"
+
     m = {"a": 1.1, "b": 2.2}
-    write_test(
+    write_test_generic(
         f,
-        "map_multiple_to_float2",
+        "map_str_float2",
         m,
-        f"arg := {fmt(m)}; m.write(&p, arg); delete(arg)",
-        usf=True,
+        fmt(m),
+        "map[m.ObjectKey]m.Object",
+        f"expected: m.Object = {fmt2(m)}",
+        is_obj_comp=True,
         flags=".StableMaps",
+        usf=True,
+        delete_expected=True,
     )
 
     m = {"a": 1.1, "b": 2.3, "c": 3.4, "d": 4.5, "e": 5.1}
-    write_test(
+    write_test_generic(
         f,
-        "map_multiple_to_float5",
+        "map_str_float5",
         m,
-        f"arg := {fmt(m)}; m.write(&p, arg); delete(arg)",
-        usf=True,
+        fmt(m),
+        "map[m.ObjectKey]m.Object",
+        f"expected: m.Object = {fmt2(m)}",
+        is_obj_comp=True,
         flags=".StableMaps",
+        usf=True,
+        delete_expected=True,
     )
+
     m = {"a": 1.1, "b": 2.3, "c": 3.4, "d": 4.5, "e": 5.1, "f": 1.3}
-    write_test(
+    write_test_generic(
         f,
-        "map_multiple_to_float6",
+        "map_str_float6",
         m,
-        f"arg := {fmt(m)}; m.write(&p, arg); delete(arg)",
-        usf=True,
+        fmt(m),
+        "map[m.ObjectKey]m.Object",
+        f"expected: m.Object = {fmt2(m)}",
+        is_obj_comp=True,
         flags=".StableMaps",
+        usf=True,
+        delete_expected=True,
     )
 
 with open(TESTS_PATH / "timestamp.odin", "w") as f:
@@ -318,15 +437,23 @@ with open(TESTS_PATH / "timestamp.odin", "w") as f:
 
     header(f)
     f.write('import "core:time"\n')
-    write_test(
+
+    write_test_generic(
         f,
         "timestamp",
         Timestamp(171798691, 69),
-        f"arg := time.Time {{ 1e9 * 171798691 + 69}}; m.write(&p, arg)",
+        "time.unix(171798691, 69)",
+        "map[m.ObjectKey]m.Object",
+        "expected: m.Object = time.unix(171798691, 69)",
+        is_obj_comp=True,
     )
-    write_test(
+
+    write_test_generic(
         f,
         "timestamp_no_ns",
         Timestamp(171798691, 0),
-        f"arg := time.Time {{ 1e9 * 171798691 + 0}}; m.write(&p, arg)",
+        "time.unix(171798691, 0)",
+        "map[m.ObjectKey]m.Object",
+        "expected: m.Object = time.unix(171798691, 0)",
+        is_obj_comp=True,
     )
