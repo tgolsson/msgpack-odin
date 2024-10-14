@@ -4,8 +4,33 @@ import "core:fmt"
 import m "../"
 
 @(test)
+test_map_empty_ser :: proc(t: ^testing.T) {
+    store := make([dynamic]u8, 0, 10)
+    p: m.Packer = { store, {  } }
+
+    value := map[u8]u8{}
+    m.write(&p, value)
+    delete(value)
+    slice_eq(t, p.buf[:], []u8{128})
+    delete(p.buf)
+}
+
+
+@(test)
+test_map_empty_de :: proc(t: ^testing.T) {
+    bytes := [?]u8{128}
+    u: m.Unpacker = { raw_data(bytes[:]), 0 }
+    res, err := m.read(&u)
+
+    testing.expect_value(t, err, nil)
+    expected: m.Object = map[m.ObjectKey]m.Object { }
+    testing.expectf(t, m.object_equals(&res, &expected), "mismatch: %v !=  %v", res, expected)
+    m.object_delete(res); delete(expected.(map[m.ObjectKey]m.Object))
+}
+
+@(test)
 test_map_int_to_int_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := map[u8]u8{0  = 10}
@@ -30,7 +55,7 @@ test_map_int_to_int_de :: proc(t: ^testing.T) {
 
 @(test)
 test_map_str_str_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := map[string]string{"foo" = "bar"}
@@ -55,7 +80,7 @@ test_map_str_str_de :: proc(t: ^testing.T) {
 
 @(test)
 test_map_str_bytes_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
     bd := [?]m.bin{1, 2, 3}
     value := map[string][]m.bin{"foo" = bd[:]}
@@ -80,7 +105,7 @@ test_map_str_bytes_de :: proc(t: ^testing.T) {
 
 @(test)
 test_map_str_array_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
     bd := [?]u16{1, 2, 3}
     value := map[string][]u16{"foo" = bd[:]}
@@ -105,7 +130,7 @@ test_map_str_array_de :: proc(t: ^testing.T) {
 
 @(test)
 test_map_str_float2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, { .StableMaps } }
 
     value := map[string]f32{"b" = 2.2, "a" = 1.1, }
@@ -130,7 +155,7 @@ test_map_str_float2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_map_str_float5_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, { .StableMaps } }
 
     value := map[string]f32{"e" = 5.1, "d" = 4.5, "c" = 3.4, "b" = 2.3, "a" = 1.1, }
@@ -155,7 +180,7 @@ test_map_str_float5_de :: proc(t: ^testing.T) {
 
 @(test)
 test_map_str_float6_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, { .StableMaps } }
 
     value := map[string]f32{"f" = 1.3, "e" = 5.1, "d" = 4.5, "c" = 3.4, "b" = 2.3, "a" = 1.1, }

@@ -5,7 +5,7 @@ import m "../"
 
 @(test)
 test_str_less_than_32_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := "hello world"
@@ -30,7 +30,7 @@ test_str_less_than_32_de :: proc(t: ^testing.T) {
 
 @(test)
 test_str_less_than_256_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := "hello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello world"
@@ -55,7 +55,7 @@ test_str_less_than_256_de :: proc(t: ^testing.T) {
 
 @(test)
 test_str_above_256_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := "hello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello world"

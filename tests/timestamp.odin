@@ -6,7 +6,7 @@ import m "../"
 import "core:time"
 @(test)
 test_timestamp_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := time.unix(171798691, 69)
@@ -31,7 +31,7 @@ test_timestamp_de :: proc(t: ^testing.T) {
 
 @(test)
 test_timestamp_no_ns_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := time.unix(171798691, 0)

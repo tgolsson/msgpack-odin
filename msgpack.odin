@@ -2,11 +2,12 @@ package msgpack
 
 import "base:intrinsics"
 
+import "core:encoding/endian"
+import "core:reflect"
 import "core:fmt"
 import "core:math"
 import "core:sort"
 import "core:time"
-import "core:encoding/endian"
 
 // @TODO[TSolberg]:
 //   Handle endianness.
@@ -35,10 +36,32 @@ write_bytes :: proc(p: ^Packer, bytes: []u8) {
 	append_elems(&p.buf, ..bytes)
 }
 
-write_bytes_head :: proc(p: ^Packer, head: u8, bytes: ..u8) {
-	append_elem(&p.buf, head)
-	append_elems(&p.buf, ..bytes)
+write_nbytes :: proc(p: ^Packer, bytes: [$N]u8) {
+	for v, _ in bytes {
+		append(&p.buf, v)
+	}
 }
+
+write_nbytes_r :: proc(p: ^Packer, bytes: [$N]u8) {
+	#reverse for v, _ in bytes {
+		append(&p.buf, v)
+	}
+}
+
+
+write_nbytes_head :: proc(p: ^Packer, head: u8, bytes: [$N]u8) {
+	write_byte(p, head)
+	write_nbytes(p, bytes)
+}
+
+write_nbytes_head_r :: proc(p: ^Packer, head: u8, bytes: [$N]u8) {
+	write_byte(p, head)
+	write_nbytes_r(p, bytes)
+}
+
+NEEDS_SWAP :: endian.PLATFORM_BYTE_ORDER == .Little
+write_multibyte :: write_nbytes_r when NEEDS_SWAP else write_nbytes
+write_multibyte_head :: write_nbytes_head_r when NEEDS_SWAP else write_nbytes_head
 
 write_bytes_2 :: proc(p: ^Packer, bytes: ..u8) {
 	append_elems(&p.buf, ..bytes)
@@ -58,79 +81,57 @@ write_rawptr :: proc(p: ^Packer, n: rawptr) {
 }
 
 write_number :: proc(p: ^Packer, num: $T) where intrinsics.type_is_integer(T) {
+
+
 	if num >= 0 {
 		num := u64(num)
-		bytes := transmute([8]u8)num
 		switch num {
 		case 0 ..= 127:
-			write_bytes(p, {bytes[0]})
+			write_byte(p, u8(num))
 
 		case 128 ..< 256:
-			write_bytes(p, {0xcc, u8(num)})
+			write_byte(p, 0xCC)
+			write_byte(p, u8(num))
 		case 256 ..< (1 << 16):
-			write_bytes(p, {0xcd, bytes[1], bytes[0]})
+			write_byte(p, 0xCD)
+			write_multibyte(p, transmute([2]u8)u16(num))
+
 		case (1 << 16) ..< (1 << 32):
-			write_bytes(p, {0xce, bytes[3], bytes[2], bytes[1], bytes[0]})
+			write_byte(p, 0xCE)
+			write_multibyte(p, transmute([4]u8)u32(num))
 		case u64(1 << 32) ..= u64(1 << 64 - 1):
-			write_bytes(
-				p,
-				{
-					0xcf,
-					bytes[7],
-					bytes[6],
-					bytes[5],
-					bytes[4],
-					bytes[3],
-					bytes[2],
-					bytes[1],
-					bytes[0],
-				},
-			)
+			write_byte(p, 0xCF)
+			write_multibyte(p, transmute([8]u8)num)
 		}
 	} else {
 		num := i64(num)
-		bytes := transmute([8]u8)num
 		switch num {
 
 		case -32 ..< 0:
-			write_bytes(p, {u8(0b11100000) | bytes[0] & 0b11111})
-
+			write_byte(p, u8(0b11100000) | u8(num) & 0b11111)
 		case -128 ..< 0:
-			write_bytes(p, {0xd0, bytes[0]})
-
+			write_byte(p, 0xd0)
+			write_byte(p, (u8)(i8(num)))
 		case -32768 ..< 0:
-			write_bytes(p, {0xd1, bytes[1], bytes[0]})
+			write_byte(p, 0xd1)
+			write_multibyte(p, transmute([2]u8)i16(num))
 		case -(1 << 31) ..< 0:
-			write_bytes(p, {0xd2, bytes[3], bytes[2], bytes[1], bytes[0]})
+			write_byte(p, 0xd2)
+			write_multibyte(p, transmute([4]u8)i32(num))
 		case -(1 << 63) ..< 0:
-			write_bytes(
-				p,
-				{
-					0xd3,
-					bytes[7],
-					bytes[6],
-					bytes[5],
-					bytes[4],
-					bytes[3],
-					bytes[2],
-					bytes[1],
-					bytes[0],
-				},
-			)
+			write_byte(p, 0xD3)
+			write_multibyte(p, transmute([8]u8)num)
 		}
 	}
 }
 
 write_generic_float :: proc(p: ^Packer, num: $T) where intrinsics.type_is_float(T) {
 	if abs(num) <= math.F32_MAX {
-		bytes := transmute([4]u8)f32(num)
-		write_bytes(p, {0xca, bytes[3], bytes[2], bytes[1], bytes[0]})
+		write_byte(p, 0xCA)
+		write_multibyte(p, transmute([4]u8)f32(num))
 	} else {
-		bytes := transmute([8]u8)f64(num)
-		write_bytes(
-			p,
-			{0xcb, bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]},
-		)
+		write_byte(p, 0xCB)
+		write_multibyte(p, transmute([8]u8)f64(num))
 	}
 }
 
@@ -309,70 +310,351 @@ import "base:runtime"
 
 begin_map :: proc(p: ^Packer, length: u32) {
 	switch length {
-	case 0..<(1 << 4):
+	case 0 ..< (1 << 4):
 		write_byte(p, 0b10000000 | u8(length))
-	case (1 << 4)..<(1 << 16):
+	case (1 << 4) ..< (1 << 16):
 		write_byte(p, 0xde)
-		endian.put_u16(p.buf[:], .Big, u16(length))
-	case (1 << 16)..=((1 << 32) - 1):
+		write_nbytes_r(p, transmute([2]u8)u16(length))
+	case (1 << 16) ..= ((1 << 32) - 1):
 		write_byte(p, 0xdf)
-		endian.put_u32(p.buf[:], .Big, length)
+		write_nbytes_r(p, transmute([4]u8)length)
 	}
 }
 
-write_any :: proc(p: ^Packer, data: any) {
+begin_array :: proc(p: ^Packer, length: u32) {
 
+	switch length {
+	case 0 ..< (1 << 4):
+		write_byte(p, 0b10010000 | u8(length))
+	case (1 << 4) ..< (1 << 16):
+		write_byte(p, 0xdc)
+		write_nbytes_r(p, transmute([2]u8)u16(length))
+	case (1 << 16) ..= ((1 << 32) - 1):
+		write_byte(p, 0xdd)
+		write_nbytes_r(p, transmute([4]u8)length)
+
+	}
+}
+
+import "core:mem"
+import "core:slice"
+
+write :: proc(p: ^Packer, data: any) {
 	ti := runtime.type_info_base(type_info_of(data.id))
 	a := any{data.data, ti.id}
 
-	 #partial switch info in ti.variant {
-	case runtime.Type_Info_Named:
+	switch info in ti.variant {
+	case runtime.Type_Info_Named, runtime.Type_Info_Enum, runtime.Type_Info_Bit_Field:
 		unreachable()
 
-	case runtime.Type_Info_Integer:
-		switch ti.id {
-		case i32:
-			write_number(p, a.(i32))
+
+	case runtime.Type_Info_Pointer,
+		runtime.Type_Info_Multi_Pointer, runtime.Type_Info_Procedure:
+		if (^rawptr)(data.data)^ == nil {
+			write_nil(p)
 		}
+
+	case runtime.Type_Info_Integer:
+    	switch data.id {
+		case i8: write_number(p, a.(i8))
+		case i16: write_number(p, a.(i16))
+		case i32: write_number(p, a.(i32))
+		case i64: write_number(p, a.(i64))
+		case int: write_number(p, a.(int))
+		case u8: write_number(p, a.(u8))
+		case u16: write_number(p, a.(u16))
+		case u32: write_number(p, a.(u32))
+		case u64: write_number(p, a.(u64))
+		}
+
+	case runtime.Type_Info_Rune,
+		runtime.Type_Info_Complex,
+		runtime.Type_Info_Quaternion,
+		runtime.Type_Info_Enumerated_Array,
+		runtime.Type_Info_Dynamic_Array,
+		runtime.Type_Info_Parameters,
+		runtime.Type_Info_Union,
+		runtime.Type_Info_Bit_Set,
+		runtime.Type_Info_Simd_Vector,
+		runtime.Type_Info_Relative_Pointer,
+		runtime.Type_Info_Relative_Multi_Pointer,
+		runtime.Type_Info_Matrix,
+		runtime.Type_Info_Soa_Pointer,
+		runtime.Type_Info_Type_Id,
+		runtime.Type_Info_Any:
+		unreachable()
+
+	case runtime.Type_Info_Slice:
+		d := cast(^mem.Raw_Slice)data.data
+		if info.elem.id == bin {
+			switch d.len {
+
+			case 0 ..< (1 << 8):
+				write_bytes_2(p, 0xc4, u8(d.len))
+
+			case (1 << 8) ..< (1 << 16):
+				bytes := transmute([2]u8)u16(d.len)
+				write_bytes_2(p, 0xc5, bytes[1], bytes[0])
+
+			case (1 << 16) ..< (1 << 32):
+				bytes := transmute([4]u8)u32(d.len)
+				write_bytes_2(p, 0xc6, bytes[3], bytes[2], bytes[1], bytes[0])
+			}
+
+			write_bytes(p, slice.bytes_from_ptr(d.data, d.len))
+		} else {
+
+			begin_array(p, u32(d.len))
+
+			for i in 0 ..< d.len {
+				data := uintptr(d.data) + uintptr(i * info.elem_size)
+				write(p, any{rawptr(data), info.elem.id})
+			}
+		}
+		case runtime.Type_Info_Array:
+		if info.elem.id == bin {
+			switch info.count {
+
+			case 0 ..< (1 << 8):
+				write_bytes_2(p, 0xc4, u8(info.count))
+
+			case (1 << 8) ..< (1 << 16):
+				bytes := transmute([2]u8)u16(info.count)
+				write_bytes_2(p, 0xc5, bytes[1], bytes[0])
+
+			case (1 << 16) ..< (1 << 32):
+				bytes := transmute([4]u8)u32(info.count)
+				write_bytes_2(p, 0xc6, bytes[3], bytes[2], bytes[1], bytes[0])
+			}
+
+			write_bytes(p, slice.bytes_from_ptr(data.data, info.count))
+		} else {
+			begin_array(p, u32(info.count))
+
+			for i in 0 ..< info.count {
+				data := uintptr(data.data) + uintptr(i * info.elem_size)
+				write(p, any{rawptr(data), info.elem.id})
+			}
+		}
+
+		case runtime.Type_Info_Boolean:
+		    write_bool(p, a.(bool))
+
+		case runtime.Type_Info_String:
+		    switch s in data {
+			case string:
+				write_str(p, s)
+			case cstring:
+				write_str(p, string(s))
+			}
+
+		case runtime.Type_Info_Float:
+    		switch data.id {
+			case f32:
+				write_generic_float(p, a.(f32))
+			case f64:
+				write_generic_float(p, a.(f64))
+			}
+
+		case runtime.Type_Info_Struct:
+        	if data.id == time.Time {
+				write_timestamp_ext1(p, data.(time.Time))
+			} else {
+				begin_map(p, u32(info.field_count))
+				for name, i in info.names[:info.field_count] {
+					id := info.types[i].id
+					data := rawptr(uintptr(data.data) + info.offsets[i])
+					the_value := any{data, id}
+					write_str(p, name)
+
+					// TODO
+					// if info.usings[i] && name == "_" {
+					// 	write_struct_fields(p, the_value, opt)
+					// } else {
+					write(p, the_value)
+					//}
+				}
+			}
+		case runtime.Type_Info_Map:
+    	m := (^mem.Raw_Map)(data.data)
+		if info.map_info == nil {
+// TODO
+		}
+			map_cap := uintptr(runtime.map_cap(m^))
+			ks, vs, hs, _, _ := runtime.map_kvh_data_dynamic(m^, info.map_info)
+
+		count_valid := 0
+		    for bucket_index in 0..<map_cap {
+				runtime.map_hash_is_valid(hs[bucket_index]) or_continue
+				count_valid += 1
+			}
+		begin_map(p, u32(count_valid))
+    		if .StableMaps not_in p.flags {
+				i := 0
+				for bucket_index in 0..<map_cap {
+					runtime.map_hash_is_valid(hs[bucket_index]) or_continue
+
+					key   := rawptr(runtime.map_cell_index_dynamic(ks, info.map_info.ks, bucket_index))
+					value := rawptr(runtime.map_cell_index_dynamic(vs, info.map_info.vs, bucket_index))
+
+					write(p, any{key, info.key.id})
+					write(p, any{value, info.value.id})
+				}
+			} else {
+				Entry :: struct($T: typeid)  {
+					key: T,
+					value: any,
+				}
+
+				output_sorted :: proc(p: ^Packer, map_cap: uintptr, info: runtime.Type_Info_Map, ks: uintptr, vs: uintptr, hs: [^]runtime.Map_Hash, key_conv: proc(ptr: uintptr) -> $T) {
+					sorted := make([dynamic]Entry(T), 0, map_cap, context.temp_allocator)
+					for bucket_index in 0..<map_cap {
+						runtime.map_hash_is_valid(hs[bucket_index]) or_continue
+
+						key := key_conv(runtime.map_cell_index_dynamic(ks, info.map_info.ks, bucket_index))
+						value := rawptr(runtime.map_cell_index_dynamic(vs, info.map_info.vs, bucket_index))
+
+						append(&sorted, Entry(T){
+							key = key,
+							value = any{value, info.value.id},
+						})
+					}
+
+					slice.sort_by(sorted[:], proc(i, j: Entry(T)) -> bool { return i.key < j.key  })
+
+
+					for s, i in sorted {
+						write(p, s.key)
+						write(p, s.value)
+					}
+
+				}
+				switch info.key.id {
+				case string:
+					uintptr_to_string :: proc(ptr: uintptr) -> string {
+						bytes := (^[]byte)(ptr)
+						return string(bytes^)
+					}
+					output_sorted(p, map_cap, info, ks, vs, hs, uintptr_to_string)
+
+				case cstring:
+					uintptr_to_string :: proc(ptr: uintptr) -> string {
+						bytes := (^cstring)(ptr)
+						return string(bytes^)
+					}
+					output_sorted(p, map_cap, info, ks, vs, hs, uintptr_to_string)
+
+				case i8:
+					uintptr_to_i8 :: proc(ptr: uintptr) -> i8 {
+						bytes := (^i8)(ptr)
+						return i8(bytes^)
+					}
+					output_sorted(p, map_cap, info, ks, vs, hs, uintptr_to_i8)
+
+				}
+
+			}
+		case:
+		panic(fmt.aprintf("unhandled case: %v", info))
+	}
+}
+
+read_into :: proc(u: ^Unpacker, t: any) -> Error {
+	v := t
+
+	if v == nil || v.id == nil {
+		return Invalid_Parameter{}
 	}
 
+	v = reflect.any_base(v)
 
-}
-write_struct :: proc(p: ^Packer, data: ^$T) where intrinsics.type_is_struct(T) {
-	ti := runtime.type_info_base(type_info_of(T))
-	info := ti.variant.(runtime.Type_Info_Struct)
-
-
-	begin_map(p, u32(info.field_count))
-	for name, i in info.names[:info.field_count] {
-		id := info.types[i].id
-		data := rawptr(uintptr(data) + info.offsets[i])
-		the_value := any{data, id}
-		write_str(p, name)
-
-		// if info.usings[i] && name == "_" {
-		// 	write_struct_fields(p, the_value, opt)
-		// } else {
-		write_any(p, the_value)
-	//}
-
+	ti := type_info_of(v.id)
+	if !reflect.is_pointer(ti) || ti.id == rawptr {
+		return Invalid_Parameter{}
 	}
-}
 
-write :: proc {
-	write_number,
-	write_bool,
-	write_nil,
-	write_rawptr,
-	write_generic_float,
-	write_str,
-	write_bin,
-	write_bin_fixed,
-	write_array,
-	write_array_fixed,
-	write_map,
-	write_timestamp_ext1,
-	write_struct,
+	data := any{(^rawptr)(v.data)^, ti.variant.(reflect.Type_Info_Pointer).elem.id}
+
+	tag := u.data[u.offset]
+	u.offset += 1
+
+	switch {
+	case tag & 0x80 == 0:
+		// positive fixint
+
+		// return u64(tag & 0x7F), nil
+	case tag & 0xE0 == 0xA0:
+		// fixstr
+		// return read_string(u, tag)
+
+	case tag & 0xF0 == 0x80:
+		// fixmap
+		// return read_map(u, tag)
+
+	case tag & 0xE0 == 0xE0:
+		// negative fixint
+		// return i64(-32 - -i8(tag & 0x1F)), nil
+
+	case tag & 0xF0 == 0x90:
+		// fixarray
+		// return read_array(u, tag)
+	}
+
+	switch tag {
+	case 0xC0:
+		// nil. XXXX
+		// return Nil{}, nil
+
+	case 0xC2:
+		maybe := ti.variant.(runtime.Type_Info_Pointer).elem.id
+		if maybe == bool {
+			v.(^bool)^ = false
+		}
+
+	case 0xC3:
+		maybe := ti.variant.(runtime.Type_Info_Pointer).elem.id
+		if maybe == bool {
+			v.(^bool)^ = true
+		}
+
+	case 0xCC, 0xCD, 0xCE, 0xCF:
+		// unsigned int
+		// return read_uint(u, tag)
+
+	case 0xD0, 0xD1, 0xD2, 0xD3:
+		// signed int
+		// return read_sint(u, tag)
+
+	case 0xCA, 0xCB:
+		// float
+		// return read_float(u, tag)
+
+	case 0xD9, 0xDA, 0xDB:
+		// str
+		// return read_string(u, tag)
+
+	case 0xC4, 0xC5, 0xC6:
+		// bin
+		// return read_bin(u, tag)
+
+	case 0xDC, 0xDD:
+		// array
+		// return read_array(u, tag)
+
+	case 0xDE, 0xDF:
+		// map
+		// return read_map(u, tag)
+
+	case 0xD4, 0xD5, 0xD6, 0xD7, 0xD8:
+		// fixext
+		// return read_fixext(u, tag)
+
+	case 0xC7, 0xC8, 0xC9:
+		// ext
+		// return read_ext(u, tag)
+	}
+
+	return nil
 }
 
 Nil :: struct {}
@@ -414,9 +696,12 @@ Unhandled_Tag :: struct {
 	tag: u8,
 }
 
+Invalid_Parameter :: struct {}
+
 Error :: union {
 	Unexpected,
-	Unhandled_Tag
+	Unhandled_Tag,
+	Invalid_Parameter,
 }
 
 Unpacker :: struct {
@@ -447,7 +732,7 @@ read_map :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
 
 
 	out := make(map[ObjectKey]Object)
-	for _ in 0 ..<size {
+	for _ in 0 ..< size {
 		key: ObjectKey
 		value: Object
 		err: Error
@@ -585,7 +870,8 @@ read_timestamp_ext1 :: proc(b: []u8) -> time.Time {
 	count := len(b)
 
 	switch count {
-	case 4: // 32-bit unix-seconds
+	case 4:
+		// 32-bit unix-seconds
 
 		seconds, _ := endian.get_u32(b[:4], .Big)
 		return time.unix(i64(seconds), 0)
@@ -665,19 +951,24 @@ read_key :: proc(u: ^Unpacker) -> (ObjectKey, Error) {
 	u.offset += 1
 
 	switch {
-	case tag & 0x80 == 0: // positive fixint
+	case tag & 0x80 == 0:
+		// positive fixint
 		return u64(tag & 0x7F), nil
-	case tag & 0xE0 == 0xA0: // fixstr
+	case tag & 0xE0 == 0xA0:
+		// fixstr
 		return read_string(u, tag)
 
-	case tag & 0xF0 == 0x80: // fixmap
+	case tag & 0xF0 == 0x80:
+		// fixmap
 		return nil, Unexpected{"a key-type", "a fixmap"}
 
 
-	case tag & 0xE0 == 0xE0: // negative fixint
+	case tag & 0xE0 == 0xE0:
+		// negative fixint
 		return i64(-32 - -i8(tag & 0x1F)), nil
 
-	case tag & 0xF0 == 0x90: // fixarray
+	case tag & 0xF0 == 0x90:
+		// fixarray
 		return nil, Unexpected{"a key-type", "a fixarray"}
 	}
 
@@ -686,24 +977,24 @@ read_key :: proc(u: ^Unpacker) -> (ObjectKey, Error) {
 	case 0xC0: // nil
 	case 0xc2, 0xc3:
 	case 0xCC, 0xCD, 0xCE, 0xCF:
-	// unsigned int
+		// unsigned int
 	case 0xD0, 0xD1, 0xD2, 0xD3:
-	// signed int
+		// signed int
 	case 0xCA, 0xCB:
-	// float
+		// float
 	case 0xD9, 0xDA, 0xDB:
-	// str
+		// str
 	case 0xC4, 0xC5, 0xC6:
-	// bin
+		// bin
 	case 0xDC, 0xDD:
-	// array
+		// array
 	case 0xDE, 0xDF:
-	// map
+		// map
 
 	case 0xD4, 0xD5, 0xD6, 0xD7, 0xD8:
-	// fixext
+		// fixext
 	case 0xC7, 0xC8, 0xC9:
-	// ext
+		// ext
 	}
 
 	return i64(10), nil
@@ -738,7 +1029,8 @@ read :: proc(u: ^Unpacker) -> (Object, Error) {
 	}
 
 	switch tag {
-	case 0xC0: // nil. XXXX
+	case 0xC0:
+		// nil. XXXX
 		return Nil{}, nil
 
 	case 0xC2:
@@ -775,14 +1067,16 @@ read :: proc(u: ^Unpacker) -> (Object, Error) {
 		// map
 		return read_map(u, tag)
 
-	case 0xD4, 0xD5, 0xD6, 0xD7, 0xD8: // fixext
+	case 0xD4, 0xD5, 0xD6, 0xD7, 0xD8:
+		// fixext
 		return read_fixext(u, tag)
 
-	case 0xC7, 0xC8, 0xC9: // ext
+	case 0xC7, 0xC8, 0xC9:
+		// ext
 		return read_ext(u, tag)
 	}
 
-	return nil, Unhandled_Tag { tag }
+	return nil, Unhandled_Tag{tag}
 }
 
 object_equals :: proc(left: ^Object, right: ^Object) -> bool {
@@ -799,7 +1093,7 @@ object_equals :: proc(left: ^Object, right: ^Object) -> bool {
 		r, is_bin := right.([]bin)
 		if !is_bin || len(l) != len(r) do return false
 
-		for idx in 0..<len(l){
+		for idx in 0 ..< len(l) {
 			if l[idx] != r[idx] do return false
 		}
 
@@ -868,7 +1162,7 @@ object_equals :: proc(left: ^Object, right: ^Object) -> bool {
 	return false
 }
 
-object_delete :: proc(object: Object){
+object_delete :: proc(object: Object) {
 	switch l in object {
 	case Nil:
 	case bool:

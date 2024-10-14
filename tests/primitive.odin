@@ -7,11 +7,12 @@ slice_eq :: proc(t: ^testing.T, a: []$T, b: []T) {
     testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", a, b)
     for i in 0..<len(a) {
         testing.expectf(t, a[i] == b[i], "%v == %v fails at index %v (%v %v)", a, b, i, a[i], b[i])
+        if a[i] != b[i] do return
     }
 }
 @(test)
 test_nil_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := rawptr(nil)
@@ -36,7 +37,7 @@ test_nil_de :: proc(t: ^testing.T) {
 
 @(test)
 test_true_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := true
@@ -61,7 +62,7 @@ test_true_de :: proc(t: ^testing.T) {
 
 @(test)
 test_false_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := false
@@ -86,7 +87,7 @@ test_false_de :: proc(t: ^testing.T) {
 
 @(test)
 test_fixint_126_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 126
@@ -111,7 +112,7 @@ test_fixint_126_de :: proc(t: ^testing.T) {
 
 @(test)
 test_fixint_127_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 127
@@ -136,7 +137,7 @@ test_fixint_127_de :: proc(t: ^testing.T) {
 
 @(test)
 test_fixint_128_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 128
@@ -161,7 +162,7 @@ test_fixint_128_de :: proc(t: ^testing.T) {
 
 @(test)
 test_nfixint_30_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -30
@@ -186,7 +187,7 @@ test_nfixint_30_de :: proc(t: ^testing.T) {
 
 @(test)
 test_nfixint_31_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -31
@@ -211,7 +212,7 @@ test_nfixint_31_de :: proc(t: ^testing.T) {
 
 @(test)
 test_nfixint_32_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -32
@@ -236,7 +237,7 @@ test_nfixint_32_de :: proc(t: ^testing.T) {
 
 @(test)
 test_nfixint_33_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -33
@@ -261,7 +262,7 @@ test_nfixint_33_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_254_8_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(254)
@@ -286,7 +287,7 @@ test_int_254_8_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_255_8_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(255)
@@ -311,7 +312,7 @@ test_int_255_8_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_256_8_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(256)
@@ -336,7 +337,7 @@ test_int_256_8_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_257_8_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(257)
@@ -361,7 +362,7 @@ test_int_257_8_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_258_8_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(258)
@@ -386,7 +387,7 @@ test_int_258_8_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_65534_16_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(65534)
@@ -411,7 +412,7 @@ test_int_65534_16_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_65535_16_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(65535)
@@ -436,7 +437,7 @@ test_int_65535_16_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_65536_16_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(65536)
@@ -461,7 +462,7 @@ test_int_65536_16_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_65537_16_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(65537)
@@ -486,7 +487,7 @@ test_int_65537_16_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_65538_16_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(65538)
@@ -511,7 +512,7 @@ test_int_65538_16_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_4294967294_32_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(4294967294)
@@ -536,7 +537,7 @@ test_int_4294967294_32_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_4294967295_32_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(4294967295)
@@ -561,7 +562,7 @@ test_int_4294967295_32_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_4294967296_32_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(4294967296)
@@ -586,7 +587,7 @@ test_int_4294967296_32_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_4294967297_32_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(4294967297)
@@ -611,7 +612,7 @@ test_int_4294967297_32_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_4294967298_32_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(4294967298)
@@ -636,7 +637,7 @@ test_int_4294967298_32_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_18446744073709551614_64_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(18446744073709551614)
@@ -661,7 +662,7 @@ test_int_18446744073709551614_64_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_18446744073709551615_64_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := u64(18446744073709551615)
@@ -686,7 +687,7 @@ test_int_18446744073709551615_64_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_62_7_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-62)
@@ -711,7 +712,7 @@ test_sint_62_7_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_63_7_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-63)
@@ -736,7 +737,7 @@ test_sint_63_7_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_64_7_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-64)
@@ -761,7 +762,7 @@ test_sint_64_7_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_65_7_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-65)
@@ -786,7 +787,7 @@ test_sint_65_7_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_66_7_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-66)
@@ -811,7 +812,7 @@ test_sint_66_7_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_16382_15_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-16382)
@@ -836,7 +837,7 @@ test_sint_16382_15_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_16383_15_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-16383)
@@ -861,7 +862,7 @@ test_sint_16383_15_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_16384_15_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-16384)
@@ -886,7 +887,7 @@ test_sint_16384_15_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_16385_15_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-16385)
@@ -911,7 +912,7 @@ test_sint_16385_15_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_16386_15_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-16386)
@@ -936,7 +937,7 @@ test_sint_16386_15_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_1073741822_31_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-1073741822)
@@ -961,7 +962,7 @@ test_sint_1073741822_31_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_1073741823_31_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-1073741823)
@@ -986,7 +987,7 @@ test_sint_1073741823_31_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_1073741824_31_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-1073741824)
@@ -1011,7 +1012,7 @@ test_sint_1073741824_31_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_1073741825_31_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-1073741825)
@@ -1036,7 +1037,7 @@ test_sint_1073741825_31_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_1073741826_31_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-1073741826)
@@ -1061,7 +1062,7 @@ test_sint_1073741826_31_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_4611686018427387902_63_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-4611686018427387902)
@@ -1086,7 +1087,7 @@ test_sint_4611686018427387902_63_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_4611686018427387903_63_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-4611686018427387903)
@@ -1111,7 +1112,7 @@ test_sint_4611686018427387903_63_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_4611686018427387904_63_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-4611686018427387904)
@@ -1136,7 +1137,7 @@ test_sint_4611686018427387904_63_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_4611686018427387905_63_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-4611686018427387905)
@@ -1161,7 +1162,7 @@ test_sint_4611686018427387905_63_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_4611686018427387906_63_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := i64(-4611686018427387906)
@@ -1186,7 +1187,7 @@ test_sint_4611686018427387906_63_2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 0
@@ -1211,7 +1212,7 @@ test_int_pow2_1_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1
@@ -1236,7 +1237,7 @@ test_int_pow2_1_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1
@@ -1261,7 +1262,7 @@ test_sint_pow2_1_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2
@@ -1286,7 +1287,7 @@ test_int_pow2_1_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2
@@ -1311,7 +1312,7 @@ test_sint_pow2_1_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 0
@@ -1336,7 +1337,7 @@ test_int_pow2_2_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1
@@ -1361,7 +1362,7 @@ test_int_pow2_2_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1
@@ -1386,7 +1387,7 @@ test_sint_pow2_2_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2
@@ -1411,7 +1412,7 @@ test_int_pow2_2_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2
@@ -1436,7 +1437,7 @@ test_sint_pow2_2_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 3
@@ -1461,7 +1462,7 @@ test_int_pow2_2_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -3
@@ -1486,7 +1487,7 @@ test_sint_pow2_2_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2
@@ -1511,7 +1512,7 @@ test_int_pow2_4_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2
@@ -1536,7 +1537,7 @@ test_sint_pow2_4_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 3
@@ -1561,7 +1562,7 @@ test_int_pow2_4_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -3
@@ -1586,7 +1587,7 @@ test_sint_pow2_4_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4
@@ -1611,7 +1612,7 @@ test_int_pow2_4_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4
@@ -1636,7 +1637,7 @@ test_sint_pow2_4_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 5
@@ -1661,7 +1662,7 @@ test_int_pow2_4_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -5
@@ -1686,7 +1687,7 @@ test_sint_pow2_4_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 6
@@ -1711,7 +1712,7 @@ test_int_pow2_8_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -6
@@ -1736,7 +1737,7 @@ test_sint_pow2_8_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 7
@@ -1761,7 +1762,7 @@ test_int_pow2_8_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -7
@@ -1786,7 +1787,7 @@ test_sint_pow2_8_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8
@@ -1811,7 +1812,7 @@ test_int_pow2_8_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8
@@ -1836,7 +1837,7 @@ test_sint_pow2_8_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 9
@@ -1861,7 +1862,7 @@ test_int_pow2_8_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -9
@@ -1886,7 +1887,7 @@ test_sint_pow2_8_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 14
@@ -1911,7 +1912,7 @@ test_int_pow2_16_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -14
@@ -1936,7 +1937,7 @@ test_sint_pow2_16_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 15
@@ -1961,7 +1962,7 @@ test_int_pow2_16_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -15
@@ -1986,7 +1987,7 @@ test_sint_pow2_16_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 16
@@ -2011,7 +2012,7 @@ test_int_pow2_16_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -16
@@ -2036,7 +2037,7 @@ test_sint_pow2_16_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 17
@@ -2061,7 +2062,7 @@ test_int_pow2_16_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -17
@@ -2086,7 +2087,7 @@ test_sint_pow2_16_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 30
@@ -2111,7 +2112,7 @@ test_int_pow2_32_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -30
@@ -2136,7 +2137,7 @@ test_sint_pow2_32_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 31
@@ -2161,7 +2162,7 @@ test_int_pow2_32_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -31
@@ -2186,7 +2187,7 @@ test_sint_pow2_32_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 32
@@ -2211,7 +2212,7 @@ test_int_pow2_32_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -32
@@ -2236,7 +2237,7 @@ test_sint_pow2_32_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 33
@@ -2261,7 +2262,7 @@ test_int_pow2_32_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -33
@@ -2286,7 +2287,7 @@ test_sint_pow2_32_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_64_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 62
@@ -2311,7 +2312,7 @@ test_int_pow2_64_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_64_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -62
@@ -2336,7 +2337,7 @@ test_sint_pow2_64_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_64_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 63
@@ -2361,7 +2362,7 @@ test_int_pow2_64_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_64_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -63
@@ -2386,7 +2387,7 @@ test_sint_pow2_64_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_64_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 64
@@ -2411,7 +2412,7 @@ test_int_pow2_64_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_64_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -64
@@ -2436,7 +2437,7 @@ test_sint_pow2_64_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_64_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 65
@@ -2461,7 +2462,7 @@ test_int_pow2_64_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_64_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -65
@@ -2486,7 +2487,7 @@ test_sint_pow2_64_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_128_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 126
@@ -2511,7 +2512,7 @@ test_int_pow2_128_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_128_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -126
@@ -2536,7 +2537,7 @@ test_sint_pow2_128_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_128_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 127
@@ -2561,7 +2562,7 @@ test_int_pow2_128_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_128_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -127
@@ -2586,7 +2587,7 @@ test_sint_pow2_128_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_128_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 128
@@ -2611,7 +2612,7 @@ test_int_pow2_128_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_128_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -128
@@ -2636,7 +2637,7 @@ test_sint_pow2_128_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_128_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 129
@@ -2661,7 +2662,7 @@ test_int_pow2_128_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_128_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -129
@@ -2686,7 +2687,7 @@ test_sint_pow2_128_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_256_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 254
@@ -2711,7 +2712,7 @@ test_int_pow2_256_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_256_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -254
@@ -2736,7 +2737,7 @@ test_sint_pow2_256_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_256_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 255
@@ -2761,7 +2762,7 @@ test_int_pow2_256_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_256_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -255
@@ -2786,7 +2787,7 @@ test_sint_pow2_256_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_256_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 256
@@ -2811,7 +2812,7 @@ test_int_pow2_256_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_256_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -256
@@ -2836,7 +2837,7 @@ test_sint_pow2_256_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_256_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 257
@@ -2861,7 +2862,7 @@ test_int_pow2_256_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_256_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -257
@@ -2886,7 +2887,7 @@ test_sint_pow2_256_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_512_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 510
@@ -2911,7 +2912,7 @@ test_int_pow2_512_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_512_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -510
@@ -2936,7 +2937,7 @@ test_sint_pow2_512_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_512_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 511
@@ -2961,7 +2962,7 @@ test_int_pow2_512_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_512_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -511
@@ -2986,7 +2987,7 @@ test_sint_pow2_512_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_512_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 512
@@ -3011,7 +3012,7 @@ test_int_pow2_512_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_512_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -512
@@ -3036,7 +3037,7 @@ test_sint_pow2_512_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_512_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 513
@@ -3061,7 +3062,7 @@ test_int_pow2_512_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_512_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -513
@@ -3086,7 +3087,7 @@ test_sint_pow2_512_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1024_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1022
@@ -3111,7 +3112,7 @@ test_int_pow2_1024_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1024_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1022
@@ -3136,7 +3137,7 @@ test_sint_pow2_1024_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1024_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1023
@@ -3161,7 +3162,7 @@ test_int_pow2_1024_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1024_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1023
@@ -3186,7 +3187,7 @@ test_sint_pow2_1024_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1024_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1024
@@ -3211,7 +3212,7 @@ test_int_pow2_1024_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1024_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1024
@@ -3236,7 +3237,7 @@ test_sint_pow2_1024_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1024_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1025
@@ -3261,7 +3262,7 @@ test_int_pow2_1024_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1024_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1025
@@ -3286,7 +3287,7 @@ test_sint_pow2_1024_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2048_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2046
@@ -3311,7 +3312,7 @@ test_int_pow2_2048_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2048_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2046
@@ -3336,7 +3337,7 @@ test_sint_pow2_2048_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2048_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2047
@@ -3361,7 +3362,7 @@ test_int_pow2_2048_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2048_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2047
@@ -3386,7 +3387,7 @@ test_sint_pow2_2048_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2048_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2048
@@ -3411,7 +3412,7 @@ test_int_pow2_2048_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2048_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2048
@@ -3436,7 +3437,7 @@ test_sint_pow2_2048_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2048_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2049
@@ -3461,7 +3462,7 @@ test_int_pow2_2048_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2048_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2049
@@ -3486,7 +3487,7 @@ test_sint_pow2_2048_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4096_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4094
@@ -3511,7 +3512,7 @@ test_int_pow2_4096_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4096_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4094
@@ -3536,7 +3537,7 @@ test_sint_pow2_4096_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4096_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4095
@@ -3561,7 +3562,7 @@ test_int_pow2_4096_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4096_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4095
@@ -3586,7 +3587,7 @@ test_sint_pow2_4096_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4096_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4096
@@ -3611,7 +3612,7 @@ test_int_pow2_4096_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4096_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4096
@@ -3636,7 +3637,7 @@ test_sint_pow2_4096_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4096_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4097
@@ -3661,7 +3662,7 @@ test_int_pow2_4096_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4096_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4097
@@ -3686,7 +3687,7 @@ test_sint_pow2_4096_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8192_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8190
@@ -3711,7 +3712,7 @@ test_int_pow2_8192_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8192_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8190
@@ -3736,7 +3737,7 @@ test_sint_pow2_8192_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8192_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8191
@@ -3761,7 +3762,7 @@ test_int_pow2_8192_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8192_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8191
@@ -3786,7 +3787,7 @@ test_sint_pow2_8192_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8192_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8192
@@ -3811,7 +3812,7 @@ test_int_pow2_8192_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8192_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8192
@@ -3836,7 +3837,7 @@ test_sint_pow2_8192_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8192_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8193
@@ -3861,7 +3862,7 @@ test_int_pow2_8192_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8192_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8193
@@ -3886,7 +3887,7 @@ test_sint_pow2_8192_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16384_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 16382
@@ -3911,7 +3912,7 @@ test_int_pow2_16384_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16384_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -16382
@@ -3936,7 +3937,7 @@ test_sint_pow2_16384_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16384_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 16383
@@ -3961,7 +3962,7 @@ test_int_pow2_16384_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16384_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -16383
@@ -3986,7 +3987,7 @@ test_sint_pow2_16384_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16384_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 16384
@@ -4011,7 +4012,7 @@ test_int_pow2_16384_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16384_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -16384
@@ -4036,7 +4037,7 @@ test_sint_pow2_16384_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16384_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 16385
@@ -4061,7 +4062,7 @@ test_int_pow2_16384_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16384_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -16385
@@ -4086,7 +4087,7 @@ test_sint_pow2_16384_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32768_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 32766
@@ -4111,7 +4112,7 @@ test_int_pow2_32768_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32768_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -32766
@@ -4136,7 +4137,7 @@ test_sint_pow2_32768_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32768_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 32767
@@ -4161,7 +4162,7 @@ test_int_pow2_32768_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32768_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -32767
@@ -4186,7 +4187,7 @@ test_sint_pow2_32768_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32768_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 32768
@@ -4211,7 +4212,7 @@ test_int_pow2_32768_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32768_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -32768
@@ -4236,7 +4237,7 @@ test_sint_pow2_32768_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32768_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 32769
@@ -4261,7 +4262,7 @@ test_int_pow2_32768_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32768_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -32769
@@ -4286,7 +4287,7 @@ test_sint_pow2_32768_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_65536_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 65534
@@ -4311,7 +4312,7 @@ test_int_pow2_65536_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_65536_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -65534
@@ -4336,7 +4337,7 @@ test_sint_pow2_65536_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_65536_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 65535
@@ -4361,7 +4362,7 @@ test_int_pow2_65536_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_65536_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -65535
@@ -4386,7 +4387,7 @@ test_sint_pow2_65536_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_65536_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 65536
@@ -4411,7 +4412,7 @@ test_int_pow2_65536_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_65536_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -65536
@@ -4436,7 +4437,7 @@ test_sint_pow2_65536_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_65536_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 65537
@@ -4461,7 +4462,7 @@ test_int_pow2_65536_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_65536_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -65537
@@ -4486,7 +4487,7 @@ test_sint_pow2_65536_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_131072_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 131070
@@ -4511,7 +4512,7 @@ test_int_pow2_131072_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_131072_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -131070
@@ -4536,7 +4537,7 @@ test_sint_pow2_131072_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_131072_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 131071
@@ -4561,7 +4562,7 @@ test_int_pow2_131072_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_131072_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -131071
@@ -4586,7 +4587,7 @@ test_sint_pow2_131072_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_131072_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 131072
@@ -4611,7 +4612,7 @@ test_int_pow2_131072_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_131072_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -131072
@@ -4636,7 +4637,7 @@ test_sint_pow2_131072_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_131072_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 131073
@@ -4661,7 +4662,7 @@ test_int_pow2_131072_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_131072_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -131073
@@ -4686,7 +4687,7 @@ test_sint_pow2_131072_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_262144_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 262142
@@ -4711,7 +4712,7 @@ test_int_pow2_262144_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_262144_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -262142
@@ -4736,7 +4737,7 @@ test_sint_pow2_262144_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_262144_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 262143
@@ -4761,7 +4762,7 @@ test_int_pow2_262144_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_262144_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -262143
@@ -4786,7 +4787,7 @@ test_sint_pow2_262144_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_262144_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 262144
@@ -4811,7 +4812,7 @@ test_int_pow2_262144_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_262144_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -262144
@@ -4836,7 +4837,7 @@ test_sint_pow2_262144_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_262144_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 262145
@@ -4861,7 +4862,7 @@ test_int_pow2_262144_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_262144_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -262145
@@ -4886,7 +4887,7 @@ test_sint_pow2_262144_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_524288_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 524286
@@ -4911,7 +4912,7 @@ test_int_pow2_524288_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_524288_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -524286
@@ -4936,7 +4937,7 @@ test_sint_pow2_524288_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_524288_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 524287
@@ -4961,7 +4962,7 @@ test_int_pow2_524288_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_524288_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -524287
@@ -4986,7 +4987,7 @@ test_sint_pow2_524288_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_524288_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 524288
@@ -5011,7 +5012,7 @@ test_int_pow2_524288_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_524288_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -524288
@@ -5036,7 +5037,7 @@ test_sint_pow2_524288_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_524288_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 524289
@@ -5061,7 +5062,7 @@ test_int_pow2_524288_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_524288_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -524289
@@ -5086,7 +5087,7 @@ test_sint_pow2_524288_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1048576_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1048574
@@ -5111,7 +5112,7 @@ test_int_pow2_1048576_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1048576_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1048574
@@ -5136,7 +5137,7 @@ test_sint_pow2_1048576_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1048576_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1048575
@@ -5161,7 +5162,7 @@ test_int_pow2_1048576_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1048576_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1048575
@@ -5186,7 +5187,7 @@ test_sint_pow2_1048576_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1048576_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1048576
@@ -5211,7 +5212,7 @@ test_int_pow2_1048576_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1048576_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1048576
@@ -5236,7 +5237,7 @@ test_sint_pow2_1048576_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1048576_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1048577
@@ -5261,7 +5262,7 @@ test_int_pow2_1048576_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1048576_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1048577
@@ -5286,7 +5287,7 @@ test_sint_pow2_1048576_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2097152_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2097150
@@ -5311,7 +5312,7 @@ test_int_pow2_2097152_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2097152_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2097150
@@ -5336,7 +5337,7 @@ test_sint_pow2_2097152_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2097152_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2097151
@@ -5361,7 +5362,7 @@ test_int_pow2_2097152_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2097152_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2097151
@@ -5386,7 +5387,7 @@ test_sint_pow2_2097152_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2097152_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2097152
@@ -5411,7 +5412,7 @@ test_int_pow2_2097152_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2097152_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2097152
@@ -5436,7 +5437,7 @@ test_sint_pow2_2097152_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2097152_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2097153
@@ -5461,7 +5462,7 @@ test_int_pow2_2097152_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2097152_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2097153
@@ -5486,7 +5487,7 @@ test_sint_pow2_2097152_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4194304_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4194302
@@ -5511,7 +5512,7 @@ test_int_pow2_4194304_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4194304_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4194302
@@ -5536,7 +5537,7 @@ test_sint_pow2_4194304_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4194304_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4194303
@@ -5561,7 +5562,7 @@ test_int_pow2_4194304_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4194304_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4194303
@@ -5586,7 +5587,7 @@ test_sint_pow2_4194304_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4194304_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4194304
@@ -5611,7 +5612,7 @@ test_int_pow2_4194304_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4194304_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4194304
@@ -5636,7 +5637,7 @@ test_sint_pow2_4194304_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4194304_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4194305
@@ -5661,7 +5662,7 @@ test_int_pow2_4194304_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4194304_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4194305
@@ -5686,7 +5687,7 @@ test_sint_pow2_4194304_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8388608_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8388606
@@ -5711,7 +5712,7 @@ test_int_pow2_8388608_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8388608_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8388606
@@ -5736,7 +5737,7 @@ test_sint_pow2_8388608_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8388608_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8388607
@@ -5761,7 +5762,7 @@ test_int_pow2_8388608_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8388608_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8388607
@@ -5786,7 +5787,7 @@ test_sint_pow2_8388608_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8388608_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8388608
@@ -5811,7 +5812,7 @@ test_int_pow2_8388608_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8388608_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8388608
@@ -5836,7 +5837,7 @@ test_sint_pow2_8388608_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8388608_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8388609
@@ -5861,7 +5862,7 @@ test_int_pow2_8388608_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8388608_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8388609
@@ -5886,7 +5887,7 @@ test_sint_pow2_8388608_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16777216_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 16777214
@@ -5911,7 +5912,7 @@ test_int_pow2_16777216_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16777216_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -16777214
@@ -5936,7 +5937,7 @@ test_sint_pow2_16777216_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16777216_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 16777215
@@ -5961,7 +5962,7 @@ test_int_pow2_16777216_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16777216_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -16777215
@@ -5986,7 +5987,7 @@ test_sint_pow2_16777216_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16777216_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 16777216
@@ -6011,7 +6012,7 @@ test_int_pow2_16777216_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16777216_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -16777216
@@ -6036,7 +6037,7 @@ test_sint_pow2_16777216_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16777216_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 16777217
@@ -6061,7 +6062,7 @@ test_int_pow2_16777216_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16777216_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -16777217
@@ -6086,7 +6087,7 @@ test_sint_pow2_16777216_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_33554432_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 33554430
@@ -6111,7 +6112,7 @@ test_int_pow2_33554432_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_33554432_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -33554430
@@ -6136,7 +6137,7 @@ test_sint_pow2_33554432_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_33554432_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 33554431
@@ -6161,7 +6162,7 @@ test_int_pow2_33554432_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_33554432_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -33554431
@@ -6186,7 +6187,7 @@ test_sint_pow2_33554432_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_33554432_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 33554432
@@ -6211,7 +6212,7 @@ test_int_pow2_33554432_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_33554432_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -33554432
@@ -6236,7 +6237,7 @@ test_sint_pow2_33554432_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_33554432_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 33554433
@@ -6261,7 +6262,7 @@ test_int_pow2_33554432_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_33554432_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -33554433
@@ -6286,7 +6287,7 @@ test_sint_pow2_33554432_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_67108864_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 67108862
@@ -6311,7 +6312,7 @@ test_int_pow2_67108864_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_67108864_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -67108862
@@ -6336,7 +6337,7 @@ test_sint_pow2_67108864_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_67108864_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 67108863
@@ -6361,7 +6362,7 @@ test_int_pow2_67108864_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_67108864_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -67108863
@@ -6386,7 +6387,7 @@ test_sint_pow2_67108864_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_67108864_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 67108864
@@ -6411,7 +6412,7 @@ test_int_pow2_67108864_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_67108864_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -67108864
@@ -6436,7 +6437,7 @@ test_sint_pow2_67108864_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_67108864_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 67108865
@@ -6461,7 +6462,7 @@ test_int_pow2_67108864_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_67108864_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -67108865
@@ -6486,7 +6487,7 @@ test_sint_pow2_67108864_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_134217728_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 134217726
@@ -6511,7 +6512,7 @@ test_int_pow2_134217728_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_134217728_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -134217726
@@ -6536,7 +6537,7 @@ test_sint_pow2_134217728_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_134217728_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 134217727
@@ -6561,7 +6562,7 @@ test_int_pow2_134217728_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_134217728_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -134217727
@@ -6586,7 +6587,7 @@ test_sint_pow2_134217728_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_134217728_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 134217728
@@ -6611,7 +6612,7 @@ test_int_pow2_134217728_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_134217728_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -134217728
@@ -6636,7 +6637,7 @@ test_sint_pow2_134217728_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_134217728_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 134217729
@@ -6661,7 +6662,7 @@ test_int_pow2_134217728_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_134217728_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -134217729
@@ -6686,7 +6687,7 @@ test_sint_pow2_134217728_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_268435456_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 268435454
@@ -6711,7 +6712,7 @@ test_int_pow2_268435456_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_268435456_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -268435454
@@ -6736,7 +6737,7 @@ test_sint_pow2_268435456_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_268435456_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 268435455
@@ -6761,7 +6762,7 @@ test_int_pow2_268435456_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_268435456_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -268435455
@@ -6786,7 +6787,7 @@ test_sint_pow2_268435456_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_268435456_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 268435456
@@ -6811,7 +6812,7 @@ test_int_pow2_268435456_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_268435456_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -268435456
@@ -6836,7 +6837,7 @@ test_sint_pow2_268435456_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_268435456_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 268435457
@@ -6861,7 +6862,7 @@ test_int_pow2_268435456_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_268435456_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -268435457
@@ -6886,7 +6887,7 @@ test_sint_pow2_268435456_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_536870912_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 536870910
@@ -6911,7 +6912,7 @@ test_int_pow2_536870912_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_536870912_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -536870910
@@ -6936,7 +6937,7 @@ test_sint_pow2_536870912_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_536870912_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 536870911
@@ -6961,7 +6962,7 @@ test_int_pow2_536870912_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_536870912_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -536870911
@@ -6986,7 +6987,7 @@ test_sint_pow2_536870912_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_536870912_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 536870912
@@ -7011,7 +7012,7 @@ test_int_pow2_536870912_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_536870912_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -536870912
@@ -7036,7 +7037,7 @@ test_sint_pow2_536870912_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_536870912_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 536870913
@@ -7061,7 +7062,7 @@ test_int_pow2_536870912_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_536870912_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -536870913
@@ -7086,7 +7087,7 @@ test_sint_pow2_536870912_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1073741824_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1073741822
@@ -7111,7 +7112,7 @@ test_int_pow2_1073741824_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1073741824_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1073741822
@@ -7136,7 +7137,7 @@ test_sint_pow2_1073741824_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1073741824_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1073741823
@@ -7161,7 +7162,7 @@ test_int_pow2_1073741824_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1073741824_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1073741823
@@ -7186,7 +7187,7 @@ test_sint_pow2_1073741824_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1073741824_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1073741824
@@ -7211,7 +7212,7 @@ test_int_pow2_1073741824_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1073741824_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1073741824
@@ -7236,7 +7237,7 @@ test_sint_pow2_1073741824_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1073741824_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1073741825
@@ -7261,7 +7262,7 @@ test_int_pow2_1073741824_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1073741824_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1073741825
@@ -7286,7 +7287,7 @@ test_sint_pow2_1073741824_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2147483648_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2147483646
@@ -7311,7 +7312,7 @@ test_int_pow2_2147483648_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2147483648_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2147483646
@@ -7336,7 +7337,7 @@ test_sint_pow2_2147483648_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2147483648_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2147483647
@@ -7361,7 +7362,7 @@ test_int_pow2_2147483648_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2147483648_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2147483647
@@ -7386,7 +7387,7 @@ test_sint_pow2_2147483648_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2147483648_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2147483648
@@ -7411,7 +7412,7 @@ test_int_pow2_2147483648_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2147483648_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2147483648
@@ -7436,7 +7437,7 @@ test_sint_pow2_2147483648_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2147483648_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2147483649
@@ -7461,7 +7462,7 @@ test_int_pow2_2147483648_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2147483648_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2147483649
@@ -7486,7 +7487,7 @@ test_sint_pow2_2147483648_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4294967296_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4294967294
@@ -7511,7 +7512,7 @@ test_int_pow2_4294967296_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4294967296_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4294967294
@@ -7536,7 +7537,7 @@ test_sint_pow2_4294967296_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4294967296_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4294967295
@@ -7561,7 +7562,7 @@ test_int_pow2_4294967296_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4294967296_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4294967295
@@ -7586,7 +7587,7 @@ test_sint_pow2_4294967296_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4294967296_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4294967296
@@ -7611,7 +7612,7 @@ test_int_pow2_4294967296_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4294967296_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4294967296
@@ -7636,7 +7637,7 @@ test_sint_pow2_4294967296_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4294967296_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4294967297
@@ -7661,7 +7662,7 @@ test_int_pow2_4294967296_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4294967296_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4294967297
@@ -7686,7 +7687,7 @@ test_sint_pow2_4294967296_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8589934592_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8589934590
@@ -7711,7 +7712,7 @@ test_int_pow2_8589934592_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8589934592_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8589934590
@@ -7736,7 +7737,7 @@ test_sint_pow2_8589934592_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8589934592_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8589934591
@@ -7761,7 +7762,7 @@ test_int_pow2_8589934592_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8589934592_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8589934591
@@ -7786,7 +7787,7 @@ test_sint_pow2_8589934592_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8589934592_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8589934592
@@ -7811,7 +7812,7 @@ test_int_pow2_8589934592_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8589934592_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8589934592
@@ -7836,7 +7837,7 @@ test_sint_pow2_8589934592_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8589934592_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8589934593
@@ -7861,7 +7862,7 @@ test_int_pow2_8589934592_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8589934592_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8589934593
@@ -7886,7 +7887,7 @@ test_sint_pow2_8589934592_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17179869184_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 17179869182
@@ -7911,7 +7912,7 @@ test_int_pow2_17179869184_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17179869184_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -17179869182
@@ -7936,7 +7937,7 @@ test_sint_pow2_17179869184_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17179869184_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 17179869183
@@ -7961,7 +7962,7 @@ test_int_pow2_17179869184_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17179869184_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -17179869183
@@ -7986,7 +7987,7 @@ test_sint_pow2_17179869184_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17179869184_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 17179869184
@@ -8011,7 +8012,7 @@ test_int_pow2_17179869184_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17179869184_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -17179869184
@@ -8036,7 +8037,7 @@ test_sint_pow2_17179869184_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17179869184_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 17179869185
@@ -8061,7 +8062,7 @@ test_int_pow2_17179869184_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17179869184_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -17179869185
@@ -8086,7 +8087,7 @@ test_sint_pow2_17179869184_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_34359738368_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 34359738366
@@ -8111,7 +8112,7 @@ test_int_pow2_34359738368_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_34359738368_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -34359738366
@@ -8136,7 +8137,7 @@ test_sint_pow2_34359738368_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_34359738368_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 34359738367
@@ -8161,7 +8162,7 @@ test_int_pow2_34359738368_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_34359738368_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -34359738367
@@ -8186,7 +8187,7 @@ test_sint_pow2_34359738368_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_34359738368_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 34359738368
@@ -8211,7 +8212,7 @@ test_int_pow2_34359738368_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_34359738368_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -34359738368
@@ -8236,7 +8237,7 @@ test_sint_pow2_34359738368_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_34359738368_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 34359738369
@@ -8261,7 +8262,7 @@ test_int_pow2_34359738368_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_34359738368_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -34359738369
@@ -8286,7 +8287,7 @@ test_sint_pow2_34359738368_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_68719476736_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 68719476734
@@ -8311,7 +8312,7 @@ test_int_pow2_68719476736_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_68719476736_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -68719476734
@@ -8336,7 +8337,7 @@ test_sint_pow2_68719476736_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_68719476736_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 68719476735
@@ -8361,7 +8362,7 @@ test_int_pow2_68719476736_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_68719476736_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -68719476735
@@ -8386,7 +8387,7 @@ test_sint_pow2_68719476736_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_68719476736_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 68719476736
@@ -8411,7 +8412,7 @@ test_int_pow2_68719476736_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_68719476736_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -68719476736
@@ -8436,7 +8437,7 @@ test_sint_pow2_68719476736_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_68719476736_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 68719476737
@@ -8461,7 +8462,7 @@ test_int_pow2_68719476736_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_68719476736_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -68719476737
@@ -8486,7 +8487,7 @@ test_sint_pow2_68719476736_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_137438953472_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 137438953470
@@ -8511,7 +8512,7 @@ test_int_pow2_137438953472_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_137438953472_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -137438953470
@@ -8536,7 +8537,7 @@ test_sint_pow2_137438953472_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_137438953472_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 137438953471
@@ -8561,7 +8562,7 @@ test_int_pow2_137438953472_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_137438953472_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -137438953471
@@ -8586,7 +8587,7 @@ test_sint_pow2_137438953472_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_137438953472_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 137438953472
@@ -8611,7 +8612,7 @@ test_int_pow2_137438953472_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_137438953472_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -137438953472
@@ -8636,7 +8637,7 @@ test_sint_pow2_137438953472_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_137438953472_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 137438953473
@@ -8661,7 +8662,7 @@ test_int_pow2_137438953472_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_137438953472_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -137438953473
@@ -8686,7 +8687,7 @@ test_sint_pow2_137438953472_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_274877906944_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 274877906942
@@ -8711,7 +8712,7 @@ test_int_pow2_274877906944_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_274877906944_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -274877906942
@@ -8736,7 +8737,7 @@ test_sint_pow2_274877906944_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_274877906944_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 274877906943
@@ -8761,7 +8762,7 @@ test_int_pow2_274877906944_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_274877906944_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -274877906943
@@ -8786,7 +8787,7 @@ test_sint_pow2_274877906944_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_274877906944_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 274877906944
@@ -8811,7 +8812,7 @@ test_int_pow2_274877906944_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_274877906944_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -274877906944
@@ -8836,7 +8837,7 @@ test_sint_pow2_274877906944_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_274877906944_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 274877906945
@@ -8861,7 +8862,7 @@ test_int_pow2_274877906944_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_274877906944_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -274877906945
@@ -8886,7 +8887,7 @@ test_sint_pow2_274877906944_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_549755813888_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 549755813886
@@ -8911,7 +8912,7 @@ test_int_pow2_549755813888_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_549755813888_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -549755813886
@@ -8936,7 +8937,7 @@ test_sint_pow2_549755813888_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_549755813888_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 549755813887
@@ -8961,7 +8962,7 @@ test_int_pow2_549755813888_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_549755813888_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -549755813887
@@ -8986,7 +8987,7 @@ test_sint_pow2_549755813888_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_549755813888_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 549755813888
@@ -9011,7 +9012,7 @@ test_int_pow2_549755813888_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_549755813888_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -549755813888
@@ -9036,7 +9037,7 @@ test_sint_pow2_549755813888_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_549755813888_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 549755813889
@@ -9061,7 +9062,7 @@ test_int_pow2_549755813888_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_549755813888_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -549755813889
@@ -9086,7 +9087,7 @@ test_sint_pow2_549755813888_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1099511627776_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1099511627774
@@ -9111,7 +9112,7 @@ test_int_pow2_1099511627776_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1099511627776_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1099511627774
@@ -9136,7 +9137,7 @@ test_sint_pow2_1099511627776_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1099511627776_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1099511627775
@@ -9161,7 +9162,7 @@ test_int_pow2_1099511627776_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1099511627776_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1099511627775
@@ -9186,7 +9187,7 @@ test_sint_pow2_1099511627776_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1099511627776_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1099511627776
@@ -9211,7 +9212,7 @@ test_int_pow2_1099511627776_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1099511627776_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1099511627776
@@ -9236,7 +9237,7 @@ test_sint_pow2_1099511627776_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1099511627776_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1099511627777
@@ -9261,7 +9262,7 @@ test_int_pow2_1099511627776_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1099511627776_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1099511627777
@@ -9286,7 +9287,7 @@ test_sint_pow2_1099511627776_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2199023255552_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2199023255550
@@ -9311,7 +9312,7 @@ test_int_pow2_2199023255552_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2199023255552_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2199023255550
@@ -9336,7 +9337,7 @@ test_sint_pow2_2199023255552_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2199023255552_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2199023255551
@@ -9361,7 +9362,7 @@ test_int_pow2_2199023255552_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2199023255552_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2199023255551
@@ -9386,7 +9387,7 @@ test_sint_pow2_2199023255552_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2199023255552_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2199023255552
@@ -9411,7 +9412,7 @@ test_int_pow2_2199023255552_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2199023255552_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2199023255552
@@ -9436,7 +9437,7 @@ test_sint_pow2_2199023255552_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2199023255552_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2199023255553
@@ -9461,7 +9462,7 @@ test_int_pow2_2199023255552_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2199023255552_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2199023255553
@@ -9486,7 +9487,7 @@ test_sint_pow2_2199023255552_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4398046511104_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4398046511102
@@ -9511,7 +9512,7 @@ test_int_pow2_4398046511104_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4398046511104_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4398046511102
@@ -9536,7 +9537,7 @@ test_sint_pow2_4398046511104_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4398046511104_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4398046511103
@@ -9561,7 +9562,7 @@ test_int_pow2_4398046511104_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4398046511104_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4398046511103
@@ -9586,7 +9587,7 @@ test_sint_pow2_4398046511104_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4398046511104_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4398046511104
@@ -9611,7 +9612,7 @@ test_int_pow2_4398046511104_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4398046511104_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4398046511104
@@ -9636,7 +9637,7 @@ test_sint_pow2_4398046511104_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4398046511104_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4398046511105
@@ -9661,7 +9662,7 @@ test_int_pow2_4398046511104_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4398046511104_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4398046511105
@@ -9686,7 +9687,7 @@ test_sint_pow2_4398046511104_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8796093022208_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8796093022206
@@ -9711,7 +9712,7 @@ test_int_pow2_8796093022208_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8796093022208_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8796093022206
@@ -9736,7 +9737,7 @@ test_sint_pow2_8796093022208_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8796093022208_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8796093022207
@@ -9761,7 +9762,7 @@ test_int_pow2_8796093022208_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8796093022208_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8796093022207
@@ -9786,7 +9787,7 @@ test_sint_pow2_8796093022208_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8796093022208_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8796093022208
@@ -9811,7 +9812,7 @@ test_int_pow2_8796093022208_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8796093022208_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8796093022208
@@ -9836,7 +9837,7 @@ test_sint_pow2_8796093022208_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8796093022208_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 8796093022209
@@ -9861,7 +9862,7 @@ test_int_pow2_8796093022208_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8796093022208_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -8796093022209
@@ -9886,7 +9887,7 @@ test_sint_pow2_8796093022208_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17592186044416_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 17592186044414
@@ -9911,7 +9912,7 @@ test_int_pow2_17592186044416_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17592186044416_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -17592186044414
@@ -9936,7 +9937,7 @@ test_sint_pow2_17592186044416_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17592186044416_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 17592186044415
@@ -9961,7 +9962,7 @@ test_int_pow2_17592186044416_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17592186044416_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -17592186044415
@@ -9986,7 +9987,7 @@ test_sint_pow2_17592186044416_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17592186044416_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 17592186044416
@@ -10011,7 +10012,7 @@ test_int_pow2_17592186044416_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17592186044416_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -17592186044416
@@ -10036,7 +10037,7 @@ test_sint_pow2_17592186044416_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17592186044416_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 17592186044417
@@ -10061,7 +10062,7 @@ test_int_pow2_17592186044416_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17592186044416_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -17592186044417
@@ -10086,7 +10087,7 @@ test_sint_pow2_17592186044416_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_35184372088832_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 35184372088830
@@ -10111,7 +10112,7 @@ test_int_pow2_35184372088832_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_35184372088832_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -35184372088830
@@ -10136,7 +10137,7 @@ test_sint_pow2_35184372088832_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_35184372088832_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 35184372088831
@@ -10161,7 +10162,7 @@ test_int_pow2_35184372088832_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_35184372088832_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -35184372088831
@@ -10186,7 +10187,7 @@ test_sint_pow2_35184372088832_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_35184372088832_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 35184372088832
@@ -10211,7 +10212,7 @@ test_int_pow2_35184372088832_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_35184372088832_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -35184372088832
@@ -10236,7 +10237,7 @@ test_sint_pow2_35184372088832_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_35184372088832_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 35184372088833
@@ -10261,7 +10262,7 @@ test_int_pow2_35184372088832_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_35184372088832_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -35184372088833
@@ -10286,7 +10287,7 @@ test_sint_pow2_35184372088832_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_70368744177664_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 70368744177662
@@ -10311,7 +10312,7 @@ test_int_pow2_70368744177664_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_70368744177664_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -70368744177662
@@ -10336,7 +10337,7 @@ test_sint_pow2_70368744177664_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_70368744177664_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 70368744177663
@@ -10361,7 +10362,7 @@ test_int_pow2_70368744177664_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_70368744177664_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -70368744177663
@@ -10386,7 +10387,7 @@ test_sint_pow2_70368744177664_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_70368744177664_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 70368744177664
@@ -10411,7 +10412,7 @@ test_int_pow2_70368744177664_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_70368744177664_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -70368744177664
@@ -10436,7 +10437,7 @@ test_sint_pow2_70368744177664_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_70368744177664_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 70368744177665
@@ -10461,7 +10462,7 @@ test_int_pow2_70368744177664_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_70368744177664_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -70368744177665
@@ -10486,7 +10487,7 @@ test_sint_pow2_70368744177664_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_140737488355328_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 140737488355326
@@ -10511,7 +10512,7 @@ test_int_pow2_140737488355328_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_140737488355328_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -140737488355326
@@ -10536,7 +10537,7 @@ test_sint_pow2_140737488355328_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_140737488355328_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 140737488355327
@@ -10561,7 +10562,7 @@ test_int_pow2_140737488355328_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_140737488355328_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -140737488355327
@@ -10586,7 +10587,7 @@ test_sint_pow2_140737488355328_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_140737488355328_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 140737488355328
@@ -10611,7 +10612,7 @@ test_int_pow2_140737488355328_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_140737488355328_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -140737488355328
@@ -10636,7 +10637,7 @@ test_sint_pow2_140737488355328_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_140737488355328_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 140737488355329
@@ -10661,7 +10662,7 @@ test_int_pow2_140737488355328_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_140737488355328_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -140737488355329
@@ -10686,7 +10687,7 @@ test_sint_pow2_140737488355328_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_281474976710656_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 281474976710654
@@ -10711,7 +10712,7 @@ test_int_pow2_281474976710656_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_281474976710656_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -281474976710654
@@ -10736,7 +10737,7 @@ test_sint_pow2_281474976710656_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_281474976710656_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 281474976710655
@@ -10761,7 +10762,7 @@ test_int_pow2_281474976710656_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_281474976710656_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -281474976710655
@@ -10786,7 +10787,7 @@ test_sint_pow2_281474976710656_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_281474976710656_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 281474976710656
@@ -10811,7 +10812,7 @@ test_int_pow2_281474976710656_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_281474976710656_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -281474976710656
@@ -10836,7 +10837,7 @@ test_sint_pow2_281474976710656_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_281474976710656_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 281474976710657
@@ -10861,7 +10862,7 @@ test_int_pow2_281474976710656_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_281474976710656_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -281474976710657
@@ -10886,7 +10887,7 @@ test_sint_pow2_281474976710656_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_562949953421312_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 562949953421310
@@ -10911,7 +10912,7 @@ test_int_pow2_562949953421312_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_562949953421312_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -562949953421310
@@ -10936,7 +10937,7 @@ test_sint_pow2_562949953421312_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_562949953421312_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 562949953421311
@@ -10961,7 +10962,7 @@ test_int_pow2_562949953421312_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_562949953421312_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -562949953421311
@@ -10986,7 +10987,7 @@ test_sint_pow2_562949953421312_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_562949953421312_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 562949953421312
@@ -11011,7 +11012,7 @@ test_int_pow2_562949953421312_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_562949953421312_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -562949953421312
@@ -11036,7 +11037,7 @@ test_sint_pow2_562949953421312_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_562949953421312_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 562949953421313
@@ -11061,7 +11062,7 @@ test_int_pow2_562949953421312_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_562949953421312_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -562949953421313
@@ -11086,7 +11087,7 @@ test_sint_pow2_562949953421312_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1125899906842624_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1125899906842622
@@ -11111,7 +11112,7 @@ test_int_pow2_1125899906842624_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1125899906842624_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1125899906842622
@@ -11136,7 +11137,7 @@ test_sint_pow2_1125899906842624_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1125899906842624_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1125899906842623
@@ -11161,7 +11162,7 @@ test_int_pow2_1125899906842624_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1125899906842624_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1125899906842623
@@ -11186,7 +11187,7 @@ test_sint_pow2_1125899906842624_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1125899906842624_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1125899906842624
@@ -11211,7 +11212,7 @@ test_int_pow2_1125899906842624_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1125899906842624_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1125899906842624
@@ -11236,7 +11237,7 @@ test_sint_pow2_1125899906842624_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1125899906842624_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1125899906842625
@@ -11261,7 +11262,7 @@ test_int_pow2_1125899906842624_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1125899906842624_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1125899906842625
@@ -11286,7 +11287,7 @@ test_sint_pow2_1125899906842624_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2251799813685248_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2251799813685246
@@ -11311,7 +11312,7 @@ test_int_pow2_2251799813685248_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2251799813685248_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2251799813685246
@@ -11336,7 +11337,7 @@ test_sint_pow2_2251799813685248_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2251799813685248_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2251799813685247
@@ -11361,7 +11362,7 @@ test_int_pow2_2251799813685248_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2251799813685248_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2251799813685247
@@ -11386,7 +11387,7 @@ test_sint_pow2_2251799813685248_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2251799813685248_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2251799813685248
@@ -11411,7 +11412,7 @@ test_int_pow2_2251799813685248_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2251799813685248_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2251799813685248
@@ -11436,7 +11437,7 @@ test_sint_pow2_2251799813685248_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2251799813685248_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2251799813685249
@@ -11461,7 +11462,7 @@ test_int_pow2_2251799813685248_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2251799813685248_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2251799813685249
@@ -11486,7 +11487,7 @@ test_sint_pow2_2251799813685248_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4503599627370496_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4503599627370494
@@ -11511,7 +11512,7 @@ test_int_pow2_4503599627370496_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4503599627370496_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4503599627370494
@@ -11536,7 +11537,7 @@ test_sint_pow2_4503599627370496_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4503599627370496_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4503599627370495
@@ -11561,7 +11562,7 @@ test_int_pow2_4503599627370496_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4503599627370496_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4503599627370495
@@ -11586,7 +11587,7 @@ test_sint_pow2_4503599627370496_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4503599627370496_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4503599627370496
@@ -11611,7 +11612,7 @@ test_int_pow2_4503599627370496_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4503599627370496_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4503599627370496
@@ -11636,7 +11637,7 @@ test_sint_pow2_4503599627370496_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4503599627370496_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4503599627370497
@@ -11661,7 +11662,7 @@ test_int_pow2_4503599627370496_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4503599627370496_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4503599627370497
@@ -11686,7 +11687,7 @@ test_sint_pow2_4503599627370496_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_9007199254740992_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 9007199254740990
@@ -11711,7 +11712,7 @@ test_int_pow2_9007199254740992_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_9007199254740992_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -9007199254740990
@@ -11736,7 +11737,7 @@ test_sint_pow2_9007199254740992_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_9007199254740992_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 9007199254740991
@@ -11761,7 +11762,7 @@ test_int_pow2_9007199254740992_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_9007199254740992_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -9007199254740991
@@ -11786,7 +11787,7 @@ test_sint_pow2_9007199254740992_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_9007199254740992_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 9007199254740992
@@ -11811,7 +11812,7 @@ test_int_pow2_9007199254740992_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_9007199254740992_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -9007199254740992
@@ -11836,7 +11837,7 @@ test_sint_pow2_9007199254740992_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_9007199254740992_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 9007199254740993
@@ -11861,7 +11862,7 @@ test_int_pow2_9007199254740992_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_9007199254740992_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -9007199254740993
@@ -11886,7 +11887,7 @@ test_sint_pow2_9007199254740992_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_18014398509481984_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 18014398509481982
@@ -11911,7 +11912,7 @@ test_int_pow2_18014398509481984_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_18014398509481984_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -18014398509481982
@@ -11936,7 +11937,7 @@ test_sint_pow2_18014398509481984_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_18014398509481984_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 18014398509481983
@@ -11961,7 +11962,7 @@ test_int_pow2_18014398509481984_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_18014398509481984_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -18014398509481983
@@ -11986,7 +11987,7 @@ test_sint_pow2_18014398509481984_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_18014398509481984_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 18014398509481984
@@ -12011,7 +12012,7 @@ test_int_pow2_18014398509481984_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_18014398509481984_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -18014398509481984
@@ -12036,7 +12037,7 @@ test_sint_pow2_18014398509481984_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_18014398509481984_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 18014398509481985
@@ -12061,7 +12062,7 @@ test_int_pow2_18014398509481984_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_18014398509481984_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -18014398509481985
@@ -12086,7 +12087,7 @@ test_sint_pow2_18014398509481984_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_36028797018963968_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 36028797018963966
@@ -12111,7 +12112,7 @@ test_int_pow2_36028797018963968_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_36028797018963968_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -36028797018963966
@@ -12136,7 +12137,7 @@ test_sint_pow2_36028797018963968_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_36028797018963968_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 36028797018963967
@@ -12161,7 +12162,7 @@ test_int_pow2_36028797018963968_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_36028797018963968_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -36028797018963967
@@ -12186,7 +12187,7 @@ test_sint_pow2_36028797018963968_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_36028797018963968_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 36028797018963968
@@ -12211,7 +12212,7 @@ test_int_pow2_36028797018963968_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_36028797018963968_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -36028797018963968
@@ -12236,7 +12237,7 @@ test_sint_pow2_36028797018963968_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_36028797018963968_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 36028797018963969
@@ -12261,7 +12262,7 @@ test_int_pow2_36028797018963968_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_36028797018963968_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -36028797018963969
@@ -12286,7 +12287,7 @@ test_sint_pow2_36028797018963968_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_72057594037927936_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 72057594037927934
@@ -12311,7 +12312,7 @@ test_int_pow2_72057594037927936_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_72057594037927936_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -72057594037927934
@@ -12336,7 +12337,7 @@ test_sint_pow2_72057594037927936_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_72057594037927936_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 72057594037927935
@@ -12361,7 +12362,7 @@ test_int_pow2_72057594037927936_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_72057594037927936_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -72057594037927935
@@ -12386,7 +12387,7 @@ test_sint_pow2_72057594037927936_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_72057594037927936_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 72057594037927936
@@ -12411,7 +12412,7 @@ test_int_pow2_72057594037927936_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_72057594037927936_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -72057594037927936
@@ -12436,7 +12437,7 @@ test_sint_pow2_72057594037927936_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_72057594037927936_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 72057594037927937
@@ -12461,7 +12462,7 @@ test_int_pow2_72057594037927936_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_72057594037927936_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -72057594037927937
@@ -12486,7 +12487,7 @@ test_sint_pow2_72057594037927936_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_144115188075855872_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 144115188075855870
@@ -12511,7 +12512,7 @@ test_int_pow2_144115188075855872_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_144115188075855872_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -144115188075855870
@@ -12536,7 +12537,7 @@ test_sint_pow2_144115188075855872_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_144115188075855872_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 144115188075855871
@@ -12561,7 +12562,7 @@ test_int_pow2_144115188075855872_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_144115188075855872_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -144115188075855871
@@ -12586,7 +12587,7 @@ test_sint_pow2_144115188075855872_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_144115188075855872_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 144115188075855872
@@ -12611,7 +12612,7 @@ test_int_pow2_144115188075855872_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_144115188075855872_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -144115188075855872
@@ -12636,7 +12637,7 @@ test_sint_pow2_144115188075855872_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_144115188075855872_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 144115188075855873
@@ -12661,7 +12662,7 @@ test_int_pow2_144115188075855872_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_144115188075855872_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -144115188075855873
@@ -12686,7 +12687,7 @@ test_sint_pow2_144115188075855872_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_288230376151711744_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 288230376151711742
@@ -12711,7 +12712,7 @@ test_int_pow2_288230376151711744_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_288230376151711744_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -288230376151711742
@@ -12736,7 +12737,7 @@ test_sint_pow2_288230376151711744_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_288230376151711744_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 288230376151711743
@@ -12761,7 +12762,7 @@ test_int_pow2_288230376151711744_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_288230376151711744_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -288230376151711743
@@ -12786,7 +12787,7 @@ test_sint_pow2_288230376151711744_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_288230376151711744_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 288230376151711744
@@ -12811,7 +12812,7 @@ test_int_pow2_288230376151711744_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_288230376151711744_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -288230376151711744
@@ -12836,7 +12837,7 @@ test_sint_pow2_288230376151711744_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_288230376151711744_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 288230376151711745
@@ -12861,7 +12862,7 @@ test_int_pow2_288230376151711744_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_288230376151711744_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -288230376151711745
@@ -12886,7 +12887,7 @@ test_sint_pow2_288230376151711744_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_576460752303423488_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 576460752303423486
@@ -12911,7 +12912,7 @@ test_int_pow2_576460752303423488_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_576460752303423488_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -576460752303423486
@@ -12936,7 +12937,7 @@ test_sint_pow2_576460752303423488_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_576460752303423488_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 576460752303423487
@@ -12961,7 +12962,7 @@ test_int_pow2_576460752303423488_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_576460752303423488_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -576460752303423487
@@ -12986,7 +12987,7 @@ test_sint_pow2_576460752303423488_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_576460752303423488_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 576460752303423488
@@ -13011,7 +13012,7 @@ test_int_pow2_576460752303423488_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_576460752303423488_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -576460752303423488
@@ -13036,7 +13037,7 @@ test_sint_pow2_576460752303423488_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_576460752303423488_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 576460752303423489
@@ -13061,7 +13062,7 @@ test_int_pow2_576460752303423488_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_576460752303423488_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -576460752303423489
@@ -13086,7 +13087,7 @@ test_sint_pow2_576460752303423488_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1152921504606846976_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1152921504606846974
@@ -13111,7 +13112,7 @@ test_int_pow2_1152921504606846976_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1152921504606846976_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1152921504606846974
@@ -13136,7 +13137,7 @@ test_sint_pow2_1152921504606846976_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1152921504606846976_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1152921504606846975
@@ -13161,7 +13162,7 @@ test_int_pow2_1152921504606846976_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1152921504606846976_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1152921504606846975
@@ -13186,7 +13187,7 @@ test_sint_pow2_1152921504606846976_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1152921504606846976_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1152921504606846976
@@ -13211,7 +13212,7 @@ test_int_pow2_1152921504606846976_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1152921504606846976_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1152921504606846976
@@ -13236,7 +13237,7 @@ test_sint_pow2_1152921504606846976_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1152921504606846976_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1152921504606846977
@@ -13261,7 +13262,7 @@ test_int_pow2_1152921504606846976_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1152921504606846976_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1152921504606846977
@@ -13286,7 +13287,7 @@ test_sint_pow2_1152921504606846976_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2305843009213693952_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2305843009213693950
@@ -13311,7 +13312,7 @@ test_int_pow2_2305843009213693952_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2305843009213693952_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2305843009213693950
@@ -13336,7 +13337,7 @@ test_sint_pow2_2305843009213693952_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2305843009213693952_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2305843009213693951
@@ -13361,7 +13362,7 @@ test_int_pow2_2305843009213693952_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2305843009213693952_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2305843009213693951
@@ -13386,7 +13387,7 @@ test_sint_pow2_2305843009213693952_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2305843009213693952_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2305843009213693952
@@ -13411,7 +13412,7 @@ test_int_pow2_2305843009213693952_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2305843009213693952_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2305843009213693952
@@ -13436,7 +13437,7 @@ test_sint_pow2_2305843009213693952_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2305843009213693952_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2305843009213693953
@@ -13461,7 +13462,7 @@ test_int_pow2_2305843009213693952_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2305843009213693952_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2305843009213693953
@@ -13486,7 +13487,7 @@ test_sint_pow2_2305843009213693952_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4611686018427387904_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4611686018427387902
@@ -13511,7 +13512,7 @@ test_int_pow2_4611686018427387904_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4611686018427387904_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4611686018427387902
@@ -13536,7 +13537,7 @@ test_sint_pow2_4611686018427387904_m2_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4611686018427387904_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4611686018427387903
@@ -13561,7 +13562,7 @@ test_int_pow2_4611686018427387904_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4611686018427387904_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4611686018427387903
@@ -13586,7 +13587,7 @@ test_sint_pow2_4611686018427387904_m1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4611686018427387904_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4611686018427387904
@@ -13611,7 +13612,7 @@ test_int_pow2_4611686018427387904_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4611686018427387904_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4611686018427387904
@@ -13636,7 +13637,7 @@ test_sint_pow2_4611686018427387904_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4611686018427387904_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 4611686018427387905
@@ -13661,7 +13662,7 @@ test_int_pow2_4611686018427387904_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4611686018427387904_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -4611686018427387905
@@ -13686,7 +13687,7 @@ test_sint_pow2_4611686018427387904_1_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1.0
@@ -13711,7 +13712,7 @@ test_float_exp0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1.0
@@ -13736,7 +13737,7 @@ test_float_nexp0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp10_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 22026.465794806703
@@ -13761,7 +13762,7 @@ test_float_exp10_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp10_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -22026.465794806703
@@ -13786,7 +13787,7 @@ test_float_nexp10_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp20_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 485165195.40978974
@@ -13811,7 +13812,7 @@ test_float_exp20_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp20_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -485165195.40978974
@@ -13836,7 +13837,7 @@ test_float_nexp20_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp30_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 10686474581524.445
@@ -13861,7 +13862,7 @@ test_float_exp30_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp30_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -10686474581524.445
@@ -13886,7 +13887,7 @@ test_float_nexp30_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp40_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2.353852668370195e+17
@@ -13911,7 +13912,7 @@ test_float_exp40_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp40_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2.353852668370195e+17
@@ -13936,7 +13937,7 @@ test_float_nexp40_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp50_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 5.184705528587058e+21
@@ -13961,7 +13962,7 @@ test_float_exp50_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp50_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -5.184705528587058e+21
@@ -13986,7 +13987,7 @@ test_float_nexp50_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp60_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1.1420073898156806e+26
@@ -14011,7 +14012,7 @@ test_float_exp60_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp60_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1.1420073898156806e+26
@@ -14036,7 +14037,7 @@ test_float_nexp60_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp70_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2.5154386709191576e+30
@@ -14061,7 +14062,7 @@ test_float_exp70_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp70_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2.5154386709191576e+30
@@ -14086,7 +14087,7 @@ test_float_nexp70_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp80_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 5.540622384393487e+34
@@ -14111,7 +14112,7 @@ test_float_exp80_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp80_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -5.540622384393487e+34
@@ -14136,7 +14137,7 @@ test_float_nexp80_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp90_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1.220403294317835e+39
@@ -14161,7 +14162,7 @@ test_float_exp90_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp90_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1.220403294317835e+39
@@ -14186,7 +14187,7 @@ test_float_nexp90_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp100_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2.6881171418161212e+43
@@ -14211,7 +14212,7 @@ test_float_exp100_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp100_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2.6881171418161212e+43
@@ -14236,7 +14237,7 @@ test_float_nexp100_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp110_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 5.920972027664636e+47
@@ -14261,7 +14262,7 @@ test_float_exp110_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp110_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -5.920972027664636e+47
@@ -14286,7 +14287,7 @@ test_float_nexp110_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp120_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1.304180878393624e+52
@@ -14311,7 +14312,7 @@ test_float_exp120_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp120_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1.304180878393624e+52
@@ -14336,7 +14337,7 @@ test_float_nexp120_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp130_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 2.872649550817812e+56
@@ -14361,7 +14362,7 @@ test_float_exp130_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp130_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -2.872649550817812e+56
@@ -14386,7 +14387,7 @@ test_float_nexp130_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp140_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 6.327431707155538e+60
@@ -14411,7 +14412,7 @@ test_float_exp140_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp140_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -6.327431707155538e+60
@@ -14436,7 +14437,7 @@ test_float_nexp140_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp150_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1.3937095806663685e+65
@@ -14461,7 +14462,7 @@ test_float_exp150_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp150_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1.3937095806663685e+65
@@ -14486,7 +14487,7 @@ test_float_nexp150_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp160_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 3.0698496406442164e+69
@@ -14511,7 +14512,7 @@ test_float_exp160_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp160_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -3.0698496406442164e+69
@@ -14536,7 +14537,7 @@ test_float_nexp160_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp170_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 6.761793810484949e+73
@@ -14561,7 +14562,7 @@ test_float_exp170_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp170_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -6.761793810484949e+73
@@ -14586,7 +14587,7 @@ test_float_nexp170_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp180_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 1.4893842007818241e+78
@@ -14611,7 +14612,7 @@ test_float_exp180_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp180_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -1.4893842007818241e+78
@@ -14636,7 +14637,7 @@ test_float_nexp180_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp190_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := 3.280587015384637e+82
@@ -14661,7 +14662,7 @@ test_float_exp190_de :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp190_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := -3.280587015384637e+82

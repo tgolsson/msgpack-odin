@@ -5,7 +5,7 @@ import m "../"
 
 @(test)
 test_str_array_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := [0]string{}
@@ -30,7 +30,7 @@ test_str_array_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_u16_array_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := [0]u16{}
@@ -55,7 +55,7 @@ test_u16_array_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_f32_array_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := [0]f32{}
@@ -80,7 +80,7 @@ test_f32_array_0_de :: proc(t: ^testing.T) {
 
 @(test)
 test_str_array_5_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := [5]string{"x", "x", "x", "x", "x"}
@@ -105,7 +105,7 @@ test_str_array_5_de :: proc(t: ^testing.T) {
 
 @(test)
 test_u16_array_5_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := [5]u16{1<<14, 1<<14, 1<<14, 1<<14, 1<<14}
@@ -130,7 +130,7 @@ test_u16_array_5_de :: proc(t: ^testing.T) {
 
 @(test)
 test_f32_array_5_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := [5]f32{1.5, 1.5, 1.5, 1.5, 1.5}
@@ -155,7 +155,7 @@ test_f32_array_5_de :: proc(t: ^testing.T) {
 
 @(test)
 test_str_array_20_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := [20]string{"x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"}
@@ -180,7 +180,7 @@ test_str_array_20_de :: proc(t: ^testing.T) {
 
 @(test)
 test_u16_array_20_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := [20]u16{1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14}
@@ -205,7 +205,7 @@ test_u16_array_20_de :: proc(t: ^testing.T) {
 
 @(test)
 test_f32_array_20_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0)
+    store := make([dynamic]u8, 0, 10)
     p: m.Packer = { store, {  } }
 
     value := [20]f32{1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5}

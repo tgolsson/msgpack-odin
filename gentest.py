@@ -50,7 +50,7 @@ def write_test_generic(
             f"""\
         @(test)
         test_{name}_ser :: proc(t: ^testing.T) {{
-            store := make([dynamic]u8, 0)
+            store := make([dynamic]u8, 0, 10)
             p: m.Packer = {{ store, {{ {flags} }} }}
             {extras}
             value := {odin_value}
@@ -93,6 +93,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
         testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", a, b)
         for i in 0..<len(a) {
             testing.expectf(t, a[i] == b[i], "%v == %v fails at index %v (%v %v)", a, b, i, a[i], b[i])
+            if a[i] != b[i] do return
         }
     }
     """
@@ -325,8 +326,19 @@ with open(TESTS_PATH / "array.odin", "w") as f:
 
 with open(TESTS_PATH / "map.odin", "w") as f:
     header(f)
-    m = {0: 10}
 
+    write_test_generic(
+        f,
+        "map_empty",
+        {},
+        "map[u8]u8{}",
+        "map[m.ObjectKey]m.Object",
+        "expected: m.Object = map[m.ObjectKey]m.Object { }",
+        is_obj_comp=True,
+        delete_expected=True,
+    )
+
+    m = {0: 10}
     write_test_generic(
         f,
         "map_int_to_int",
