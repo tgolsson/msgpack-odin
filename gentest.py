@@ -24,6 +24,7 @@ def write_test_generic(
     odin_value,
     output_cast,
     output_value,
+    odin_type,
     flags="",
     usf=False,
     is_slice_comp=False,
@@ -33,14 +34,24 @@ def write_test_generic(
 ):
     expectation = str(list(msgpack.packb(python_value, use_single_float=usf)))[1:-1]
     comp = f"testing.expect_value(t, res.({output_cast}), expected)"
-
+    comp2 = f"testing.expect_value(t, out, ({odin_type})({odin_value}))"
     if is_slice_comp:
         comp = f"slice_eq(t, res.({output_cast}), expected)"
+        if not "time.Time" in odin_type:
+            comp2 = f"v := {odin_value}; slice_eq(t, v[:], out[:])"
 
     delete = ""
     if is_obj_comp:
         comp = 'testing.expectf(t, m.object_equals(&res, &expected), "mismatch: %v !=  %v", res, expected)'
         delete = "m.object_delete(res)"
+        if not "time.Time" in odin_type:
+            comp2 = f"v := {odin_value}; slice_eq(t, v[:], out[:])"
+
+    if "map" in odin_type:
+        comp2 = f"v := {odin_value}; map_eq(t, out, v)"
+
+    if "][]" in odin_type:
+        comp2 = f"v := {odin_value}; map_slice_eq(t, out, v)"
 
     if delete_expected:
         delete += "; delete(expected.(map[m.ObjectKey]m.Object))"
@@ -71,6 +82,18 @@ def write_test_generic(
             {comp}
             {delete}
         }}\n
+
+        @(test)
+        test_{name}_de_into :: proc(t: ^testing.T) {{
+            bytes := [?]u8{{{expectation}}}
+            u: m.Unpacker = {{ raw_data(bytes[:]), 0 }}
+            out: {odin_type}
+            err := m.read_into(&u, &out)
+
+            {extras}
+            testing.expect_value(t, err, nil)
+            {comp2}
+        }}\n
         """
         )
     )
@@ -96,6 +119,20 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
             if a[i] != b[i] do return
         }
     }
+
+    map_eq :: proc(t: ^testing.T, a: map[$K]$T, b: map[K]T) {
+        testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", a, b)
+        for k, v in a {
+            testing.expectf(t, v == b[k], "%v == %v fails with key %v (%v %v)", a, b[k], k, k, b[k])
+            if v != b[k] do return
+        }
+    }
+    map_slice_eq :: proc(t: ^testing.T, a: map[$K][]$T, b: map[K][]T) {
+        testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", a, b)
+        for k, v in a {
+            slice_eq(t, v, b[k])
+        }
+    }
     """
         )
     )
@@ -107,6 +144,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
         "rawptr(nil)",
         "m.Nil",
         "expected := m.Nil{}",
+        "rawptr",
     )
 
     write_test_generic(
@@ -116,6 +154,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
         "true",
         "bool",
         "expected := true",
+        "bool",
     )
 
     write_test_generic(
@@ -125,6 +164,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
         "false",
         "bool",
         "expected := false",
+        "bool",
     )
 
     for i in range(126, 129):
@@ -135,6 +175,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
             i,
             "u64",
             f"expected: u64 = {i}",
+            "u64",
         )
 
     for i in range(0b00011110, 0b00100010):
@@ -145,6 +186,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
             -i,
             "i64",
             f"expected: i64 = {-i}",
+            "i64",
         )
 
     for bitsize in [8, 16, 32, 64]:
@@ -159,6 +201,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
                 f"u64({v})",
                 "u64",
                 f"expected: u64 = {v}",
+                "u64",
             )
 
     for bitsize in [7, 15, 31, 63]:
@@ -173,6 +216,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
                 f"i64({v})",
                 "i64",
                 f"expected: i64 = {v}",
+                "i64",
             )
 
     for i in range(63):
@@ -186,6 +230,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
                     str(v + x),
                     "u64",
                     f"expected: u64 = {v + x}",
+                    "u64",
                 )
 
             if -(v + x) < 0:
@@ -196,6 +241,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
                     str(-(v + x)),
                     "i64",
                     f"expected: i64 = {-(v + x)}",
+                    "i64",
                 )
 
     for i in range(0, 200, 10):
@@ -208,6 +254,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
             v,
             t,
             f"expected: {t} = {v}",
+            t,
             usf=i < 90,
         )
         write_test_generic(
@@ -217,6 +264,7 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
             -v,
             t,
             f"expected: {t} = {-v}",
+            t,
             usf=i < 90,
         )
 
@@ -230,6 +278,7 @@ with open(TESTS_PATH / "string.odin", "w") as f:
         '"hello world"',
         "string",
         'expected := "hello world"',
+        "string",
     )
 
     v = "hello world" * 10
@@ -240,6 +289,7 @@ with open(TESTS_PATH / "string.odin", "w") as f:
         f'"{v}"',
         "string",
         f'expected := "{v}"',
+        "string",
     )
 
     v = "hello world" * 25
@@ -250,6 +300,7 @@ with open(TESTS_PATH / "string.odin", "w") as f:
         f'"{v}"',
         "string",
         f'expected := "{v}"',
+        "string",
     )
 
 with open(TESTS_PATH / "bytes.odin", "w") as f:
@@ -262,6 +313,7 @@ with open(TESTS_PATH / "bytes.odin", "w") as f:
         format_bytes("hello world"),
         "[]m.bin",
         f'expected := {format_bytes("hello world")}',
+        "[]m.bin",
         is_slice_comp=True,
     )
 
@@ -273,6 +325,7 @@ with open(TESTS_PATH / "bytes.odin", "w") as f:
         format_bytes(b),
         "[]m.bin",
         f"expected := {format_bytes(b)}",
+        "[]m.bin",
         is_slice_comp=True,
     )
 
@@ -284,6 +337,7 @@ with open(TESTS_PATH / "bytes.odin", "w") as f:
         format_bytes(b),
         "[]m.bin",
         f"expected := {format_bytes(b)}",
+        "[]m.bin",
         is_slice_comp=True,
     )
 
@@ -299,6 +353,7 @@ with open(TESTS_PATH / "array.odin", "w") as f:
             f'[{count}]string{{{", ".join([s] * count)}}}',
             "[]m.Object",
             f'inner := [{count}]m.Object{{{", ".join([s] * count)}}}; expected: m.Object = inner[:]',
+            f"[{count}]string",
             is_obj_comp=True,
         )
 
@@ -309,6 +364,7 @@ with open(TESTS_PATH / "array.odin", "w") as f:
             f'[{count}]u16{{{", ".join("1<<14" for _ in range(count))}}}',
             "[]m.Object",
             f'inner := [{count}]m.Object{{{", ".join("m.Object(u64(1 << 14))" for _ in range( count))}}}; expected: m.Object = inner[:]',
+            f"[{count}]u16",
             is_obj_comp=True,
         )
 
@@ -319,6 +375,7 @@ with open(TESTS_PATH / "array.odin", "w") as f:
             f'[{count}]f32{{{", ".join("1.5" for _ in range(count))}}}',
             "[]m.Object",
             f'inner := [{count}]m.Object{{{", ".join("m.Object(f32(1.5))" for _ in range( count))}}}; expected: m.Object = inner[:]',
+            f"[{count}]f32",
             usf=True,
             is_obj_comp=True,
         )
@@ -334,6 +391,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         "map[u8]u8{}",
         "map[m.ObjectKey]m.Object",
         "expected: m.Object = map[m.ObjectKey]m.Object { }",
+        "map[u8]u8",
         is_obj_comp=True,
         delete_expected=True,
     )
@@ -346,6 +404,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         "map[u8]u8{0  = 10}",
         "map[m.ObjectKey]m.Object",
         "expected: m.Object = map[m.ObjectKey]m.Object { u64(0) = u64(10) }",
+        "map[u8]u8",
         is_obj_comp=True,
         delete_expected=True,
     )
@@ -358,6 +417,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         'map[string]string{"foo" = "bar"}',
         "map[m.ObjectKey]m.Object",
         'expected: m.Object = map[m.ObjectKey]m.Object { "foo" = "bar" }',
+        "map[string]string",
         is_obj_comp=True,
         delete_expected=True,
     )
@@ -370,6 +430,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         'map[string][]m.bin{"foo" = bd[:]}',
         "map[m.ObjectKey]m.Object",
         'bd := [?]m.bin{1, 2, 3}; expected: m.Object = map[m.ObjectKey]m.Object { "foo" = bd[:] }',
+        "map[string][]m.bin",
         is_obj_comp=True,
         extras="bd := [?]m.bin{1, 2, 3}",
         delete_expected=True,
@@ -383,6 +444,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         'map[string][]u16{"foo" = bd[:]}',
         "map[m.ObjectKey]m.Object",
         'bd := [?]m.Object{u64(1), u64(2), u64(3)}; expected: m.Object = map[m.ObjectKey]m.Object { "foo" = bd[:] }',
+        "map[string][]u16",
         is_obj_comp=True,
         extras="bd := [?]u16{1, 2, 3}",
         delete_expected=True,
@@ -410,6 +472,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         fmt(m),
         "map[m.ObjectKey]m.Object",
         f"expected: m.Object = {fmt2(m)}",
+        "map[string]f32",
         is_obj_comp=True,
         flags=".StableMaps",
         usf=True,
@@ -424,6 +487,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         fmt(m),
         "map[m.ObjectKey]m.Object",
         f"expected: m.Object = {fmt2(m)}",
+        "map[string]f32",
         is_obj_comp=True,
         flags=".StableMaps",
         usf=True,
@@ -438,6 +502,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         fmt(m),
         "map[m.ObjectKey]m.Object",
         f"expected: m.Object = {fmt2(m)}",
+        "map[string]f32",
         is_obj_comp=True,
         flags=".StableMaps",
         usf=True,
@@ -457,6 +522,7 @@ with open(TESTS_PATH / "timestamp.odin", "w") as f:
         "time.unix(171798691, 69)",
         "map[m.ObjectKey]m.Object",
         "expected: m.Object = time.unix(171798691, 69)",
+        "time.Time",
         is_obj_comp=True,
     )
 
@@ -467,5 +533,6 @@ with open(TESTS_PATH / "timestamp.odin", "w") as f:
         "time.unix(171798691, 0)",
         "map[m.ObjectKey]m.Object",
         "expected: m.Object = time.unix(171798691, 0)",
+        "time.Time",
         is_obj_comp=True,
     )
