@@ -26,15 +26,18 @@ Tag :: union {
 	Float,
 	Uint,
 	Int,
-
 	Negative_Fixint,
 }
 
-POSITIVE_FIXINT_MASK	:: 0x7F
-FIXMAP_PREFIX			:: 0x80
-FIXARRAY_PREFIX			:: 0x90
-FIXSTR_PREFIX			:: 0xA0
-NEGATIVE_FIXINT_PREFIX	:: 0xE0
+POSITIVE_FIXINT_MASK	:: 0x80
+NEGATIVE_FIXINT_MASK	:: 0xE0
+
+FIXMAP_MASK  			:: 0xF0
+FIXMAP_VALUE  			:: 0x80
+FIXARRAY_MASK			:: 0xF0
+FIXARRAY_VALUE 			:: 0x90
+FIXSTR_MASK   			:: 0xE0
+FIXSTR_VALUE   			:: 0xA0
 
 NIL			:: 0xC0
 UNUSED		:: 0xC1
@@ -72,23 +75,23 @@ MAP_32		:: 0xDF
 
 
 is_positive_fixint :: #force_inline proc(raw: u8) -> bool {
-	return (raw & POSITIVE_FIXINT_MASK) == raw
+	return (raw & POSITIVE_FIXINT_MASK) != 0x80
 }
 
 is_negative_fixint :: #force_inline proc(raw: u8) -> bool {
-	return (raw & NEGATIVE_FIXINT_PREFIX) == NEGATIVE_FIXINT_PREFIX
+	return (raw & NEGATIVE_FIXINT_MASK) == NEGATIVE_FIXINT_MASK
 }
 
 is_fixstr :: #force_inline proc(raw: u8) -> bool {
-	return (raw & FIXSTR_PREFIX) == FIXSTR_PREFIX
+	return (raw & FIXSTR_MASK) == FIXSTR_VALUE
 }
 
 is_fixmap :: #force_inline proc(raw: u8) -> bool {
-	return (raw & FIXMAP_PREFIX) == FIXMAP_PREFIX
+	return (raw & FIXMAP_MASK) == FIXMAP_VALUE
 }
 
 is_fixarray :: #force_inline proc(raw: u8) -> bool {
-	return (raw & FIXARRAY_PREFIX) == FIXARRAY_PREFIX
+	return (raw & FIXARRAY_MASK) == FIXARRAY_VALUE
 }
 
 encode_tag :: proc(p: ^Packer, tag: Tag) {
@@ -97,52 +100,54 @@ encode_tag :: proc(p: ^Packer, tag: Tag) {
 	// }
 }
 
+import "core:fmt"
+
 decode_tag :: proc(u: ^Unpacker) -> Tag {
 	raw := read_byte(u)
 
 	switch {
 	case is_positive_fixint(raw):
-		return Positive_Fixint { raw & POSITIVE_FIXINT_MASK }
+		return Positive_Fixint { raw & 0x7F }
 	case is_negative_fixint(raw):
-		return Negative_Fixint {-32 - i8(raw ~ u8(NEGATIVE_FIXINT_PREFIX))}
+		return Negative_Fixint {-32 + i8(raw & ~u8(NEGATIVE_FIXINT_MASK))}
 	case is_fixarray(raw):
-		return Array { int(raw ~ u8(FIXARRAY_PREFIX))}
+		return Array { int(raw ~ u8(FIXARRAY_MASK))}
 	case is_fixstr(raw):
-		return Str { int(raw ~ u8(FIXSTR_PREFIX))}
+		return Str { int(raw ~ u8(FIXSTR_MASK))}
 	case is_fixmap(raw):
-		return Map { int(raw ~ u8(FIXMAP_PREFIX))}
+		return Map { int(raw ~ u8(FIXMAP_MASK))}
 	}
 
 	switch raw {
-	case NIL: return Nil {}
-	case TRUE, FALSE: return Bool { raw == TRUE }
-	case BIN_8: return Bin { int(read_byte(u)) }
-	case BIN_16: return Bin { int(read_number(u, u16)) }
-	case BIN_32: return Bin { int(read_number(u, u32)) }
-	case EXT_8: return  Ext { int(read_byte(u)), read_number(u, i8) }
-	case EXT_16: return Ext { int(read_number(u, u16)), read_number(u, i8) }
-	case EXT_32: return Ext { int(read_number(u, u32)), read_number(u, i8) }
+	case NIL:				 return Nil {}
+	case TRUE, FALSE:		 return Bool { raw == TRUE }
+	case BIN_8:				 return Bin { int(read_byte(u)) }
+	case BIN_16:			 return Bin { int(read_number(u, u16)) }
+	case BIN_32:			 return Bin { int(read_number(u, u32)) }
+	case EXT_8:				 return Ext { int(read_byte(u)), read_number(u, i8) }
+	case EXT_16:			 return Ext { int(read_number(u, u16)), read_number(u, i8) }
+	case EXT_32:			 return Ext { int(read_number(u, u32)), read_number(u, i8) }
 	case FLOAT_32, FLOAT_64: return Float { raw == FLOAT_64 }
-	case UINT_8: return Uint { 1 }
-	case UINT_16: return Uint { 2 }
-	case UINT_32: return Uint { 4 }
-	case UINT_64: return Uint { 8 }
-	case INT_8: return Int { 1 }
-	case INT_16: return Int { 2 }
-	case INT_32: return Int { 4 }
-	case INT_64: return Int { 8 }
-	case FIXEXT_1: return Ext { 1, read_number(u, i8) }
-	case FIXEXT_2: return Ext { 2, read_number(u, i8) }
-	case FIXEXT_4: return Ext { 4, read_number(u, i8) }
-	case FIXEXT_8: return Ext { 8, read_number(u, i8) }
-	case FIXEXT_16: return Ext { 16, read_number(u, i8) }
-	case STR_8: return Str { int(read_byte(u)) }
-	case STR_16: return Str { int(read_number(u, u16)) }
-	case STR_32: return Str { int(read_number(u, u32)) }
-	case ARRAY_16: return Array { int(read_number(u, u16)) }
-	case ARRAY_32: return Array { int(read_number(u, u32)) }
-	case MAP_16: return Map { int(read_number(u, u16)) }
-	case MAP_32: return Map { int(read_number(u, u32)) }
+	case UINT_8:			 return Uint { 1 }
+	case UINT_16:			 return Uint { 2 }
+	case UINT_32:			 return Uint { 4 }
+	case UINT_64:			 return Uint { 8 }
+	case INT_8:				 return Int { 1 }
+	case INT_16:			 return Int { 2 }
+	case INT_32:			 return Int { 4 }
+	case INT_64:			 return Int { 8 }
+	case FIXEXT_1:			 return Ext { 1, read_number(u, i8) }
+	case FIXEXT_2:			 return Ext { 2, read_number(u, i8) }
+	case FIXEXT_4:			 return Ext { 4, read_number(u, i8) }
+	case FIXEXT_8:			 return Ext { 8, read_number(u, i8) }
+	case FIXEXT_16:			 return Ext { 16, read_number(u, i8) }
+	case STR_8:				 return Str { int(read_byte(u)) }
+	case STR_16:			 return Str { int(read_number(u, u16)) }
+	case STR_32:			 return Str { int(read_number(u, u32)) }
+	case ARRAY_16:			 return Array { int(read_number(u, u16)) }
+	case ARRAY_32:			 return Array { int(read_number(u, u32)) }
+	case MAP_16:			 return Map { int(read_number(u, u16)) }
+	case MAP_32:			 return Map { int(read_number(u, u32)) }
 	}
 
 	unreachable()

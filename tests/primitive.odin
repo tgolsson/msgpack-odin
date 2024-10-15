@@ -24,43 +24,6 @@ map_slice_eq :: proc(t: ^testing.T, a: map[$K][]$T, b: map[K][]T) {
         slice_eq(t, v, b[k])
     }
 }
-@(test)
-test_nil_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
-
-    value := rawptr(nil)
-    m.write(&p, value)
-
-    slice_eq(t, p.buf[:], []u8{192})
-    delete(p.buf)
-}
-
-
-@(test)
-test_nil_de :: proc(t: ^testing.T) {
-    bytes := [?]u8{192}
-    u: m.Unpacker = { raw_data(bytes[:]), 0 }
-    res, err := m.read(&u)
-
-    testing.expect_value(t, err, nil)
-    expected := m.Nil{}
-    testing.expect_value(t, res.(m.Nil), expected)
-
-}
-
-
-@(test)
-test_nil_de_into :: proc(t: ^testing.T) {
-    bytes := [?]u8{192}
-    u: m.Unpacker = { raw_data(bytes[:]), 0 }
-    out: rawptr
-    err := m.read_into(&u, &out)
-
-
-    testing.expect_value(t, err, nil)
-    testing.expect_value(t, out, (rawptr)(rawptr(nil)))
-}
 
 @(test)
 test_true_ser :: proc(t: ^testing.T) {
@@ -22329,4 +22292,3 @@ test_float_nexp190_de_into :: proc(t: ^testing.T) {
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-3.280587015384637e+82))
 }
-

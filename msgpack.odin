@@ -49,7 +49,7 @@ Unexpected :: struct {
 }
 
 Unhandled_Tag :: struct {
-	tag: u8,
+	tag: Tag,
 }
 
 Invalid_Parameter :: struct {

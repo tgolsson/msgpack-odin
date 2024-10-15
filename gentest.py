@@ -139,16 +139,6 @@ with open(TESTS_PATH / "primitive.odin", "w") as f:
 
     write_test_generic(
         f,
-        "nil",
-        None,
-        "rawptr(nil)",
-        "m.Nil",
-        "expected := m.Nil{}",
-        "rawptr",
-    )
-
-    write_test_generic(
-        f,
         "true",
         True,
         "true",

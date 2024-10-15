@@ -9,15 +9,15 @@ import "core:mem"
 import "core:reflect"
 import "core:slice"
 import "core:sort"
-import "core:time"
 import "core:strings"
+import "core:time"
 
 Unpacker :: struct {
 	data:   [^]u8,
 	offset: u64,
 }
 
-read_byte  :: proc(u: ^Unpacker) -> u8 {
+read_byte :: proc(u: ^Unpacker) -> u8 {
 	u.offset += 1
 	return u.data[u.offset - 1]
 }
@@ -26,7 +26,7 @@ read_multibyte :: read_nbytes_r when NEEDS_SWAP else read_nbytes
 
 read_nbytes :: proc(u: ^Unpacker, $bytes: u64) -> [bytes]u8 {
 	out: [bytes]u8
-	copy(out[:], u.data[u.offset:u.offset+bytes])
+	copy(out[:], u.data[u.offset:u.offset + bytes])
 	u.offset += bytes
 	return out
 }
@@ -53,18 +53,7 @@ read_size :: proc(u: ^Unpacker, width: u64) -> u64 {
 	return size
 }
 
-read_map :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
-	size: u64 = 0
-	switch {
-	case tag & 0xF0 == 0x80:
-		size = u64(tag & 0x0F)
-	case tag == 0xDE:
-		size = read_size(u, 2)
-	case tag == 0xDF:
-		size = read_size(u, 4)
-	}
-
-
+read_map :: proc(u: ^Unpacker, size: int) -> (Object, Error) {
 	out := make(map[ObjectKey]Object)
 	for _ in 0 ..< size {
 		key: ObjectKey
@@ -108,36 +97,14 @@ read_string :: proc(u: ^Unpacker, size: int) -> (string, Error) {
 	return string(bytes), nil
 }
 
-read_bin :: proc(u: ^Unpacker, tag: u8) -> ([]bin, Error) {
-
-	size: u64 = 0
-
-	switch {
-	case tag == 0xC4:
-		size = read_size(u, 1)
-	case tag == 0xC5:
-		size = read_size(u, 2)
-	case tag == 0xC6:
-		size = read_size(u, 4)
-	}
-
-	bytes := u.data[u.offset:u.offset + size]
-	u.offset += size
+read_bin :: proc(u: ^Unpacker, size: int) -> ([]bin, Error) {
+	bytes := u.data[u.offset:u.offset + u64(size)]
+	u.offset += u64(size)
 
 	return transmute([]bin)bytes[:], nil
 }
 
-read_array :: proc(u: ^Unpacker, tag: u8) -> ([]Object, Error) {
-	size: u64 = 0
-
-	switch {
-	case tag & 0xF0 == 0x90:
-		size = u64(0x0F & tag)
-	case tag == 0xDC:
-		size = read_size(u, 2)
-	case tag == 0xDD:
-		size = read_size(u, 4)
-	}
+read_array :: proc(u: ^Unpacker, size: int) -> ([]Object, Error) {
 
 	out := make([]Object, size)
 	for i in 0 ..< size {
@@ -223,32 +190,14 @@ read_timestamp_ext1 :: proc(b: []u8) -> time.Time {
 	panic("unreachable")
 }
 
-read_fixext :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
-	size: u64 = 0
+read_fixext :: proc(u: ^Unpacker, type: i8, size: int) -> (Object, Error) {
+	bytes := u.data[u.offset:u.offset + u64(size)]
+	u.offset += u64(size)
 
-	switch tag {
-	case 0xD4:
-		size = 1
-	case 0xD5:
-		size = 2
-	case 0xD6:
-		size = 4
-	case 0xD7:
-		size = 8
-	case 0xD8:
-		size = 16
-	}
-
-	type := u.data[u.offset]
-	u.offset += 1
-
-	bytes := u.data[u.offset:u.offset + size]
-	u.offset += size
-
-	if i8(type) == -1 {
+	if type == -1 {
 		return read_timestamp_ext1(bytes), nil
 	} else {
-		return "asd", nil
+		return nil, Unexpected { "a known ext", "unknown ext" }
 	}
 }
 
@@ -334,79 +283,59 @@ read_key :: proc(u: ^Unpacker) -> (ObjectKey, Error) {
 }
 
 read :: proc(u: ^Unpacker) -> (Object, Error) {
-	tag := u.data[u.offset]
-	u.offset += 1
-
+	tag := decode_tag(u)
 	// XXXX: we handle these separately in a blanks switch as they
 	// require bitmasking, while the "non-bitmasked" fields below can
 	// use a regular switch.
-	switch {
-	case tag & 0x80 == 0:
-		// positive fixint
-		return u64(tag & 0x7F), nil
-	case tag & 0xE0 == 0xA0:
-		// fixstr
-		return read_string(u, 0) // TODO
+	switch variant in tag {
+	case Positive_Fixint:
+		return u64(variant.value), nil
+	case Map:
+		return read_map(u, int(variant.length))
+	case Array:
+		return read_array(u, int(variant.length))
+	case Str:
+		return read_string(u, variant.length) // TODO
+	case Nil:
+		return nil, nil
+	case Bool:
+		return variant.value, nil
+	case Bin:
+		return read_bin(u, variant.length)
+	case Ext:
+		return read_fixext(u, variant.type, variant.length)
+	case Float:
+		if variant.is_double {
+			return read_number(u, f64), nil
+		} else {
+			return read_number(u, f32), nil
+		}
+	case Uint:
+		switch variant.width {
+		case 1:
+			return u64(read_number(u, u8)), nil
+		case 2:
+			return u64(read_number(u, u16)), nil
+		case 4:
+			return u64(read_number(u, u32)), nil
+		case 8:
+			return u64(read_number(u, u64)), nil
+		}
+	case Int:
+		switch variant.width {
+		case 1:
+			return i64(read_number(u, i8)), nil
+		case 2:
+			return i64(read_number(u, i16)), nil
+		case 4:
+			return i64(read_number(u, i32)), nil
+		case 8:
+			return i64(read_number(u, i64)), nil
+		}
+	case Negative_Fixint:
+		return i64(variant.value), nil
 
-	case tag & 0xF0 == 0x80:
-		// fixmap
-		return read_map(u, tag)
 
-	case tag & 0xE0 == 0xE0:
-		// negative fixint
-		return i64(-32 - -i8(tag & 0x1F)), nil
-
-	case tag & 0xF0 == 0x90:
-		// fixarray
-		return read_array(u, tag)
-	}
-
-	switch tag {
-	case 0xC0:
-		// nil. XXXX
-		return Nil{}, nil
-
-	case 0xC2:
-		return false, nil
-
-	case 0xC3:
-		return true, nil
-
-	case 0xCC, 0xCD, 0xCE, 0xCF:
-		// unsigned int
-		return read_uint(u, tag)
-
-	case 0xD0, 0xD1, 0xD2, 0xD3:
-		// signed int
-		return read_sint(u, tag)
-
-	case 0xCA, 0xCB:
-		// float
-		return read_float(u, tag)
-
-	case 0xD9, 0xDA, 0xDB:
-		// str
-		return read_string(u, 0) // TODO
-
-	case 0xC4, 0xC5, 0xC6:
-		// bin
-		return read_bin(u, tag)
-
-	case 0xDC, 0xDD:
-		// array
-		return read_array(u, tag)
-
-	case 0xDE, 0xDF:
-		// map
-		return read_map(u, tag)
-
-	case 0xD4, 0xD5, 0xD6, 0xD7, 0xD8:
-		// fixext
-		return read_fixext(u, tag)
-
-	case 0xC7, 0xC8, 0xC9:
-		// ext
-		return read_ext(u, tag)
 	}
 
 	return nil, Unhandled_Tag{tag}
@@ -415,30 +344,45 @@ read :: proc(u: ^Unpacker) -> (Object, Error) {
 assign_num :: proc(v: any, t: typeid, value: $T) where intrinsics.type_is_numeric(T) {
 	data := v.data
 	switch t {
-	case i8: (^i8)(v.data)^ = i8(value)
-	case i16: (^i16)(v.data)^ = i16(value)
-	case i32: (^i32)(v.data)^ = i32(value)
-	case i64: (^i64)(v.data)^ = i64(value)
-	case u8: (^u8)(v.data)^ = u8(value)
-	case u16: (^u16)(v.data)^ = u16(value)
-	case u32: (^u32)(v.data)^ = u32(value)
-	case u64: (^u64)(v.data)^ = u64(value)
-	case int: (^int)(v.data)^ = int(value)
-	case f32: (^f32)(v.data)^ = f32(value)
-	case f64: (^f64)(v.data)^ = f64(value)
+	case i8:
+		(^i8)(v.data)^ = i8(value)
+	case i16:
+		(^i16)(v.data)^ = i16(value)
+	case i32:
+		(^i32)(v.data)^ = i32(value)
+	case i64:
+		(^i64)(v.data)^ = i64(value)
+	case u8:
+		(^u8)(v.data)^ = u8(value)
+	case u16:
+		(^u16)(v.data)^ = u16(value)
+	case u32:
+		(^u32)(v.data)^ = u32(value)
+	case u64:
+		(^u64)(v.data)^ = u64(value)
+	case int:
+		(^int)(v.data)^ = int(value)
+	case f32:
+		(^f32)(v.data)^ = f32(value)
+	case f64:
+		(^f64)(v.data)^ = f64(value)
 	}
 }
 
 assign_str :: proc(v: any, t: typeid, value: $T) {
 	when T == string {
 		switch t {
-		case string: (^string)(v.data)^ = value
-		case cstring: (^cstring)(v.data)^ = strings.unsafe_string_to_cstring(value)
+		case string:
+			(^string)(v.data)^ = value
+		case cstring:
+			(^cstring)(v.data)^ = strings.unsafe_string_to_cstring(value)
 		}
 	} else when T == cstring {
 		switch t {
-		case string: (^string)(v.data)^ = string(value)
-		case cstring: (^cstring)(v.data)^ = value
+		case string:
+			(^string)(v.data)^ = string(value)
+		case cstring:
+			(^cstring)(v.data)^ = value
 		}
 	}
 }
@@ -448,13 +392,13 @@ read_into :: proc(u: ^Unpacker, t: any) -> Error {
 	v := t
 
 	if v == nil || v.id == nil {
-		return Invalid_Parameter{ "v was nil or its type was nil"}
+		return Invalid_Parameter{"v was nil or its type was nil"}
 	}
 
 	v = reflect.any_base(v)
 	ti := type_info_of(v.id)
 	if !reflect.is_pointer(ti) || ti.id == rawptr {
-		return Invalid_Parameter{ "t is not a pointer"}
+		return Invalid_Parameter{"t is not a pointer"}
 	}
 
 	data := any{(^rawptr)(v.data)^, ti.variant.(reflect.Type_Info_Pointer).elem.id}
@@ -462,12 +406,12 @@ read_into :: proc(u: ^Unpacker, t: any) -> Error {
 	return read_into_value(u, data)
 }
 
-read_map_into :: proc(u: ^Unpacker, v: any, info: runtime.Type_Info_Map, length: u64  ) -> Error {
+read_map_into :: proc(u: ^Unpacker, v: any, info: runtime.Type_Info_Map, length: u64) -> Error {
 	key_type := info.key.id
 	value_type := info.value.id
 
 	out_map := [0]u8{}
-	for index in 0..<length {
+	for index in 0 ..< length {
 
 
 	}
@@ -476,7 +420,12 @@ read_map_into :: proc(u: ^Unpacker, v: any, info: runtime.Type_Info_Map, length:
 }
 
 
-read_struct_into :: proc(u: ^Unpacker, v: any, info: runtime.Type_Info_Struct, length: u64  ) -> Error {
+read_struct_into :: proc(
+	u: ^Unpacker,
+	v: any,
+	info: runtime.Type_Info_Struct,
+	length: u64,
+) -> Error {
 
 	return nil
 }
@@ -498,27 +447,35 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> Error {
 		assign_str(v, v.id, str)
 	case Uint:
 		switch variant.width {
-		case 1: assign_num(v, v.id, read_number(u, u8))
-		case 2: assign_num(v, v.id, read_number(u, u16))
-		case 4: assign_num(v, v.id, read_number(u, u32))
-		case 8: assign_num(v, v.id, read_number(u, u64))
+		case 1:
+			assign_num(v, v.id, read_number(u, u8))
+		case 2:
+			assign_num(v, v.id, read_number(u, u16))
+		case 4:
+			assign_num(v, v.id, read_number(u, u32))
+		case 8:
+			assign_num(v, v.id, read_number(u, u64))
 		}
 	case Int:
 		switch variant.width {
- 		case 1: assign_num(v, v.id, read_number(u, i8))
-		case 2: assign_num(v, v.id, read_number(u, i16))
-		case 4: assign_num(v, v.id, read_number(u, i32))
-		case 8: assign_num(v, v.id, read_number(u, i64))
+		case 1:
+			assign_num(v, v.id, read_number(u, i8))
+		case 2:
+			assign_num(v, v.id, read_number(u, i16))
+		case 4:
+			assign_num(v, v.id, read_number(u, i32))
+		case 8:
+			assign_num(v, v.id, read_number(u, i64))
 		}
 	case Bool:
 		if v.id == bool {
-		 	(^bool)(v.data)^ = variant.value
+			(^bool)(v.data)^ = variant.value
 		} else {
-			return Unexpected { "a bool", "not a bool" }
+			return Unexpected{"a bool", "not a bool"}
 		}
 
 	case Nil:
-		// TODO
+	// TODO
 	case Map:
 		length := u64(variant.length)
 
@@ -528,44 +485,45 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> Error {
 		case runtime.Type_Info_Struct:
 			read_struct_into(u, v, info, length)
 		case:
-		    panic(fmt.aprintf("unhandled target for map: %v", info))
+			panic(fmt.aprintf("unhandled target for map: %v", info))
 		}
 
 	case Bin:
 	case Ext:
 	case Float:
-
-	case Array: // fixarray
+		if variant.is_double {
+			assign_num(v, v.id, read_number(u, f64))
+		} else {
+			assign_num(v, v.id, read_number(u, f32))
+		}
+	case Array:
+		// fixarray
 		length := variant.length
 		maybe := ti
 
 		#partial switch info in maybe.variant {
-			case runtime.Type_Info_Array:
+		case runtime.Type_Info_Array:
 			if length != info.count {
-				return Slice_Length_Mismatch {
-					info.count, length
-				}
+				return Slice_Length_Mismatch{info.count, length}
 			}
 
-			for i in 0..<length {
+			for i in 0 ..< length {
 				dest := uintptr(v.data) + uintptr(int(i) * info.elem_size)
 				read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
 			}
 
 		case runtime.Type_Info_Slice:
-    		d := cast(^mem.Raw_Slice)v.data
+			d := cast(^mem.Raw_Slice)v.data
 			if length != d.len / info.elem_size {
-				return Slice_Length_Mismatch {
-					d.len / info.elem_size, length
-				}
+				return Slice_Length_Mismatch{d.len / info.elem_size, length}
 			}
 
-			for i in 0..<length {
+			for i in 0 ..< length {
 				dest := uintptr(d.data) + uintptr(int(i) * info.elem_size)
 				read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
 			}
 		case:
-		panic(fmt.aprintfln("foobar: %v", info))
+			panic(fmt.aprintfln("foobar: %v", info))
 		}
 
 	}
