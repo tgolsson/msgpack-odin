@@ -77,20 +77,6 @@ read_map :: proc(u: ^Unpacker, size: int) -> (Object, Error) {
 }
 
 read_string :: proc(u: ^Unpacker, size: int) -> (string, Error) {
-	// size: u64 = 0
-
-	// switch {
-	// case tag & 0xE0 == 0xA0:
-	// 	// fixstr
-	// 	size = u64(tag & 0x1F)
-	// case tag == 0xD9:
-	// 	size = read_size(u, 1)
-	// case tag == 0xDA:
-	// 	size = read_size(u, 2)
-	// case tag == 0xDB:
-	// 	size = read_size(u, 4)
-	// }
-
 	bytes := u.data[u.offset:u.offset + u64(size)]
 	u.offset += u64(size)
 
@@ -202,26 +188,11 @@ read_fixext :: proc(u: ^Unpacker, type: i8, size: int) -> (Object, Error) {
 }
 
 
-read_ext :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
-	size: u64 = 0
-
-	switch tag {
-	case 0xc7:
-		size = read_size(u, 1)
-	case 0xc8:
-		size = read_size(u, 2)
-	case 0xc9:
-		size = read_size(u, 3)
-	}
-
-	type := u.data[u.offset]
-	u.offset += 1
-
-	bytes := u.data[u.offset:u.offset + size]
-	u.offset += size
-
+read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (Object, Error) {
+	bytes := u.data[u.offset:u.offset + u64(size)]
+	u.offset += u64(size)
 	if i8(type) == -1 {
-		panic("foobar")
+		return read_timestamp_ext1(bytes), nil
 	} else {
 		return "asd", nil
 	}
@@ -232,54 +203,58 @@ read_key :: proc(u: ^Unpacker) -> (ObjectKey, Error) {
 	// XXXX[TS]: This is mostly copied from below.
 	tag := decode_tag(u)
 
-	// switch {
-	// case tag & 0x80 == 0:
-	// 	// positive fixint
-	// 	return u64(tag & 0x7F), nil
-	// case tag & 0xE0 == 0xA0:
-	// 	// fixstr
-	// 	return read_string(u, tag)
+	#partial switch variant in tag {
+	case Str:
+		str, err := read_string(u, int(variant.length))
+		if err != nil {
+			return nil, err
+		}
+		return ObjectKey(str), nil
 
-	// case tag & 0xF0 == 0x80:
-	// 	// fixmap
-	// 	return nil, Unexpected{"a key-type", "a fixmap"}
+	case Positive_Fixint:
+		return ObjectKey(u64(variant.value)), nil
 
+	case Negative_Fixint:
+		return ObjectKey(i64(variant.value)), nil
 
-	// case tag & 0xE0 == 0xE0:
-	// 	// negative fixint
-	// 	return i64(-32 - -i8(tag & 0x1F)), nil
+	case Uint:
+		switch variant.width {
+		case 1:
+			return u64(read_number(u, u8)), nil
+		case 2:
+			return u64(read_number(u, u16)), nil
+		case 4:
+			return u64(read_number(u, u32)), nil
+		case 8:
+			return u64(read_number(u, u64)), nil
+		}
+	case Int:
+		switch variant.width {
+		case 1:
+			return i64(read_number(u, i8)), nil
+		case 2:
+			return i64(read_number(u, i16)), nil
+		case 4:
+			return i64(read_number(u, i32)), nil
+		case 8:
+			return i64(read_number(u, i64)), nil
+		}
 
-	// case tag & 0xF0 == 0x90:
-	// 	// fixarray
-	// 	return nil, Unexpected{"a key-type", "a fixarray"}
-	// }
+	case Float:
+		if variant.is_double {
+			return ObjectKey(read_number(u, f64)), nil
+		} else {
+			return ObjectKey(read_number(u, f32)), nil
+		}
 
-	// switch tag {
+	case Bool:
+		return ObjectKey(variant.value), nil
 
-	// case 0xC0: // nil
-	// case 0xc2, 0xc3:
-	// case 0xCC, 0xCD, 0xCE, 0xCF:
-	// 	// unsigned int
-	// case 0xD0, 0xD1, 0xD2, 0xD3:
-	// 	// signed int
-	// case 0xCA, 0xCB:
-	// 	// float
-	// case 0xD9, 0xDA, 0xDB:
-	// 	// str
-	// case 0xC4, 0xC5, 0xC6:
-	// 	// bin
-	// case 0xDC, 0xDD:
-	// 	// array
-	// case 0xDE, 0xDF:
-	// 	// map
+	case:
+		return nil, Unexpected{"a valid key type", fmt.tprintf("%v", variant)}
+	}
 
-	// case 0xD4, 0xD5, 0xD6, 0xD7, 0xD8:
-	// 	// fixext
-	// case 0xC7, 0xC8, 0xC9:
-	// 	// ext
-	// }
-
-	return i64(10), nil
+	unreachable()
 }
 
 read :: proc(u: ^Unpacker) -> (Object, Error) {
@@ -303,7 +278,7 @@ read :: proc(u: ^Unpacker) -> (Object, Error) {
 	case Bin:
 		return read_bin(u, variant.length)
 	case Ext:
-		return read_fixext(u, variant.type, variant.length)
+		return read_ext(u, variant.type, variant.length)
 	case Float:
 		if variant.is_double {
 			return read_number(u, f64), nil
@@ -406,17 +381,43 @@ read_into :: proc(u: ^Unpacker, t: any) -> Error {
 	return read_into_value(u, data)
 }
 
-read_map_into :: proc(u: ^Unpacker, v: any, info: runtime.Type_Info_Map, length: u64) -> Error {
+read_map_into :: proc(u: ^Unpacker, v: any, info: runtime.Type_Info_Map, length: u64) -> (err: Error) {
+	raw_map := (^runtime.Raw_Map)(v.data)
+
+	if raw_map.allocator.procedure == nil {
+		raw_map.allocator = context.allocator
+	}
+
+	defer if err != nil {
+		_ = runtime.map_free_dynamic(raw_map^, info.map_info)
+	}
+
+	runtime.map_reserve_dynamic(raw_map, info.map_info, uintptr(length)) or_return
+
 	key_type := info.key.id
 	value_type := info.value.id
 
-	out_map := [0]u8{}
-	for index in 0 ..< length {
+	key_temp := mem.alloc_bytes_non_zeroed(info.key.size, info.key.align, context.temp_allocator) or_return
+	defer mem.free(raw_data(key_temp), context.temp_allocator)
+	key_value := any{ raw_data(key_temp), key_type }
 
 
+	value_temp := mem.alloc_bytes_non_zeroed(info.value.size, info.value.align, context.temp_allocator) or_return
+	defer mem.free(raw_data(value_temp)	, context.temp_allocator)
+	value_value := any{ raw_data(value_temp), value_type }
+
+	for i in 0..<length {
+		mem.zero_slice(key_temp[:])
+		mem.zero_slice(value_temp[:])
+		read_into_value(u, key_value) or_return
+		read_into_value(u, value_value) or_return
+
+		set_ptr := runtime.__dynamic_map_set_without_hash(raw_map, info.map_info, key_value.data, value_value.data)
 	}
 
-	return nil
+
+	raw_map.len = uintptr(length)
+	return err
 }
 
 
@@ -426,11 +427,130 @@ read_struct_into :: proc(
 	info: runtime.Type_Info_Struct,
 	length: u64,
 ) -> Error {
+	for i in 0..<length {
+		key, err := read_key(u)
+		if err != nil {
+			return err
+		}
 
+		field_name := key.(string)
+		field_info := reflect.struct_field_by_name(v.id, field_name)
+		field_offset := field_info.offset
+		field_type := field_info.type
+		field_data := rawptr(uintptr(v.data) + field_offset)
+		field_any := any{data = field_data, id = field_type.id}
+		field_type_info := type_info_of(field_type.id)
+		err = read_into_value(u, field_any)
+		if err != nil {
+			return err
+		}
+	}
+	
 	return nil
 }
 
-read_into_value :: proc(u: ^Unpacker, t: any) -> Error {
+import "core:io"
+
+read_bytes_into :: proc(u: ^Unpacker, v: any, info: ^runtime.Type_Info, length: int) -> (err: Error) {
+	// bytes are guaranteed to be homogenous, so no need to delegate per-item etc.
+	#partial switch info in info.variant {
+	case runtime.Type_Info_Array:
+		target_length := info.count
+		if length != target_length {
+			return Slice_Length_Mismatch{target_length, length}
+		}
+
+		slice := ([^]byte)(v.data)[:length]
+		copy(slice[:length], u.data[u.offset:u.offset + u64(length)])
+		u.offset += u64(length)
+
+	case runtime.Type_Info_Slice:
+		raw_slice := (^mem.Raw_Slice)(v.data)
+		target_length := raw_slice.len / info.elem_size
+
+		bytes := u.data[u.offset:u.offset + u64(length)]
+		raw_slice^   = transmute(mem.Raw_Slice)bytes
+		u.offset += u64(length)
+
+	case runtime.Type_Info_Dynamic_Array:
+		raw_dynamic_array := (^mem.Raw_Dynamic_Array)(v.data)
+		target_length := raw_dynamic_array.len / info.elem_size
+
+		buf := strings.builder_make(0, length) or_return
+		defer if err != nil { strings.builder_destroy(&buf) }
+		copy(buf.buf[:], u.data[u.offset:u.offset+u64(length)])
+		u.offset += u64(length)
+
+		raw_dynamic_array.data = raw_data(buf.buf[:])
+		raw_dynamic_array.len = length	
+		raw_dynamic_array.cap = length
+		raw_dynamic_array.allocator = context.allocator
+
+
+	case:
+		fmt.eprintf("foobar: %v\n", info)
+		return Unexpected{"a bin", "not a bin"}
+	}
+
+	return err
+}
+
+read_array_into :: proc(u: ^Unpacker, v: any, info: ^runtime.Type_Info, length: int) -> (err: Error) {
+	#partial switch info in info.variant {
+	case runtime.Type_Info_Array:
+		target_length := info.count
+		if length != target_length {
+			return Slice_Length_Mismatch{target_length, length}
+		}
+
+		for i in 0..<length {
+			elem := any{rawptr(uintptr(v.data) + uintptr(i * info.elem_size)), info.elem.id}
+			err = read_into_value(u, elem)
+			if err != nil {
+				return err
+			}
+		}
+
+	case runtime.Type_Info_Slice:
+		raw_slice := (^mem.Raw_Slice)(v.data)
+		target_length := raw_slice.len
+
+		if length > target_length {
+			return Slice_Length_Mismatch{target_length, length}
+		}
+
+		for i in 0..<length {
+			elem := any{rawptr(uintptr(raw_slice.data) + uintptr(i * info.elem_size)), info.elem.id}
+			read_into_value(u, elem) or_return
+
+		}
+
+	case runtime.Type_Info_Dynamic_Array:
+		raw_dynamic_array := (^mem.Raw_Dynamic_Array)(v.data)
+		target_length := raw_dynamic_array.len
+
+		if length > target_length {
+			new_data := make([]byte, length * info.elem_size)
+			mem.copy(raw_data(new_data), raw_dynamic_array.data, target_length * info.elem_size)
+			raw_dynamic_array.data = raw_data(new_data)
+			raw_dynamic_array.len = length
+			raw_dynamic_array.cap = length
+		}
+
+		for i in 0..<length {
+			elem := any{rawptr(uintptr(raw_dynamic_array.data) + uintptr(i * info.elem_size)), info.elem.id}
+			read_into_value(u, elem) or_return
+
+		}
+
+	case:
+		return Unexpected{"an array, slice, or dynamic array", "not an array-like type"}
+	}
+
+	return err
+}
+
+read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Error) {
 	v := t
 	ti := reflect.type_info_base(type_info_of(v.id))
 	tag := decode_tag(u)
@@ -481,14 +601,17 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> Error {
 
 		#partial switch info in ti.variant {
 		case runtime.Type_Info_Map:
-			read_map_into(u, v, info, length)
+			read_map_into(u, v, info, length) or_return
 		case runtime.Type_Info_Struct:
-			read_struct_into(u, v, info, length)
+			read_struct_into(u, v, info, length) or_return	
 		case:
-			panic(fmt.aprintf("unhandled target for map: %v", info))
+			return Unexpected{"a map", "not a map"}
 		}
 
 	case Bin:
+	    length := variant.length
+		read_bytes_into(u, v, ti, length) or_return
+
 	case Ext:
 	case Float:
 		if variant.is_double {
@@ -514,78 +637,33 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> Error {
 
 		case runtime.Type_Info_Slice:
 			d := cast(^mem.Raw_Slice)v.data
-			if length != d.len / info.elem_size {
-				return Slice_Length_Mismatch{d.len / info.elem_size, length}
+			if length < d.len / info.elem_size {
+				for i in 0 ..< length {
+					dest := uintptr(d.data) + uintptr(int(i) * info.elem_size)
+					read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
+				}
+			} else {
+				data := mem.alloc_bytes_non_zeroed(info.elem.size * length, info.elem.align, allocator=context.temp_allocator) or_return
+				defer if err != nil { mem.free_bytes(data, allocator=context.temp_allocator) }
+				da := mem.Raw_Dynamic_Array{raw_data(data), length, length, context.temp_allocator }
+
+				for i in 0 ..< length {
+					dest := uintptr(da.data) + uintptr(int(i) * info.elem_size)
+					read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
+				}
+
+				raw      := (^mem.Raw_Slice)(v.data)
+				raw.data  = da.data
+				raw.len   = da.len
+
+				fmt.println("HERE", raw)
 			}
 
-			for i in 0 ..< length {
-				dest := uintptr(d.data) + uintptr(int(i) * info.elem_size)
-				read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
-			}
 		case:
 			panic(fmt.aprintfln("foobar: %v", info))
 		}
 
 	}
-
-	// switch tag {
-	// case 0xC0:
-	// 	// nil. XXXX
-	// 	// return Nil{}, nil
-
-	// case 0xC2, 0xC3:
-	// 	maybe := ti.id
-
-	// case 0xCC, 0xCD, 0xCE, 0xCF: // uint
-	// 	ok := read_uint(u, tag) or_return
-
-	// 	maybe := ti.id
-	// 	assign_num(v, maybe, ok.(u64))
-
-	// case 0xD0, 0xD1, 0xD2, 0xD3:
-	// 	ok := read_sint(u, tag) or_return
-
-	// 	maybe := ti.id
-	// 	assign_num(v, maybe, ok.(i64))
-
-	// case 0xCA, 0xCB:
-	// 	ok := read_float(u, tag) or_return
-
-	// 	maybe := ti.id
-	// 	fmt.println("read float", ok, maybe)
-	// 	#partial switch f in ok {
-	// 	case f32: 		assign_num(v, maybe, f)
-	// 	case f64: 		assign_num(v, maybe, f)
-	// 	case: unreachable()
-	// 	}
-
-	// case 0xD9, 0xDA, 0xDB:
-	// 	// str
-	// 	// return read_string(u, tag)
-
-	// case 0xC4, 0xC5, 0xC6: // bin
-	// 	data := read_bin(u, tag) or_return
-	// 	maybe := ti.id
-	// 	if maybe == []bin {
-	// 		(^[]bin)(v.data)^ = data
-	// 	}
-
-	// case 0xDC, 0xDD:
-	// 	// array
-	// 	// return read_array(u, tag)
-
-	// case 0xDE, 0xDF:
-	// 	// map
-	// 	// return read_map(u, tag)
-
-	// case 0xD4, 0xD5, 0xD6, 0xD7, 0xD8:
-	// 	// fixext
-	// 	// return read_fixext(u, tag)
-
-	// case 0xC7, 0xC8, 0xC9:
-	// 	// ext
-	// 	// return read_ext(u, tag)
-	// }
 
 	return nil
 }

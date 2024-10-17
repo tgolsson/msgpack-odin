@@ -4,7 +4,7 @@ import "core:fmt"
 import m "../"
 
 slice_eq :: proc(t: ^testing.T, a: []$T, b: []T) {
-    testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", a, b)
+    testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", len(a), len(b))
     for i in 0..<len(a) {
         testing.expectf(t, a[i] == b[i], "%v == %v fails at index %v (%v %v)", a, b, i, a[i], b[i])
         if a[i] != b[i] do return
@@ -19,9 +19,10 @@ map_eq :: proc(t: ^testing.T, a: map[$K]$T, b: map[K]T) {
     }
 }
 map_slice_eq :: proc(t: ^testing.T, a: map[$K][]$T, b: map[K][]T) {
-    testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", a, b)
-    for k, v in a {
-        slice_eq(t, v, b[k])
+    testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", len(a), len(b))
+    for k, &v in a {
+        v2 := b[k]
+        slice_eq(t, v[:], v2[:])
     }
 }
 

@@ -60,11 +60,16 @@ Slice_Length_Mismatch :: struct {
 	target_length: int,
 	source_length: int,
 }
+
+import "base:runtime"
+import "core:io"
 Error :: union {
 	Unexpected,
 	Unhandled_Tag,
 	Invalid_Parameter,
 	Slice_Length_Mismatch,
+	runtime.Allocator_Error,
+	io.Error,
 }
 
 object_equals :: proc(left: ^Object, right: ^Object) -> bool {

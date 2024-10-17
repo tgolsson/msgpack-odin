@@ -94,10 +94,39 @@ is_fixarray :: #force_inline proc(raw: u8) -> bool {
 	return (raw & FIXARRAY_MASK) == FIXARRAY_VALUE
 }
 
-encode_tag :: proc(p: ^Packer, tag: Tag) {
-	// switch variant in tag {
+write_size :: proc(p: ^Packer, size: $T) {
+    bytes := transmute([size_of(T)]u8)size
+	write_multibyte(p, bytes)
+} 
 
-	// }
+encode_tag :: proc(p: ^Packer, tag: Tag) {
+	#partial switch variant in tag {
+	case Map:
+		if variant.length < (1 << 4) {
+			write_byte(p, FIXMAP_VALUE | u8(variant.length))
+		} else if variant.length <= (1 << 16) {
+			write_byte(p, MAP_16)
+			write_size(p, u16(variant.length))
+		} else {
+			write_byte(p, MAP_32)
+			write_size(p, u32(variant.length))
+		}
+	case Array:
+		if variant.length < (1 << 4) {
+			write_byte(p, FIXARRAY_VALUE | u8(variant.length))
+		} else if variant.length <= (1 << 16) {
+			write_byte(p, ARRAY_16)
+			write_size(p, u16(variant.length))
+		} else {
+			write_byte(p, ARRAY_32)
+			write_size(p, u32(variant.length))
+		}
+	
+	case Nil:
+		write_byte(p, NIL)
+	case Bool:
+		write_byte(p, TRUE if variant.value else FALSE)
+	}
 }
 
 import "core:fmt"
@@ -107,15 +136,15 @@ decode_tag :: proc(u: ^Unpacker) -> Tag {
 
 	switch {
 	case is_positive_fixint(raw):
-		return Positive_Fixint { raw & 0x7F }
+		return Positive_Fixint { raw & ~u8(POSITIVE_FIXINT_MASK) }
 	case is_negative_fixint(raw):
-		return Negative_Fixint {-32 + i8(raw & ~u8(NEGATIVE_FIXINT_MASK))}
+		return Negative_Fixint { -32 + i8(raw & ~u8(NEGATIVE_FIXINT_MASK))}
 	case is_fixarray(raw):
-		return Array { int(raw ~ u8(FIXARRAY_MASK))}
+		return Array { int(raw & ~u8(FIXARRAY_MASK))}
 	case is_fixstr(raw):
-		return Str { int(raw ~ u8(FIXSTR_MASK))}
+		return Str { int(raw & ~u8(FIXSTR_MASK))}
 	case is_fixmap(raw):
-		return Map { int(raw ~ u8(FIXMAP_MASK))}
+		return Map { int(raw & ~u8(FIXMAP_MASK))}
 	}
 
 	switch raw {
