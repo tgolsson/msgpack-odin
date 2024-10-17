@@ -5,14 +5,14 @@ import m "../"
 
 @(test)
 test_str_array_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := [0]string{}
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{144})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{144})
+
 }
 
 
@@ -43,14 +43,14 @@ test_str_array_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_u16_array_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := [0]u16{}
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{144})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{144})
+
 }
 
 
@@ -81,14 +81,14 @@ test_u16_array_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_f32_array_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := [0]f32{}
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{144})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{144})
+
 }
 
 
@@ -119,14 +119,14 @@ test_f32_array_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_str_array_5_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := [5]string{"x", "x", "x", "x", "x"}
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{149, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{149, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120})
+
 }
 
 
@@ -157,14 +157,14 @@ test_str_array_5_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_u16_array_5_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := [5]u16{1<<14, 1<<14, 1<<14, 1<<14, 1<<14}
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{149, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{149, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0})
+
 }
 
 
@@ -195,14 +195,14 @@ test_u16_array_5_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_f32_array_5_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := [5]f32{1.5, 1.5, 1.5, 1.5, 1.5}
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{149, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{149, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0})
+
 }
 
 
@@ -233,14 +233,14 @@ test_f32_array_5_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_str_array_20_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := [20]string{"x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"}
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{220, 0, 20, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{220, 0, 20, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120, 161, 120})
+
 }
 
 
@@ -271,14 +271,14 @@ test_str_array_20_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_u16_array_20_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := [20]u16{1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14, 1<<14}
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{220, 0, 20, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{220, 0, 20, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0, 205, 64, 0})
+
 }
 
 
@@ -309,14 +309,14 @@ test_u16_array_20_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_f32_array_20_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := [20]f32{1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5}
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{220, 0, 20, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{220, 0, 20, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0, 202, 63, 192, 0, 0})
+
 }
 
 

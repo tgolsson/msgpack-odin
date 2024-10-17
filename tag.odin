@@ -97,36 +97,10 @@ is_fixarray :: #force_inline proc(raw: u8) -> bool {
 write_size :: proc(p: ^Packer, size: $T) {
     bytes := transmute([size_of(T)]u8)size
 	write_multibyte(p, bytes)
-} 
+}
 
 encode_tag :: proc(p: ^Packer, tag: Tag) {
-	#partial switch variant in tag {
-	case Map:
-		if variant.length < (1 << 4) {
-			write_byte(p, FIXMAP_VALUE | u8(variant.length))
-		} else if variant.length <= (1 << 16) {
-			write_byte(p, MAP_16)
-			write_size(p, u16(variant.length))
-		} else {
-			write_byte(p, MAP_32)
-			write_size(p, u32(variant.length))
-		}
-	case Array:
-		if variant.length < (1 << 4) {
-			write_byte(p, FIXARRAY_VALUE | u8(variant.length))
-		} else if variant.length <= (1 << 16) {
-			write_byte(p, ARRAY_16)
-			write_size(p, u16(variant.length))
-		} else {
-			write_byte(p, ARRAY_32)
-			write_size(p, u32(variant.length))
-		}
-	
-	case Nil:
-		write_byte(p, NIL)
-	case Bool:
-		write_byte(p, TRUE if variant.value else FALSE)
-	}
+	pack_tag(p, tag)
 }
 
 import "core:fmt"

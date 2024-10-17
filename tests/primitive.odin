@@ -4,7 +4,7 @@ import "core:fmt"
 import m "../"
 
 slice_eq :: proc(t: ^testing.T, a: []$T, b: []T) {
-    testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", len(a), len(b))
+    testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", a, b)
     for i in 0..<len(a) {
         testing.expectf(t, a[i] == b[i], "%v == %v fails at index %v (%v %v)", a, b, i, a[i], b[i])
         if a[i] != b[i] do return
@@ -19,23 +19,21 @@ map_eq :: proc(t: ^testing.T, a: map[$K]$T, b: map[K]T) {
     }
 }
 map_slice_eq :: proc(t: ^testing.T, a: map[$K][]$T, b: map[K][]T) {
-    testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", len(a), len(b))
-    for k, &v in a {
-        v2 := b[k]
-        slice_eq(t, v[:], v2[:])
+    testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", a, b)
+    for k, v in a {
+        slice_eq(t, v, b[k])
     }
 }
-
 @(test)
 test_true_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := true
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{195})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{195})
+
 }
 
 
@@ -66,14 +64,14 @@ test_true_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_false_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := false
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{194})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{194})
+
 }
 
 
@@ -104,14 +102,14 @@ test_false_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_fixint_126_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 126
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{126})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{126})
+
 }
 
 
@@ -142,14 +140,14 @@ test_fixint_126_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_fixint_127_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 127
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{127})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{127})
+
 }
 
 
@@ -180,14 +178,14 @@ test_fixint_127_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_fixint_128_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 128
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{204, 128})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{204, 128})
+
 }
 
 
@@ -218,14 +216,14 @@ test_fixint_128_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_nfixint_30_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -30
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{226})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{226})
+
 }
 
 
@@ -256,14 +254,14 @@ test_nfixint_30_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_nfixint_31_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -31
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{225})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{225})
+
 }
 
 
@@ -294,14 +292,14 @@ test_nfixint_31_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_nfixint_32_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -32
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{224})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{224})
+
 }
 
 
@@ -332,14 +330,14 @@ test_nfixint_32_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_nfixint_33_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -33
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 223})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 223})
+
 }
 
 
@@ -370,14 +368,14 @@ test_nfixint_33_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_254_8_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(254)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{204, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{204, 254})
+
 }
 
 
@@ -408,14 +406,14 @@ test_int_254_8_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_255_8_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(255)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{204, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{204, 255})
+
 }
 
 
@@ -446,14 +444,14 @@ test_int_255_8_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_256_8_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(256)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 1, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 1, 0})
+
 }
 
 
@@ -484,14 +482,14 @@ test_int_256_8_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_257_8_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(257)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 1, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 1, 1})
+
 }
 
 
@@ -522,14 +520,14 @@ test_int_257_8_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_258_8_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(258)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 1, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 1, 2})
+
 }
 
 
@@ -560,14 +558,14 @@ test_int_258_8_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_65534_16_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(65534)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 255, 254})
+
 }
 
 
@@ -598,14 +596,14 @@ test_int_65534_16_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_65535_16_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(65535)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 255, 255})
+
 }
 
 
@@ -636,14 +634,14 @@ test_int_65535_16_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_65536_16_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(65536)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 1, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 1, 0, 0})
+
 }
 
 
@@ -674,14 +672,14 @@ test_int_65536_16_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_65537_16_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(65537)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 1, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 1, 0, 1})
+
 }
 
 
@@ -712,14 +710,14 @@ test_int_65537_16_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_65538_16_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(65538)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 1, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 1, 0, 2})
+
 }
 
 
@@ -750,14 +748,14 @@ test_int_65538_16_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_4294967294_32_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(4294967294)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 255, 255, 255, 254})
+
 }
 
 
@@ -788,14 +786,14 @@ test_int_4294967294_32_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_4294967295_32_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(4294967295)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 255, 255, 255, 255})
+
 }
 
 
@@ -826,14 +824,14 @@ test_int_4294967295_32_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_4294967296_32_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(4294967296)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 1, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 1, 0, 0, 0, 0})
+
 }
 
 
@@ -864,14 +862,14 @@ test_int_4294967296_32_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_4294967297_32_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(4294967297)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 1, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 1, 0, 0, 0, 1})
+
 }
 
 
@@ -902,14 +900,14 @@ test_int_4294967297_32_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_4294967298_32_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(4294967298)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 1, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 1, 0, 0, 0, 2})
+
 }
 
 
@@ -940,14 +938,14 @@ test_int_4294967298_32_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_18446744073709551614_64_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(18446744073709551614)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 255, 255, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 255, 255, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -978,14 +976,14 @@ test_int_18446744073709551614_64_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_18446744073709551615_64_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := u64(18446744073709551615)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 255, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 255, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -1016,14 +1014,14 @@ test_int_18446744073709551615_64_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_62_7_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-62)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 194})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 194})
+
 }
 
 
@@ -1054,14 +1052,14 @@ test_sint_62_7_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_63_7_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-63)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 193})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 193})
+
 }
 
 
@@ -1092,14 +1090,14 @@ test_sint_63_7_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_64_7_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-64)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 192})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 192})
+
 }
 
 
@@ -1130,14 +1128,14 @@ test_sint_64_7_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_65_7_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-65)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 191})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 191})
+
 }
 
 
@@ -1168,14 +1166,14 @@ test_sint_65_7_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_66_7_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-66)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 190})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 190})
+
 }
 
 
@@ -1206,14 +1204,14 @@ test_sint_66_7_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_16382_15_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-16382)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 192, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 192, 2})
+
 }
 
 
@@ -1244,14 +1242,14 @@ test_sint_16382_15_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_16383_15_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-16383)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 192, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 192, 1})
+
 }
 
 
@@ -1282,14 +1280,14 @@ test_sint_16383_15_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_16384_15_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-16384)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 192, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 192, 0})
+
 }
 
 
@@ -1320,14 +1318,14 @@ test_sint_16384_15_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_16385_15_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-16385)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 191, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 191, 255})
+
 }
 
 
@@ -1358,14 +1356,14 @@ test_sint_16385_15_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_16386_15_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-16386)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 191, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 191, 254})
+
 }
 
 
@@ -1396,14 +1394,14 @@ test_sint_16386_15_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_1073741822_31_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-1073741822)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 192, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 192, 0, 0, 2})
+
 }
 
 
@@ -1434,14 +1432,14 @@ test_sint_1073741822_31_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_1073741823_31_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-1073741823)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 192, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 192, 0, 0, 1})
+
 }
 
 
@@ -1472,14 +1470,14 @@ test_sint_1073741823_31_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_1073741824_31_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-1073741824)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 192, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 192, 0, 0, 0})
+
 }
 
 
@@ -1510,14 +1508,14 @@ test_sint_1073741824_31_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_1073741825_31_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-1073741825)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 191, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 191, 255, 255, 255})
+
 }
 
 
@@ -1548,14 +1546,14 @@ test_sint_1073741825_31_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_1073741826_31_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-1073741826)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 191, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 191, 255, 255, 254})
+
 }
 
 
@@ -1586,14 +1584,14 @@ test_sint_1073741826_31_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_4611686018427387902_63_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-4611686018427387902)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -1624,14 +1622,14 @@ test_sint_4611686018427387902_63_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_4611686018427387903_63_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-4611686018427387903)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -1662,14 +1660,14 @@ test_sint_4611686018427387903_63_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_4611686018427387904_63_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-4611686018427387904)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -1700,14 +1698,14 @@ test_sint_4611686018427387904_63_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_4611686018427387905_63_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-4611686018427387905)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 191, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 191, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -1738,14 +1736,14 @@ test_sint_4611686018427387905_63_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_4611686018427387906_63_2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := i64(-4611686018427387906)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 191, 255, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 191, 255, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -1776,14 +1774,14 @@ test_sint_4611686018427387906_63_2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 0
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{0})
+
 }
 
 
@@ -1814,14 +1812,14 @@ test_int_pow2_1_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{1})
+
 }
 
 
@@ -1852,14 +1850,14 @@ test_int_pow2_1_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{255})
+
 }
 
 
@@ -1890,14 +1888,14 @@ test_sint_pow2_1_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{2})
+
 }
 
 
@@ -1928,14 +1926,14 @@ test_int_pow2_1_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{254})
+
 }
 
 
@@ -1966,14 +1964,14 @@ test_sint_pow2_1_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 0
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{0})
+
 }
 
 
@@ -2004,14 +2002,14 @@ test_int_pow2_2_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{1})
+
 }
 
 
@@ -2042,14 +2040,14 @@ test_int_pow2_2_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{255})
+
 }
 
 
@@ -2080,14 +2078,14 @@ test_sint_pow2_2_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{2})
+
 }
 
 
@@ -2118,14 +2116,14 @@ test_int_pow2_2_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{254})
+
 }
 
 
@@ -2156,14 +2154,14 @@ test_sint_pow2_2_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 3
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{3})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{3})
+
 }
 
 
@@ -2194,14 +2192,14 @@ test_int_pow2_2_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -3
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{253})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{253})
+
 }
 
 
@@ -2232,14 +2230,14 @@ test_sint_pow2_2_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{2})
+
 }
 
 
@@ -2270,14 +2268,14 @@ test_int_pow2_4_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{254})
+
 }
 
 
@@ -2308,14 +2306,14 @@ test_sint_pow2_4_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 3
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{3})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{3})
+
 }
 
 
@@ -2346,14 +2344,14 @@ test_int_pow2_4_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -3
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{253})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{253})
+
 }
 
 
@@ -2384,14 +2382,14 @@ test_sint_pow2_4_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{4})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{4})
+
 }
 
 
@@ -2422,14 +2420,14 @@ test_int_pow2_4_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{252})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{252})
+
 }
 
 
@@ -2460,14 +2458,14 @@ test_sint_pow2_4_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 5
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{5})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{5})
+
 }
 
 
@@ -2498,14 +2496,14 @@ test_int_pow2_4_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -5
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{251})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{251})
+
 }
 
 
@@ -2536,14 +2534,14 @@ test_sint_pow2_4_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 6
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{6})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{6})
+
 }
 
 
@@ -2574,14 +2572,14 @@ test_int_pow2_8_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -6
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{250})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{250})
+
 }
 
 
@@ -2612,14 +2610,14 @@ test_sint_pow2_8_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 7
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{7})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{7})
+
 }
 
 
@@ -2650,14 +2648,14 @@ test_int_pow2_8_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -7
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{249})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{249})
+
 }
 
 
@@ -2688,14 +2686,14 @@ test_sint_pow2_8_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{8})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{8})
+
 }
 
 
@@ -2726,14 +2724,14 @@ test_int_pow2_8_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{248})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{248})
+
 }
 
 
@@ -2764,14 +2762,14 @@ test_sint_pow2_8_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 9
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{9})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{9})
+
 }
 
 
@@ -2802,14 +2800,14 @@ test_int_pow2_8_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -9
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{247})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{247})
+
 }
 
 
@@ -2840,14 +2838,14 @@ test_sint_pow2_8_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 14
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{14})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{14})
+
 }
 
 
@@ -2878,14 +2876,14 @@ test_int_pow2_16_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -14
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{242})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{242})
+
 }
 
 
@@ -2916,14 +2914,14 @@ test_sint_pow2_16_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 15
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{15})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{15})
+
 }
 
 
@@ -2954,14 +2952,14 @@ test_int_pow2_16_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -15
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{241})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{241})
+
 }
 
 
@@ -2992,14 +2990,14 @@ test_sint_pow2_16_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 16
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{16})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{16})
+
 }
 
 
@@ -3030,14 +3028,14 @@ test_int_pow2_16_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -16
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{240})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{240})
+
 }
 
 
@@ -3068,14 +3066,14 @@ test_sint_pow2_16_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 17
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{17})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{17})
+
 }
 
 
@@ -3106,14 +3104,14 @@ test_int_pow2_16_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -17
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{239})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{239})
+
 }
 
 
@@ -3144,14 +3142,14 @@ test_sint_pow2_16_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 30
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{30})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{30})
+
 }
 
 
@@ -3182,14 +3180,14 @@ test_int_pow2_32_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -30
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{226})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{226})
+
 }
 
 
@@ -3220,14 +3218,14 @@ test_sint_pow2_32_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 31
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{31})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{31})
+
 }
 
 
@@ -3258,14 +3256,14 @@ test_int_pow2_32_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -31
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{225})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{225})
+
 }
 
 
@@ -3296,14 +3294,14 @@ test_sint_pow2_32_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 32
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{32})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{32})
+
 }
 
 
@@ -3334,14 +3332,14 @@ test_int_pow2_32_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -32
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{224})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{224})
+
 }
 
 
@@ -3372,14 +3370,14 @@ test_sint_pow2_32_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 33
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{33})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{33})
+
 }
 
 
@@ -3410,14 +3408,14 @@ test_int_pow2_32_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -33
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 223})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 223})
+
 }
 
 
@@ -3448,14 +3446,14 @@ test_sint_pow2_32_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_64_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 62
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{62})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{62})
+
 }
 
 
@@ -3486,14 +3484,14 @@ test_int_pow2_64_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_64_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -62
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 194})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 194})
+
 }
 
 
@@ -3524,14 +3522,14 @@ test_sint_pow2_64_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_64_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 63
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{63})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{63})
+
 }
 
 
@@ -3562,14 +3560,14 @@ test_int_pow2_64_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_64_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -63
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 193})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 193})
+
 }
 
 
@@ -3600,14 +3598,14 @@ test_sint_pow2_64_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_64_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 64
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{64})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{64})
+
 }
 
 
@@ -3638,14 +3636,14 @@ test_int_pow2_64_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_64_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -64
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 192})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 192})
+
 }
 
 
@@ -3676,14 +3674,14 @@ test_sint_pow2_64_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_64_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 65
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{65})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{65})
+
 }
 
 
@@ -3714,14 +3712,14 @@ test_int_pow2_64_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_64_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -65
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 191})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 191})
+
 }
 
 
@@ -3752,14 +3750,14 @@ test_sint_pow2_64_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_128_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 126
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{126})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{126})
+
 }
 
 
@@ -3790,14 +3788,14 @@ test_int_pow2_128_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_128_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -126
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 130})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 130})
+
 }
 
 
@@ -3828,14 +3826,14 @@ test_sint_pow2_128_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_128_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 127
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{127})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{127})
+
 }
 
 
@@ -3866,14 +3864,14 @@ test_int_pow2_128_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_128_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -127
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 129})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 129})
+
 }
 
 
@@ -3904,14 +3902,14 @@ test_sint_pow2_128_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_128_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 128
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{204, 128})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{204, 128})
+
 }
 
 
@@ -3942,14 +3940,14 @@ test_int_pow2_128_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_128_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -128
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{208, 128})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{208, 128})
+
 }
 
 
@@ -3980,14 +3978,14 @@ test_sint_pow2_128_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_128_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 129
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{204, 129})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{204, 129})
+
 }
 
 
@@ -4018,14 +4016,14 @@ test_int_pow2_128_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_128_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -129
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 255, 127})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 255, 127})
+
 }
 
 
@@ -4056,14 +4054,14 @@ test_sint_pow2_128_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_256_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 254
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{204, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{204, 254})
+
 }
 
 
@@ -4094,14 +4092,14 @@ test_int_pow2_256_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_256_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -254
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 255, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 255, 2})
+
 }
 
 
@@ -4132,14 +4130,14 @@ test_sint_pow2_256_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_256_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 255
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{204, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{204, 255})
+
 }
 
 
@@ -4170,14 +4168,14 @@ test_int_pow2_256_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_256_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -255
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 255, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 255, 1})
+
 }
 
 
@@ -4208,14 +4206,14 @@ test_sint_pow2_256_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_256_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 256
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 1, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 1, 0})
+
 }
 
 
@@ -4246,14 +4244,14 @@ test_int_pow2_256_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_256_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -256
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 255, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 255, 0})
+
 }
 
 
@@ -4284,14 +4282,14 @@ test_sint_pow2_256_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_256_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 257
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 1, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 1, 1})
+
 }
 
 
@@ -4322,14 +4320,14 @@ test_int_pow2_256_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_256_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -257
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 254, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 254, 255})
+
 }
 
 
@@ -4360,14 +4358,14 @@ test_sint_pow2_256_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_512_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 510
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 1, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 1, 254})
+
 }
 
 
@@ -4398,14 +4396,14 @@ test_int_pow2_512_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_512_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -510
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 254, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 254, 2})
+
 }
 
 
@@ -4436,14 +4434,14 @@ test_sint_pow2_512_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_512_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 511
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 1, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 1, 255})
+
 }
 
 
@@ -4474,14 +4472,14 @@ test_int_pow2_512_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_512_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -511
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 254, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 254, 1})
+
 }
 
 
@@ -4512,14 +4510,14 @@ test_sint_pow2_512_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_512_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 512
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 2, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 2, 0})
+
 }
 
 
@@ -4550,14 +4548,14 @@ test_int_pow2_512_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_512_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -512
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 254, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 254, 0})
+
 }
 
 
@@ -4588,14 +4586,14 @@ test_sint_pow2_512_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_512_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 513
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 2, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 2, 1})
+
 }
 
 
@@ -4626,14 +4624,14 @@ test_int_pow2_512_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_512_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -513
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 253, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 253, 255})
+
 }
 
 
@@ -4664,14 +4662,14 @@ test_sint_pow2_512_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1024_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1022
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 3, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 3, 254})
+
 }
 
 
@@ -4702,14 +4700,14 @@ test_int_pow2_1024_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1024_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1022
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 252, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 252, 2})
+
 }
 
 
@@ -4740,14 +4738,14 @@ test_sint_pow2_1024_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1024_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1023
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 3, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 3, 255})
+
 }
 
 
@@ -4778,14 +4776,14 @@ test_int_pow2_1024_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1024_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1023
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 252, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 252, 1})
+
 }
 
 
@@ -4816,14 +4814,14 @@ test_sint_pow2_1024_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1024_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1024
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 4, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 4, 0})
+
 }
 
 
@@ -4854,14 +4852,14 @@ test_int_pow2_1024_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1024_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1024
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 252, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 252, 0})
+
 }
 
 
@@ -4892,14 +4890,14 @@ test_sint_pow2_1024_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1024_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1025
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 4, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 4, 1})
+
 }
 
 
@@ -4930,14 +4928,14 @@ test_int_pow2_1024_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1024_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1025
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 251, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 251, 255})
+
 }
 
 
@@ -4968,14 +4966,14 @@ test_sint_pow2_1024_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2048_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2046
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 7, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 7, 254})
+
 }
 
 
@@ -5006,14 +5004,14 @@ test_int_pow2_2048_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2048_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2046
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 248, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 248, 2})
+
 }
 
 
@@ -5044,14 +5042,14 @@ test_sint_pow2_2048_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2048_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2047
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 7, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 7, 255})
+
 }
 
 
@@ -5082,14 +5080,14 @@ test_int_pow2_2048_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2048_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2047
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 248, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 248, 1})
+
 }
 
 
@@ -5120,14 +5118,14 @@ test_sint_pow2_2048_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2048_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2048
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 8, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 8, 0})
+
 }
 
 
@@ -5158,14 +5156,14 @@ test_int_pow2_2048_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2048_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2048
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 248, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 248, 0})
+
 }
 
 
@@ -5196,14 +5194,14 @@ test_sint_pow2_2048_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2048_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2049
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 8, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 8, 1})
+
 }
 
 
@@ -5234,14 +5232,14 @@ test_int_pow2_2048_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2048_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2049
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 247, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 247, 255})
+
 }
 
 
@@ -5272,14 +5270,14 @@ test_sint_pow2_2048_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4096_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4094
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 15, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 15, 254})
+
 }
 
 
@@ -5310,14 +5308,14 @@ test_int_pow2_4096_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4096_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4094
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 240, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 240, 2})
+
 }
 
 
@@ -5348,14 +5346,14 @@ test_sint_pow2_4096_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4096_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4095
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 15, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 15, 255})
+
 }
 
 
@@ -5386,14 +5384,14 @@ test_int_pow2_4096_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4096_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4095
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 240, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 240, 1})
+
 }
 
 
@@ -5424,14 +5422,14 @@ test_sint_pow2_4096_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4096_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4096
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 16, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 16, 0})
+
 }
 
 
@@ -5462,14 +5460,14 @@ test_int_pow2_4096_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4096_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4096
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 240, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 240, 0})
+
 }
 
 
@@ -5500,14 +5498,14 @@ test_sint_pow2_4096_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4096_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4097
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 16, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 16, 1})
+
 }
 
 
@@ -5538,14 +5536,14 @@ test_int_pow2_4096_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4096_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4097
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 239, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 239, 255})
+
 }
 
 
@@ -5576,14 +5574,14 @@ test_sint_pow2_4096_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8192_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8190
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 31, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 31, 254})
+
 }
 
 
@@ -5614,14 +5612,14 @@ test_int_pow2_8192_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8192_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8190
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 224, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 224, 2})
+
 }
 
 
@@ -5652,14 +5650,14 @@ test_sint_pow2_8192_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8192_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8191
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 31, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 31, 255})
+
 }
 
 
@@ -5690,14 +5688,14 @@ test_int_pow2_8192_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8192_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8191
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 224, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 224, 1})
+
 }
 
 
@@ -5728,14 +5726,14 @@ test_sint_pow2_8192_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8192_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8192
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 32, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 32, 0})
+
 }
 
 
@@ -5766,14 +5764,14 @@ test_int_pow2_8192_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8192_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8192
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 224, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 224, 0})
+
 }
 
 
@@ -5804,14 +5802,14 @@ test_sint_pow2_8192_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8192_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8193
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 32, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 32, 1})
+
 }
 
 
@@ -5842,14 +5840,14 @@ test_int_pow2_8192_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8192_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8193
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 223, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 223, 255})
+
 }
 
 
@@ -5880,14 +5878,14 @@ test_sint_pow2_8192_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16384_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 16382
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 63, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 63, 254})
+
 }
 
 
@@ -5918,14 +5916,14 @@ test_int_pow2_16384_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16384_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -16382
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 192, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 192, 2})
+
 }
 
 
@@ -5956,14 +5954,14 @@ test_sint_pow2_16384_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16384_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 16383
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 63, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 63, 255})
+
 }
 
 
@@ -5994,14 +5992,14 @@ test_int_pow2_16384_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16384_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -16383
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 192, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 192, 1})
+
 }
 
 
@@ -6032,14 +6030,14 @@ test_sint_pow2_16384_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16384_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 16384
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 64, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 64, 0})
+
 }
 
 
@@ -6070,14 +6068,14 @@ test_int_pow2_16384_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16384_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -16384
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 192, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 192, 0})
+
 }
 
 
@@ -6108,14 +6106,14 @@ test_sint_pow2_16384_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16384_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 16385
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 64, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 64, 1})
+
 }
 
 
@@ -6146,14 +6144,14 @@ test_int_pow2_16384_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16384_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -16385
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 191, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 191, 255})
+
 }
 
 
@@ -6184,14 +6182,14 @@ test_sint_pow2_16384_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32768_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 32766
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 127, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 127, 254})
+
 }
 
 
@@ -6222,14 +6220,14 @@ test_int_pow2_32768_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32768_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -32766
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 128, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 128, 2})
+
 }
 
 
@@ -6260,14 +6258,14 @@ test_sint_pow2_32768_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32768_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 32767
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 127, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 127, 255})
+
 }
 
 
@@ -6298,14 +6296,14 @@ test_int_pow2_32768_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32768_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -32767
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 128, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 128, 1})
+
 }
 
 
@@ -6336,14 +6334,14 @@ test_sint_pow2_32768_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32768_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 32768
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 128, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 128, 0})
+
 }
 
 
@@ -6374,14 +6372,14 @@ test_int_pow2_32768_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32768_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -32768
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{209, 128, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{209, 128, 0})
+
 }
 
 
@@ -6412,14 +6410,14 @@ test_sint_pow2_32768_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_32768_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 32769
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 128, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 128, 1})
+
 }
 
 
@@ -6450,14 +6448,14 @@ test_int_pow2_32768_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_32768_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -32769
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 255, 127, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 255, 127, 255})
+
 }
 
 
@@ -6488,14 +6486,14 @@ test_sint_pow2_32768_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_65536_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 65534
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 255, 254})
+
 }
 
 
@@ -6526,14 +6524,14 @@ test_int_pow2_65536_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_65536_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -65534
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 255, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 255, 0, 2})
+
 }
 
 
@@ -6564,14 +6562,14 @@ test_sint_pow2_65536_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_65536_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 65535
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{205, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{205, 255, 255})
+
 }
 
 
@@ -6602,14 +6600,14 @@ test_int_pow2_65536_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_65536_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -65535
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 255, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 255, 0, 1})
+
 }
 
 
@@ -6640,14 +6638,14 @@ test_sint_pow2_65536_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_65536_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 65536
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 1, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 1, 0, 0})
+
 }
 
 
@@ -6678,14 +6676,14 @@ test_int_pow2_65536_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_65536_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -65536
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 255, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 255, 0, 0})
+
 }
 
 
@@ -6716,14 +6714,14 @@ test_sint_pow2_65536_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_65536_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 65537
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 1, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 1, 0, 1})
+
 }
 
 
@@ -6754,14 +6752,14 @@ test_int_pow2_65536_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_65536_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -65537
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 254, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 254, 255, 255})
+
 }
 
 
@@ -6792,14 +6790,14 @@ test_sint_pow2_65536_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_131072_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 131070
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 1, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 1, 255, 254})
+
 }
 
 
@@ -6830,14 +6828,14 @@ test_int_pow2_131072_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_131072_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -131070
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 254, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 254, 0, 2})
+
 }
 
 
@@ -6868,14 +6866,14 @@ test_sint_pow2_131072_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_131072_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 131071
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 1, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 1, 255, 255})
+
 }
 
 
@@ -6906,14 +6904,14 @@ test_int_pow2_131072_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_131072_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -131071
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 254, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 254, 0, 1})
+
 }
 
 
@@ -6944,14 +6942,14 @@ test_sint_pow2_131072_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_131072_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 131072
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 2, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 2, 0, 0})
+
 }
 
 
@@ -6982,14 +6980,14 @@ test_int_pow2_131072_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_131072_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -131072
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 254, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 254, 0, 0})
+
 }
 
 
@@ -7020,14 +7018,14 @@ test_sint_pow2_131072_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_131072_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 131073
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 2, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 2, 0, 1})
+
 }
 
 
@@ -7058,14 +7056,14 @@ test_int_pow2_131072_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_131072_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -131073
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 253, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 253, 255, 255})
+
 }
 
 
@@ -7096,14 +7094,14 @@ test_sint_pow2_131072_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_262144_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 262142
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 3, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 3, 255, 254})
+
 }
 
 
@@ -7134,14 +7132,14 @@ test_int_pow2_262144_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_262144_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -262142
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 252, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 252, 0, 2})
+
 }
 
 
@@ -7172,14 +7170,14 @@ test_sint_pow2_262144_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_262144_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 262143
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 3, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 3, 255, 255})
+
 }
 
 
@@ -7210,14 +7208,14 @@ test_int_pow2_262144_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_262144_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -262143
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 252, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 252, 0, 1})
+
 }
 
 
@@ -7248,14 +7246,14 @@ test_sint_pow2_262144_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_262144_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 262144
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 4, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 4, 0, 0})
+
 }
 
 
@@ -7286,14 +7284,14 @@ test_int_pow2_262144_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_262144_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -262144
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 252, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 252, 0, 0})
+
 }
 
 
@@ -7324,14 +7322,14 @@ test_sint_pow2_262144_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_262144_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 262145
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 4, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 4, 0, 1})
+
 }
 
 
@@ -7362,14 +7360,14 @@ test_int_pow2_262144_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_262144_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -262145
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 251, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 251, 255, 255})
+
 }
 
 
@@ -7400,14 +7398,14 @@ test_sint_pow2_262144_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_524288_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 524286
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 7, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 7, 255, 254})
+
 }
 
 
@@ -7438,14 +7436,14 @@ test_int_pow2_524288_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_524288_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -524286
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 248, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 248, 0, 2})
+
 }
 
 
@@ -7476,14 +7474,14 @@ test_sint_pow2_524288_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_524288_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 524287
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 7, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 7, 255, 255})
+
 }
 
 
@@ -7514,14 +7512,14 @@ test_int_pow2_524288_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_524288_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -524287
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 248, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 248, 0, 1})
+
 }
 
 
@@ -7552,14 +7550,14 @@ test_sint_pow2_524288_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_524288_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 524288
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 8, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 8, 0, 0})
+
 }
 
 
@@ -7590,14 +7588,14 @@ test_int_pow2_524288_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_524288_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -524288
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 248, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 248, 0, 0})
+
 }
 
 
@@ -7628,14 +7626,14 @@ test_sint_pow2_524288_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_524288_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 524289
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 8, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 8, 0, 1})
+
 }
 
 
@@ -7666,14 +7664,14 @@ test_int_pow2_524288_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_524288_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -524289
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 247, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 247, 255, 255})
+
 }
 
 
@@ -7704,14 +7702,14 @@ test_sint_pow2_524288_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1048576_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1048574
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 15, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 15, 255, 254})
+
 }
 
 
@@ -7742,14 +7740,14 @@ test_int_pow2_1048576_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1048576_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1048574
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 240, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 240, 0, 2})
+
 }
 
 
@@ -7780,14 +7778,14 @@ test_sint_pow2_1048576_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1048576_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1048575
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 15, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 15, 255, 255})
+
 }
 
 
@@ -7818,14 +7816,14 @@ test_int_pow2_1048576_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1048576_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1048575
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 240, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 240, 0, 1})
+
 }
 
 
@@ -7856,14 +7854,14 @@ test_sint_pow2_1048576_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1048576_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1048576
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 16, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 16, 0, 0})
+
 }
 
 
@@ -7894,14 +7892,14 @@ test_int_pow2_1048576_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1048576_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1048576
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 240, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 240, 0, 0})
+
 }
 
 
@@ -7932,14 +7930,14 @@ test_sint_pow2_1048576_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1048576_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1048577
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 16, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 16, 0, 1})
+
 }
 
 
@@ -7970,14 +7968,14 @@ test_int_pow2_1048576_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1048576_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1048577
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 239, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 239, 255, 255})
+
 }
 
 
@@ -8008,14 +8006,14 @@ test_sint_pow2_1048576_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2097152_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2097150
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 31, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 31, 255, 254})
+
 }
 
 
@@ -8046,14 +8044,14 @@ test_int_pow2_2097152_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2097152_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2097150
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 224, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 224, 0, 2})
+
 }
 
 
@@ -8084,14 +8082,14 @@ test_sint_pow2_2097152_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2097152_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2097151
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 31, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 31, 255, 255})
+
 }
 
 
@@ -8122,14 +8120,14 @@ test_int_pow2_2097152_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2097152_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2097151
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 224, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 224, 0, 1})
+
 }
 
 
@@ -8160,14 +8158,14 @@ test_sint_pow2_2097152_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2097152_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2097152
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 32, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 32, 0, 0})
+
 }
 
 
@@ -8198,14 +8196,14 @@ test_int_pow2_2097152_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2097152_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2097152
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 224, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 224, 0, 0})
+
 }
 
 
@@ -8236,14 +8234,14 @@ test_sint_pow2_2097152_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2097152_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2097153
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 32, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 32, 0, 1})
+
 }
 
 
@@ -8274,14 +8272,14 @@ test_int_pow2_2097152_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2097152_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2097153
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 223, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 223, 255, 255})
+
 }
 
 
@@ -8312,14 +8310,14 @@ test_sint_pow2_2097152_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4194304_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4194302
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 63, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 63, 255, 254})
+
 }
 
 
@@ -8350,14 +8348,14 @@ test_int_pow2_4194304_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4194304_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4194302
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 192, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 192, 0, 2})
+
 }
 
 
@@ -8388,14 +8386,14 @@ test_sint_pow2_4194304_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4194304_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4194303
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 63, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 63, 255, 255})
+
 }
 
 
@@ -8426,14 +8424,14 @@ test_int_pow2_4194304_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4194304_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4194303
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 192, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 192, 0, 1})
+
 }
 
 
@@ -8464,14 +8462,14 @@ test_sint_pow2_4194304_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4194304_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4194304
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 64, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 64, 0, 0})
+
 }
 
 
@@ -8502,14 +8500,14 @@ test_int_pow2_4194304_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4194304_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4194304
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 192, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 192, 0, 0})
+
 }
 
 
@@ -8540,14 +8538,14 @@ test_sint_pow2_4194304_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4194304_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4194305
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 64, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 64, 0, 1})
+
 }
 
 
@@ -8578,14 +8576,14 @@ test_int_pow2_4194304_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4194304_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4194305
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 191, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 191, 255, 255})
+
 }
 
 
@@ -8616,14 +8614,14 @@ test_sint_pow2_4194304_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8388608_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8388606
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 127, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 127, 255, 254})
+
 }
 
 
@@ -8654,14 +8652,14 @@ test_int_pow2_8388608_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8388608_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8388606
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 128, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 128, 0, 2})
+
 }
 
 
@@ -8692,14 +8690,14 @@ test_sint_pow2_8388608_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8388608_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8388607
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 127, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 127, 255, 255})
+
 }
 
 
@@ -8730,14 +8728,14 @@ test_int_pow2_8388608_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8388608_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8388607
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 128, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 128, 0, 1})
+
 }
 
 
@@ -8768,14 +8766,14 @@ test_sint_pow2_8388608_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8388608_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8388608
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 128, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 128, 0, 0})
+
 }
 
 
@@ -8806,14 +8804,14 @@ test_int_pow2_8388608_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8388608_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8388608
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 128, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 128, 0, 0})
+
 }
 
 
@@ -8844,14 +8842,14 @@ test_sint_pow2_8388608_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8388608_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8388609
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 128, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 128, 0, 1})
+
 }
 
 
@@ -8882,14 +8880,14 @@ test_int_pow2_8388608_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8388608_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8388609
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 127, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 127, 255, 255})
+
 }
 
 
@@ -8920,14 +8918,14 @@ test_sint_pow2_8388608_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16777216_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 16777214
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 255, 255, 254})
+
 }
 
 
@@ -8958,14 +8956,14 @@ test_int_pow2_16777216_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16777216_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -16777214
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 0, 0, 2})
+
 }
 
 
@@ -8996,14 +8994,14 @@ test_sint_pow2_16777216_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16777216_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 16777215
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 0, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 0, 255, 255, 255})
+
 }
 
 
@@ -9034,14 +9032,14 @@ test_int_pow2_16777216_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16777216_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -16777215
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 0, 0, 1})
+
 }
 
 
@@ -9072,14 +9070,14 @@ test_sint_pow2_16777216_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16777216_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 16777216
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 1, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 1, 0, 0, 0})
+
 }
 
 
@@ -9110,14 +9108,14 @@ test_int_pow2_16777216_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16777216_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -16777216
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 255, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 255, 0, 0, 0})
+
 }
 
 
@@ -9148,14 +9146,14 @@ test_sint_pow2_16777216_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_16777216_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 16777217
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 1, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 1, 0, 0, 1})
+
 }
 
 
@@ -9186,14 +9184,14 @@ test_int_pow2_16777216_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_16777216_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -16777217
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 254, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 254, 255, 255, 255})
+
 }
 
 
@@ -9224,14 +9222,14 @@ test_sint_pow2_16777216_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_33554432_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 33554430
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 1, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 1, 255, 255, 254})
+
 }
 
 
@@ -9262,14 +9260,14 @@ test_int_pow2_33554432_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_33554432_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -33554430
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 254, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 254, 0, 0, 2})
+
 }
 
 
@@ -9300,14 +9298,14 @@ test_sint_pow2_33554432_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_33554432_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 33554431
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 1, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 1, 255, 255, 255})
+
 }
 
 
@@ -9338,14 +9336,14 @@ test_int_pow2_33554432_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_33554432_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -33554431
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 254, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 254, 0, 0, 1})
+
 }
 
 
@@ -9376,14 +9374,14 @@ test_sint_pow2_33554432_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_33554432_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 33554432
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 2, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 2, 0, 0, 0})
+
 }
 
 
@@ -9414,14 +9412,14 @@ test_int_pow2_33554432_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_33554432_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -33554432
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 254, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 254, 0, 0, 0})
+
 }
 
 
@@ -9452,14 +9450,14 @@ test_sint_pow2_33554432_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_33554432_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 33554433
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 2, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 2, 0, 0, 1})
+
 }
 
 
@@ -9490,14 +9488,14 @@ test_int_pow2_33554432_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_33554432_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -33554433
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 253, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 253, 255, 255, 255})
+
 }
 
 
@@ -9528,14 +9526,14 @@ test_sint_pow2_33554432_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_67108864_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 67108862
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 3, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 3, 255, 255, 254})
+
 }
 
 
@@ -9566,14 +9564,14 @@ test_int_pow2_67108864_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_67108864_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -67108862
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 252, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 252, 0, 0, 2})
+
 }
 
 
@@ -9604,14 +9602,14 @@ test_sint_pow2_67108864_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_67108864_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 67108863
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 3, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 3, 255, 255, 255})
+
 }
 
 
@@ -9642,14 +9640,14 @@ test_int_pow2_67108864_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_67108864_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -67108863
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 252, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 252, 0, 0, 1})
+
 }
 
 
@@ -9680,14 +9678,14 @@ test_sint_pow2_67108864_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_67108864_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 67108864
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 4, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 4, 0, 0, 0})
+
 }
 
 
@@ -9718,14 +9716,14 @@ test_int_pow2_67108864_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_67108864_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -67108864
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 252, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 252, 0, 0, 0})
+
 }
 
 
@@ -9756,14 +9754,14 @@ test_sint_pow2_67108864_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_67108864_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 67108865
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 4, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 4, 0, 0, 1})
+
 }
 
 
@@ -9794,14 +9792,14 @@ test_int_pow2_67108864_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_67108864_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -67108865
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 251, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 251, 255, 255, 255})
+
 }
 
 
@@ -9832,14 +9830,14 @@ test_sint_pow2_67108864_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_134217728_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 134217726
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 7, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 7, 255, 255, 254})
+
 }
 
 
@@ -9870,14 +9868,14 @@ test_int_pow2_134217728_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_134217728_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -134217726
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 248, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 248, 0, 0, 2})
+
 }
 
 
@@ -9908,14 +9906,14 @@ test_sint_pow2_134217728_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_134217728_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 134217727
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 7, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 7, 255, 255, 255})
+
 }
 
 
@@ -9946,14 +9944,14 @@ test_int_pow2_134217728_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_134217728_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -134217727
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 248, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 248, 0, 0, 1})
+
 }
 
 
@@ -9984,14 +9982,14 @@ test_sint_pow2_134217728_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_134217728_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 134217728
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 8, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 8, 0, 0, 0})
+
 }
 
 
@@ -10022,14 +10020,14 @@ test_int_pow2_134217728_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_134217728_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -134217728
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 248, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 248, 0, 0, 0})
+
 }
 
 
@@ -10060,14 +10058,14 @@ test_sint_pow2_134217728_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_134217728_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 134217729
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 8, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 8, 0, 0, 1})
+
 }
 
 
@@ -10098,14 +10096,14 @@ test_int_pow2_134217728_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_134217728_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -134217729
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 247, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 247, 255, 255, 255})
+
 }
 
 
@@ -10136,14 +10134,14 @@ test_sint_pow2_134217728_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_268435456_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 268435454
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 15, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 15, 255, 255, 254})
+
 }
 
 
@@ -10174,14 +10172,14 @@ test_int_pow2_268435456_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_268435456_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -268435454
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 240, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 240, 0, 0, 2})
+
 }
 
 
@@ -10212,14 +10210,14 @@ test_sint_pow2_268435456_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_268435456_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 268435455
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 15, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 15, 255, 255, 255})
+
 }
 
 
@@ -10250,14 +10248,14 @@ test_int_pow2_268435456_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_268435456_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -268435455
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 240, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 240, 0, 0, 1})
+
 }
 
 
@@ -10288,14 +10286,14 @@ test_sint_pow2_268435456_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_268435456_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 268435456
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 16, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 16, 0, 0, 0})
+
 }
 
 
@@ -10326,14 +10324,14 @@ test_int_pow2_268435456_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_268435456_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -268435456
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 240, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 240, 0, 0, 0})
+
 }
 
 
@@ -10364,14 +10362,14 @@ test_sint_pow2_268435456_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_268435456_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 268435457
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 16, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 16, 0, 0, 1})
+
 }
 
 
@@ -10402,14 +10400,14 @@ test_int_pow2_268435456_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_268435456_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -268435457
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 239, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 239, 255, 255, 255})
+
 }
 
 
@@ -10440,14 +10438,14 @@ test_sint_pow2_268435456_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_536870912_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 536870910
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 31, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 31, 255, 255, 254})
+
 }
 
 
@@ -10478,14 +10476,14 @@ test_int_pow2_536870912_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_536870912_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -536870910
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 224, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 224, 0, 0, 2})
+
 }
 
 
@@ -10516,14 +10514,14 @@ test_sint_pow2_536870912_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_536870912_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 536870911
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 31, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 31, 255, 255, 255})
+
 }
 
 
@@ -10554,14 +10552,14 @@ test_int_pow2_536870912_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_536870912_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -536870911
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 224, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 224, 0, 0, 1})
+
 }
 
 
@@ -10592,14 +10590,14 @@ test_sint_pow2_536870912_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_536870912_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 536870912
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 32, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 32, 0, 0, 0})
+
 }
 
 
@@ -10630,14 +10628,14 @@ test_int_pow2_536870912_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_536870912_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -536870912
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 224, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 224, 0, 0, 0})
+
 }
 
 
@@ -10668,14 +10666,14 @@ test_sint_pow2_536870912_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_536870912_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 536870913
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 32, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 32, 0, 0, 1})
+
 }
 
 
@@ -10706,14 +10704,14 @@ test_int_pow2_536870912_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_536870912_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -536870913
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 223, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 223, 255, 255, 255})
+
 }
 
 
@@ -10744,14 +10742,14 @@ test_sint_pow2_536870912_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1073741824_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1073741822
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 63, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 63, 255, 255, 254})
+
 }
 
 
@@ -10782,14 +10780,14 @@ test_int_pow2_1073741824_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1073741824_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1073741822
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 192, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 192, 0, 0, 2})
+
 }
 
 
@@ -10820,14 +10818,14 @@ test_sint_pow2_1073741824_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1073741824_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1073741823
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 63, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 63, 255, 255, 255})
+
 }
 
 
@@ -10858,14 +10856,14 @@ test_int_pow2_1073741824_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1073741824_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1073741823
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 192, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 192, 0, 0, 1})
+
 }
 
 
@@ -10896,14 +10894,14 @@ test_sint_pow2_1073741824_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1073741824_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1073741824
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 64, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 64, 0, 0, 0})
+
 }
 
 
@@ -10934,14 +10932,14 @@ test_int_pow2_1073741824_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1073741824_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1073741824
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 192, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 192, 0, 0, 0})
+
 }
 
 
@@ -10972,14 +10970,14 @@ test_sint_pow2_1073741824_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1073741824_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1073741825
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 64, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 64, 0, 0, 1})
+
 }
 
 
@@ -11010,14 +11008,14 @@ test_int_pow2_1073741824_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1073741824_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1073741825
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 191, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 191, 255, 255, 255})
+
 }
 
 
@@ -11048,14 +11046,14 @@ test_sint_pow2_1073741824_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2147483648_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2147483646
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 127, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 127, 255, 255, 254})
+
 }
 
 
@@ -11086,14 +11084,14 @@ test_int_pow2_2147483648_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2147483648_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2147483646
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 128, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 128, 0, 0, 2})
+
 }
 
 
@@ -11124,14 +11122,14 @@ test_sint_pow2_2147483648_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2147483648_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2147483647
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 127, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 127, 255, 255, 255})
+
 }
 
 
@@ -11162,14 +11160,14 @@ test_int_pow2_2147483648_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2147483648_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2147483647
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 128, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 128, 0, 0, 1})
+
 }
 
 
@@ -11200,14 +11198,14 @@ test_sint_pow2_2147483648_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2147483648_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2147483648
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 128, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 128, 0, 0, 0})
+
 }
 
 
@@ -11238,14 +11236,14 @@ test_int_pow2_2147483648_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2147483648_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2147483648
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{210, 128, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{210, 128, 0, 0, 0})
+
 }
 
 
@@ -11276,14 +11274,14 @@ test_sint_pow2_2147483648_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2147483648_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2147483649
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 128, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 128, 0, 0, 1})
+
 }
 
 
@@ -11314,14 +11312,14 @@ test_int_pow2_2147483648_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2147483648_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2147483649
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 255, 127, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 255, 127, 255, 255, 255})
+
 }
 
 
@@ -11352,14 +11350,14 @@ test_sint_pow2_2147483648_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4294967296_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4294967294
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 255, 255, 255, 254})
+
 }
 
 
@@ -11390,14 +11388,14 @@ test_int_pow2_4294967296_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4294967296_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4294967294
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 255, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 255, 0, 0, 0, 2})
+
 }
 
 
@@ -11428,14 +11426,14 @@ test_sint_pow2_4294967296_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4294967296_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4294967295
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{206, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{206, 255, 255, 255, 255})
+
 }
 
 
@@ -11466,14 +11464,14 @@ test_int_pow2_4294967296_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4294967296_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4294967295
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 255, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 255, 0, 0, 0, 1})
+
 }
 
 
@@ -11504,14 +11502,14 @@ test_sint_pow2_4294967296_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4294967296_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4294967296
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 1, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 1, 0, 0, 0, 0})
+
 }
 
 
@@ -11542,14 +11540,14 @@ test_int_pow2_4294967296_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4294967296_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4294967296
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 255, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 255, 0, 0, 0, 0})
+
 }
 
 
@@ -11580,14 +11578,14 @@ test_sint_pow2_4294967296_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4294967296_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4294967297
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 1, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 1, 0, 0, 0, 1})
+
 }
 
 
@@ -11618,14 +11616,14 @@ test_int_pow2_4294967296_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4294967296_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4294967297
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 254, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 254, 255, 255, 255, 255})
+
 }
 
 
@@ -11656,14 +11654,14 @@ test_sint_pow2_4294967296_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8589934592_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8589934590
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 1, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 1, 255, 255, 255, 254})
+
 }
 
 
@@ -11694,14 +11692,14 @@ test_int_pow2_8589934592_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8589934592_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8589934590
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 254, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 254, 0, 0, 0, 2})
+
 }
 
 
@@ -11732,14 +11730,14 @@ test_sint_pow2_8589934592_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8589934592_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8589934591
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 1, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 1, 255, 255, 255, 255})
+
 }
 
 
@@ -11770,14 +11768,14 @@ test_int_pow2_8589934592_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8589934592_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8589934591
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 254, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 254, 0, 0, 0, 1})
+
 }
 
 
@@ -11808,14 +11806,14 @@ test_sint_pow2_8589934592_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8589934592_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8589934592
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 2, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 2, 0, 0, 0, 0})
+
 }
 
 
@@ -11846,14 +11844,14 @@ test_int_pow2_8589934592_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8589934592_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8589934592
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 254, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 254, 0, 0, 0, 0})
+
 }
 
 
@@ -11884,14 +11882,14 @@ test_sint_pow2_8589934592_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8589934592_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8589934593
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 2, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 2, 0, 0, 0, 1})
+
 }
 
 
@@ -11922,14 +11920,14 @@ test_int_pow2_8589934592_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8589934592_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8589934593
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 253, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 253, 255, 255, 255, 255})
+
 }
 
 
@@ -11960,14 +11958,14 @@ test_sint_pow2_8589934592_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17179869184_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 17179869182
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 3, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 3, 255, 255, 255, 254})
+
 }
 
 
@@ -11998,14 +11996,14 @@ test_int_pow2_17179869184_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17179869184_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -17179869182
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 252, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 252, 0, 0, 0, 2})
+
 }
 
 
@@ -12036,14 +12034,14 @@ test_sint_pow2_17179869184_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17179869184_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 17179869183
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 3, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 3, 255, 255, 255, 255})
+
 }
 
 
@@ -12074,14 +12072,14 @@ test_int_pow2_17179869184_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17179869184_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -17179869183
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 252, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 252, 0, 0, 0, 1})
+
 }
 
 
@@ -12112,14 +12110,14 @@ test_sint_pow2_17179869184_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17179869184_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 17179869184
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 4, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 4, 0, 0, 0, 0})
+
 }
 
 
@@ -12150,14 +12148,14 @@ test_int_pow2_17179869184_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17179869184_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -17179869184
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 252, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 252, 0, 0, 0, 0})
+
 }
 
 
@@ -12188,14 +12186,14 @@ test_sint_pow2_17179869184_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17179869184_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 17179869185
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 4, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 4, 0, 0, 0, 1})
+
 }
 
 
@@ -12226,14 +12224,14 @@ test_int_pow2_17179869184_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17179869184_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -17179869185
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 251, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 251, 255, 255, 255, 255})
+
 }
 
 
@@ -12264,14 +12262,14 @@ test_sint_pow2_17179869184_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_34359738368_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 34359738366
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 7, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 7, 255, 255, 255, 254})
+
 }
 
 
@@ -12302,14 +12300,14 @@ test_int_pow2_34359738368_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_34359738368_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -34359738366
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 248, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 248, 0, 0, 0, 2})
+
 }
 
 
@@ -12340,14 +12338,14 @@ test_sint_pow2_34359738368_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_34359738368_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 34359738367
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 7, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 7, 255, 255, 255, 255})
+
 }
 
 
@@ -12378,14 +12376,14 @@ test_int_pow2_34359738368_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_34359738368_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -34359738367
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 248, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 248, 0, 0, 0, 1})
+
 }
 
 
@@ -12416,14 +12414,14 @@ test_sint_pow2_34359738368_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_34359738368_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 34359738368
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 8, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 8, 0, 0, 0, 0})
+
 }
 
 
@@ -12454,14 +12452,14 @@ test_int_pow2_34359738368_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_34359738368_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -34359738368
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 248, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 248, 0, 0, 0, 0})
+
 }
 
 
@@ -12492,14 +12490,14 @@ test_sint_pow2_34359738368_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_34359738368_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 34359738369
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 8, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 8, 0, 0, 0, 1})
+
 }
 
 
@@ -12530,14 +12528,14 @@ test_int_pow2_34359738368_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_34359738368_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -34359738369
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 247, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 247, 255, 255, 255, 255})
+
 }
 
 
@@ -12568,14 +12566,14 @@ test_sint_pow2_34359738368_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_68719476736_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 68719476734
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 15, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 15, 255, 255, 255, 254})
+
 }
 
 
@@ -12606,14 +12604,14 @@ test_int_pow2_68719476736_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_68719476736_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -68719476734
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 240, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 240, 0, 0, 0, 2})
+
 }
 
 
@@ -12644,14 +12642,14 @@ test_sint_pow2_68719476736_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_68719476736_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 68719476735
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 15, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 15, 255, 255, 255, 255})
+
 }
 
 
@@ -12682,14 +12680,14 @@ test_int_pow2_68719476736_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_68719476736_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -68719476735
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 240, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 240, 0, 0, 0, 1})
+
 }
 
 
@@ -12720,14 +12718,14 @@ test_sint_pow2_68719476736_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_68719476736_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 68719476736
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 16, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 16, 0, 0, 0, 0})
+
 }
 
 
@@ -12758,14 +12756,14 @@ test_int_pow2_68719476736_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_68719476736_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -68719476736
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 240, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 240, 0, 0, 0, 0})
+
 }
 
 
@@ -12796,14 +12794,14 @@ test_sint_pow2_68719476736_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_68719476736_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 68719476737
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 16, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 16, 0, 0, 0, 1})
+
 }
 
 
@@ -12834,14 +12832,14 @@ test_int_pow2_68719476736_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_68719476736_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -68719476737
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 239, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 239, 255, 255, 255, 255})
+
 }
 
 
@@ -12872,14 +12870,14 @@ test_sint_pow2_68719476736_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_137438953472_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 137438953470
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 31, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 31, 255, 255, 255, 254})
+
 }
 
 
@@ -12910,14 +12908,14 @@ test_int_pow2_137438953472_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_137438953472_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -137438953470
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 224, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 224, 0, 0, 0, 2})
+
 }
 
 
@@ -12948,14 +12946,14 @@ test_sint_pow2_137438953472_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_137438953472_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 137438953471
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 31, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 31, 255, 255, 255, 255})
+
 }
 
 
@@ -12986,14 +12984,14 @@ test_int_pow2_137438953472_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_137438953472_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -137438953471
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 224, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 224, 0, 0, 0, 1})
+
 }
 
 
@@ -13024,14 +13022,14 @@ test_sint_pow2_137438953472_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_137438953472_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 137438953472
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 32, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 32, 0, 0, 0, 0})
+
 }
 
 
@@ -13062,14 +13060,14 @@ test_int_pow2_137438953472_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_137438953472_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -137438953472
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 224, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 224, 0, 0, 0, 0})
+
 }
 
 
@@ -13100,14 +13098,14 @@ test_sint_pow2_137438953472_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_137438953472_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 137438953473
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 32, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 32, 0, 0, 0, 1})
+
 }
 
 
@@ -13138,14 +13136,14 @@ test_int_pow2_137438953472_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_137438953472_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -137438953473
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 223, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 223, 255, 255, 255, 255})
+
 }
 
 
@@ -13176,14 +13174,14 @@ test_sint_pow2_137438953472_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_274877906944_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 274877906942
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 63, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 63, 255, 255, 255, 254})
+
 }
 
 
@@ -13214,14 +13212,14 @@ test_int_pow2_274877906944_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_274877906944_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -274877906942
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 192, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 192, 0, 0, 0, 2})
+
 }
 
 
@@ -13252,14 +13250,14 @@ test_sint_pow2_274877906944_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_274877906944_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 274877906943
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 63, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 63, 255, 255, 255, 255})
+
 }
 
 
@@ -13290,14 +13288,14 @@ test_int_pow2_274877906944_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_274877906944_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -274877906943
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 192, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 192, 0, 0, 0, 1})
+
 }
 
 
@@ -13328,14 +13326,14 @@ test_sint_pow2_274877906944_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_274877906944_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 274877906944
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 64, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 64, 0, 0, 0, 0})
+
 }
 
 
@@ -13366,14 +13364,14 @@ test_int_pow2_274877906944_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_274877906944_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -274877906944
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 192, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 192, 0, 0, 0, 0})
+
 }
 
 
@@ -13404,14 +13402,14 @@ test_sint_pow2_274877906944_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_274877906944_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 274877906945
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 64, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 64, 0, 0, 0, 1})
+
 }
 
 
@@ -13442,14 +13440,14 @@ test_int_pow2_274877906944_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_274877906944_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -274877906945
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 191, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 191, 255, 255, 255, 255})
+
 }
 
 
@@ -13480,14 +13478,14 @@ test_sint_pow2_274877906944_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_549755813888_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 549755813886
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 127, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 127, 255, 255, 255, 254})
+
 }
 
 
@@ -13518,14 +13516,14 @@ test_int_pow2_549755813888_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_549755813888_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -549755813886
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 128, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 128, 0, 0, 0, 2})
+
 }
 
 
@@ -13556,14 +13554,14 @@ test_sint_pow2_549755813888_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_549755813888_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 549755813887
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 127, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 127, 255, 255, 255, 255})
+
 }
 
 
@@ -13594,14 +13592,14 @@ test_int_pow2_549755813888_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_549755813888_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -549755813887
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 128, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 128, 0, 0, 0, 1})
+
 }
 
 
@@ -13632,14 +13630,14 @@ test_sint_pow2_549755813888_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_549755813888_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 549755813888
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 128, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 128, 0, 0, 0, 0})
+
 }
 
 
@@ -13670,14 +13668,14 @@ test_int_pow2_549755813888_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_549755813888_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -549755813888
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 128, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 128, 0, 0, 0, 0})
+
 }
 
 
@@ -13708,14 +13706,14 @@ test_sint_pow2_549755813888_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_549755813888_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 549755813889
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 128, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 128, 0, 0, 0, 1})
+
 }
 
 
@@ -13746,14 +13744,14 @@ test_int_pow2_549755813888_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_549755813888_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -549755813889
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 127, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 127, 255, 255, 255, 255})
+
 }
 
 
@@ -13784,14 +13782,14 @@ test_sint_pow2_549755813888_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1099511627776_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1099511627774
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -13822,14 +13820,14 @@ test_int_pow2_1099511627776_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1099511627776_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1099511627774
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -13860,14 +13858,14 @@ test_sint_pow2_1099511627776_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1099511627776_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1099511627775
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 0, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 0, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -13898,14 +13896,14 @@ test_int_pow2_1099511627776_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1099511627776_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1099511627775
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -13936,14 +13934,14 @@ test_sint_pow2_1099511627776_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1099511627776_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1099511627776
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 1, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 1, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -13974,14 +13972,14 @@ test_int_pow2_1099511627776_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1099511627776_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1099511627776
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 255, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 255, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -14012,14 +14010,14 @@ test_sint_pow2_1099511627776_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1099511627776_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1099511627777
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 1, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 1, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -14050,14 +14048,14 @@ test_int_pow2_1099511627776_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1099511627776_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1099511627777
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 254, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 254, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -14088,14 +14086,14 @@ test_sint_pow2_1099511627776_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2199023255552_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2199023255550
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 1, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 1, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -14126,14 +14124,14 @@ test_int_pow2_2199023255552_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2199023255552_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2199023255550
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 254, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 254, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -14164,14 +14162,14 @@ test_sint_pow2_2199023255552_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2199023255552_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2199023255551
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 1, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 1, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -14202,14 +14200,14 @@ test_int_pow2_2199023255552_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2199023255552_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2199023255551
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 254, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 254, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -14240,14 +14238,14 @@ test_sint_pow2_2199023255552_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2199023255552_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2199023255552
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 2, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 2, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -14278,14 +14276,14 @@ test_int_pow2_2199023255552_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2199023255552_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2199023255552
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 254, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 254, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -14316,14 +14314,14 @@ test_sint_pow2_2199023255552_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2199023255552_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2199023255553
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 2, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 2, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -14354,14 +14352,14 @@ test_int_pow2_2199023255552_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2199023255552_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2199023255553
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 253, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 253, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -14392,14 +14390,14 @@ test_sint_pow2_2199023255552_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4398046511104_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4398046511102
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 3, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 3, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -14430,14 +14428,14 @@ test_int_pow2_4398046511104_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4398046511104_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4398046511102
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 252, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 252, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -14468,14 +14466,14 @@ test_sint_pow2_4398046511104_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4398046511104_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4398046511103
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 3, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 3, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -14506,14 +14504,14 @@ test_int_pow2_4398046511104_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4398046511104_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4398046511103
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 252, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 252, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -14544,14 +14542,14 @@ test_sint_pow2_4398046511104_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4398046511104_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4398046511104
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 4, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 4, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -14582,14 +14580,14 @@ test_int_pow2_4398046511104_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4398046511104_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4398046511104
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 252, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 252, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -14620,14 +14618,14 @@ test_sint_pow2_4398046511104_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4398046511104_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4398046511105
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 4, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 4, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -14658,14 +14656,14 @@ test_int_pow2_4398046511104_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4398046511104_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4398046511105
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 251, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 251, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -14696,14 +14694,14 @@ test_sint_pow2_4398046511104_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8796093022208_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8796093022206
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 7, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 7, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -14734,14 +14732,14 @@ test_int_pow2_8796093022208_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8796093022208_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8796093022206
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 248, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 248, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -14772,14 +14770,14 @@ test_sint_pow2_8796093022208_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8796093022208_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8796093022207
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 7, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 7, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -14810,14 +14808,14 @@ test_int_pow2_8796093022208_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8796093022208_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8796093022207
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 248, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 248, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -14848,14 +14846,14 @@ test_sint_pow2_8796093022208_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8796093022208_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8796093022208
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 8, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 8, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -14886,14 +14884,14 @@ test_int_pow2_8796093022208_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8796093022208_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8796093022208
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 248, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 248, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -14924,14 +14922,14 @@ test_sint_pow2_8796093022208_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_8796093022208_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 8796093022209
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 8, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 8, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -14962,14 +14960,14 @@ test_int_pow2_8796093022208_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_8796093022208_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -8796093022209
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 247, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 247, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -15000,14 +14998,14 @@ test_sint_pow2_8796093022208_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17592186044416_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 17592186044414
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 15, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 15, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -15038,14 +15036,14 @@ test_int_pow2_17592186044416_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17592186044416_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -17592186044414
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 240, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 240, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -15076,14 +15074,14 @@ test_sint_pow2_17592186044416_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17592186044416_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 17592186044415
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 15, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 15, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -15114,14 +15112,14 @@ test_int_pow2_17592186044416_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17592186044416_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -17592186044415
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 240, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 240, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -15152,14 +15150,14 @@ test_sint_pow2_17592186044416_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17592186044416_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 17592186044416
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 16, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 16, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -15190,14 +15188,14 @@ test_int_pow2_17592186044416_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17592186044416_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -17592186044416
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 240, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 240, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -15228,14 +15226,14 @@ test_sint_pow2_17592186044416_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_17592186044416_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 17592186044417
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 16, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 16, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -15266,14 +15264,14 @@ test_int_pow2_17592186044416_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_17592186044416_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -17592186044417
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 239, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 239, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -15304,14 +15302,14 @@ test_sint_pow2_17592186044416_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_35184372088832_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 35184372088830
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 31, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 31, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -15342,14 +15340,14 @@ test_int_pow2_35184372088832_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_35184372088832_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -35184372088830
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 224, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 224, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -15380,14 +15378,14 @@ test_sint_pow2_35184372088832_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_35184372088832_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 35184372088831
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 31, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 31, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -15418,14 +15416,14 @@ test_int_pow2_35184372088832_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_35184372088832_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -35184372088831
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 224, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 224, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -15456,14 +15454,14 @@ test_sint_pow2_35184372088832_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_35184372088832_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 35184372088832
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 32, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 32, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -15494,14 +15492,14 @@ test_int_pow2_35184372088832_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_35184372088832_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -35184372088832
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 224, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 224, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -15532,14 +15530,14 @@ test_sint_pow2_35184372088832_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_35184372088832_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 35184372088833
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 32, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 32, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -15570,14 +15568,14 @@ test_int_pow2_35184372088832_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_35184372088832_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -35184372088833
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 223, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 223, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -15608,14 +15606,14 @@ test_sint_pow2_35184372088832_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_70368744177664_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 70368744177662
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 63, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 63, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -15646,14 +15644,14 @@ test_int_pow2_70368744177664_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_70368744177664_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -70368744177662
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 192, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 192, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -15684,14 +15682,14 @@ test_sint_pow2_70368744177664_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_70368744177664_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 70368744177663
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 63, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 63, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -15722,14 +15720,14 @@ test_int_pow2_70368744177664_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_70368744177664_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -70368744177663
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 192, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 192, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -15760,14 +15758,14 @@ test_sint_pow2_70368744177664_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_70368744177664_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 70368744177664
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 64, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 64, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -15798,14 +15796,14 @@ test_int_pow2_70368744177664_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_70368744177664_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -70368744177664
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 192, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 192, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -15836,14 +15834,14 @@ test_sint_pow2_70368744177664_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_70368744177664_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 70368744177665
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 64, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 64, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -15874,14 +15872,14 @@ test_int_pow2_70368744177664_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_70368744177664_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -70368744177665
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 191, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 191, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -15912,14 +15910,14 @@ test_sint_pow2_70368744177664_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_140737488355328_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 140737488355326
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 127, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 127, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -15950,14 +15948,14 @@ test_int_pow2_140737488355328_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_140737488355328_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -140737488355326
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 128, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 128, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -15988,14 +15986,14 @@ test_sint_pow2_140737488355328_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_140737488355328_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 140737488355327
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 127, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 127, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -16026,14 +16024,14 @@ test_int_pow2_140737488355328_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_140737488355328_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -140737488355327
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 128, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 128, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -16064,14 +16062,14 @@ test_sint_pow2_140737488355328_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_140737488355328_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 140737488355328
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 128, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 128, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -16102,14 +16100,14 @@ test_int_pow2_140737488355328_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_140737488355328_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -140737488355328
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 128, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 128, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -16140,14 +16138,14 @@ test_sint_pow2_140737488355328_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_140737488355328_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 140737488355329
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 128, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 128, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -16178,14 +16176,14 @@ test_int_pow2_140737488355328_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_140737488355328_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -140737488355329
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 127, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 127, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -16216,14 +16214,14 @@ test_sint_pow2_140737488355328_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_281474976710656_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 281474976710654
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -16254,14 +16252,14 @@ test_int_pow2_281474976710656_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_281474976710656_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -281474976710654
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -16292,14 +16290,14 @@ test_sint_pow2_281474976710656_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_281474976710656_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 281474976710655
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 0, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 0, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -16330,14 +16328,14 @@ test_int_pow2_281474976710656_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_281474976710656_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -281474976710655
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -16368,14 +16366,14 @@ test_sint_pow2_281474976710656_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_281474976710656_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 281474976710656
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 1, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 1, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -16406,14 +16404,14 @@ test_int_pow2_281474976710656_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_281474976710656_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -281474976710656
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 255, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 255, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -16444,14 +16442,14 @@ test_sint_pow2_281474976710656_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_281474976710656_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 281474976710657
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 1, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 1, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -16482,14 +16480,14 @@ test_int_pow2_281474976710656_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_281474976710656_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -281474976710657
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 254, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 254, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -16520,14 +16518,14 @@ test_sint_pow2_281474976710656_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_562949953421312_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 562949953421310
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 1, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 1, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -16558,14 +16556,14 @@ test_int_pow2_562949953421312_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_562949953421312_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -562949953421310
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 254, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 254, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -16596,14 +16594,14 @@ test_sint_pow2_562949953421312_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_562949953421312_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 562949953421311
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 1, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 1, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -16634,14 +16632,14 @@ test_int_pow2_562949953421312_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_562949953421312_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -562949953421311
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 254, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 254, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -16672,14 +16670,14 @@ test_sint_pow2_562949953421312_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_562949953421312_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 562949953421312
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 2, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 2, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -16710,14 +16708,14 @@ test_int_pow2_562949953421312_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_562949953421312_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -562949953421312
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 254, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 254, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -16748,14 +16746,14 @@ test_sint_pow2_562949953421312_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_562949953421312_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 562949953421313
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 2, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 2, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -16786,14 +16784,14 @@ test_int_pow2_562949953421312_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_562949953421312_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -562949953421313
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 253, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 253, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -16824,14 +16822,14 @@ test_sint_pow2_562949953421312_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1125899906842624_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1125899906842622
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 3, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 3, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -16862,14 +16860,14 @@ test_int_pow2_1125899906842624_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1125899906842624_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1125899906842622
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 252, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 252, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -16900,14 +16898,14 @@ test_sint_pow2_1125899906842624_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1125899906842624_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1125899906842623
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 3, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 3, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -16938,14 +16936,14 @@ test_int_pow2_1125899906842624_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1125899906842624_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1125899906842623
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 252, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 252, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -16976,14 +16974,14 @@ test_sint_pow2_1125899906842624_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1125899906842624_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1125899906842624
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 4, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 4, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -17014,14 +17012,14 @@ test_int_pow2_1125899906842624_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1125899906842624_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1125899906842624
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 252, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 252, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -17052,14 +17050,14 @@ test_sint_pow2_1125899906842624_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1125899906842624_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1125899906842625
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 4, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 4, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -17090,14 +17088,14 @@ test_int_pow2_1125899906842624_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1125899906842624_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1125899906842625
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 251, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 251, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -17128,14 +17126,14 @@ test_sint_pow2_1125899906842624_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2251799813685248_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2251799813685246
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 7, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 7, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -17166,14 +17164,14 @@ test_int_pow2_2251799813685248_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2251799813685248_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2251799813685246
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 248, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 248, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -17204,14 +17202,14 @@ test_sint_pow2_2251799813685248_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2251799813685248_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2251799813685247
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 7, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 7, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -17242,14 +17240,14 @@ test_int_pow2_2251799813685248_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2251799813685248_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2251799813685247
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 248, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 248, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -17280,14 +17278,14 @@ test_sint_pow2_2251799813685248_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2251799813685248_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2251799813685248
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 8, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 8, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -17318,14 +17316,14 @@ test_int_pow2_2251799813685248_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2251799813685248_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2251799813685248
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 248, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 248, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -17356,14 +17354,14 @@ test_sint_pow2_2251799813685248_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2251799813685248_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2251799813685249
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 8, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 8, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -17394,14 +17392,14 @@ test_int_pow2_2251799813685248_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2251799813685248_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2251799813685249
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 247, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 247, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -17432,14 +17430,14 @@ test_sint_pow2_2251799813685248_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4503599627370496_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4503599627370494
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 15, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 15, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -17470,14 +17468,14 @@ test_int_pow2_4503599627370496_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4503599627370496_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4503599627370494
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 240, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 240, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -17508,14 +17506,14 @@ test_sint_pow2_4503599627370496_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4503599627370496_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4503599627370495
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 15, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 15, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -17546,14 +17544,14 @@ test_int_pow2_4503599627370496_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4503599627370496_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4503599627370495
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 240, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 240, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -17584,14 +17582,14 @@ test_sint_pow2_4503599627370496_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4503599627370496_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4503599627370496
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 16, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 16, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -17622,14 +17620,14 @@ test_int_pow2_4503599627370496_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4503599627370496_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4503599627370496
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 240, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 240, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -17660,14 +17658,14 @@ test_sint_pow2_4503599627370496_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4503599627370496_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4503599627370497
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 16, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 16, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -17698,14 +17696,14 @@ test_int_pow2_4503599627370496_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4503599627370496_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4503599627370497
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 239, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 239, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -17736,14 +17734,14 @@ test_sint_pow2_4503599627370496_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_9007199254740992_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 9007199254740990
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 31, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 31, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -17774,14 +17772,14 @@ test_int_pow2_9007199254740992_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_9007199254740992_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -9007199254740990
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 224, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 224, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -17812,14 +17810,14 @@ test_sint_pow2_9007199254740992_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_9007199254740992_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 9007199254740991
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 31, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 31, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -17850,14 +17848,14 @@ test_int_pow2_9007199254740992_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_9007199254740992_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -9007199254740991
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 224, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 224, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -17888,14 +17886,14 @@ test_sint_pow2_9007199254740992_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_9007199254740992_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 9007199254740992
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 32, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 32, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -17926,14 +17924,14 @@ test_int_pow2_9007199254740992_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_9007199254740992_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -9007199254740992
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 224, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 224, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -17964,14 +17962,14 @@ test_sint_pow2_9007199254740992_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_9007199254740992_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 9007199254740993
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 32, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 32, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -18002,14 +18000,14 @@ test_int_pow2_9007199254740992_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_9007199254740992_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -9007199254740993
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 223, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 223, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -18040,14 +18038,14 @@ test_sint_pow2_9007199254740992_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_18014398509481984_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 18014398509481982
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 63, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 63, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -18078,14 +18076,14 @@ test_int_pow2_18014398509481984_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_18014398509481984_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -18014398509481982
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 192, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 192, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -18116,14 +18114,14 @@ test_sint_pow2_18014398509481984_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_18014398509481984_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 18014398509481983
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 63, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 63, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -18154,14 +18152,14 @@ test_int_pow2_18014398509481984_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_18014398509481984_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -18014398509481983
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 192, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 192, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -18192,14 +18190,14 @@ test_sint_pow2_18014398509481984_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_18014398509481984_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 18014398509481984
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 64, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 64, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -18230,14 +18228,14 @@ test_int_pow2_18014398509481984_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_18014398509481984_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -18014398509481984
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 192, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 192, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -18268,14 +18266,14 @@ test_sint_pow2_18014398509481984_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_18014398509481984_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 18014398509481985
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 64, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 64, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -18306,14 +18304,14 @@ test_int_pow2_18014398509481984_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_18014398509481984_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -18014398509481985
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 191, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 191, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -18344,14 +18342,14 @@ test_sint_pow2_18014398509481984_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_36028797018963968_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 36028797018963966
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 127, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 127, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -18382,14 +18380,14 @@ test_int_pow2_36028797018963968_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_36028797018963968_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -36028797018963966
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 128, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 128, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -18420,14 +18418,14 @@ test_sint_pow2_36028797018963968_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_36028797018963968_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 36028797018963967
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 127, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 127, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -18458,14 +18456,14 @@ test_int_pow2_36028797018963968_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_36028797018963968_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -36028797018963967
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 128, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 128, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -18496,14 +18494,14 @@ test_sint_pow2_36028797018963968_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_36028797018963968_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 36028797018963968
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 128, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 128, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -18534,14 +18532,14 @@ test_int_pow2_36028797018963968_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_36028797018963968_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -36028797018963968
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 128, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 128, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -18572,14 +18570,14 @@ test_sint_pow2_36028797018963968_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_36028797018963968_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 36028797018963969
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 128, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 128, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -18610,14 +18608,14 @@ test_int_pow2_36028797018963968_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_36028797018963968_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -36028797018963969
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 127, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 127, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -18648,14 +18646,14 @@ test_sint_pow2_36028797018963968_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_72057594037927936_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 72057594037927934
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 255, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 255, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -18686,14 +18684,14 @@ test_int_pow2_72057594037927936_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_72057594037927936_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -72057594037927934
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 0, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 0, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -18724,14 +18722,14 @@ test_sint_pow2_72057594037927936_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_72057594037927936_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 72057594037927935
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 0, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 0, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -18762,14 +18760,14 @@ test_int_pow2_72057594037927936_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_72057594037927936_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -72057594037927935
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -18800,14 +18798,14 @@ test_sint_pow2_72057594037927936_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_72057594037927936_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 72057594037927936
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 1, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 1, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -18838,14 +18836,14 @@ test_int_pow2_72057594037927936_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_72057594037927936_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -72057594037927936
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 255, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 255, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -18876,14 +18874,14 @@ test_sint_pow2_72057594037927936_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_72057594037927936_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 72057594037927937
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 1, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 1, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -18914,14 +18912,14 @@ test_int_pow2_72057594037927936_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_72057594037927936_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -72057594037927937
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 254, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 254, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -18952,14 +18950,14 @@ test_sint_pow2_72057594037927936_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_144115188075855872_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 144115188075855870
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 1, 255, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 1, 255, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -18990,14 +18988,14 @@ test_int_pow2_144115188075855872_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_144115188075855872_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -144115188075855870
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 254, 0, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 254, 0, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -19028,14 +19026,14 @@ test_sint_pow2_144115188075855872_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_144115188075855872_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 144115188075855871
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 1, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 1, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -19066,14 +19064,14 @@ test_int_pow2_144115188075855872_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_144115188075855872_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -144115188075855871
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 254, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 254, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -19104,14 +19102,14 @@ test_sint_pow2_144115188075855872_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_144115188075855872_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 144115188075855872
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 2, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 2, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -19142,14 +19140,14 @@ test_int_pow2_144115188075855872_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_144115188075855872_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -144115188075855872
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 254, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 254, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -19180,14 +19178,14 @@ test_sint_pow2_144115188075855872_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_144115188075855872_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 144115188075855873
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 2, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 2, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -19218,14 +19216,14 @@ test_int_pow2_144115188075855872_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_144115188075855872_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -144115188075855873
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 253, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 253, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -19256,14 +19254,14 @@ test_sint_pow2_144115188075855872_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_288230376151711744_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 288230376151711742
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 3, 255, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 3, 255, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -19294,14 +19292,14 @@ test_int_pow2_288230376151711744_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_288230376151711744_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -288230376151711742
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 252, 0, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 252, 0, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -19332,14 +19330,14 @@ test_sint_pow2_288230376151711744_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_288230376151711744_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 288230376151711743
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 3, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 3, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -19370,14 +19368,14 @@ test_int_pow2_288230376151711744_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_288230376151711744_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -288230376151711743
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 252, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 252, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -19408,14 +19406,14 @@ test_sint_pow2_288230376151711744_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_288230376151711744_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 288230376151711744
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 4, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 4, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -19446,14 +19444,14 @@ test_int_pow2_288230376151711744_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_288230376151711744_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -288230376151711744
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 252, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 252, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -19484,14 +19482,14 @@ test_sint_pow2_288230376151711744_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_288230376151711744_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 288230376151711745
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 4, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 4, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -19522,14 +19520,14 @@ test_int_pow2_288230376151711744_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_288230376151711744_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -288230376151711745
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 251, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 251, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -19560,14 +19558,14 @@ test_sint_pow2_288230376151711744_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_576460752303423488_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 576460752303423486
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 7, 255, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 7, 255, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -19598,14 +19596,14 @@ test_int_pow2_576460752303423488_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_576460752303423488_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -576460752303423486
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 248, 0, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 248, 0, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -19636,14 +19634,14 @@ test_sint_pow2_576460752303423488_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_576460752303423488_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 576460752303423487
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 7, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 7, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -19674,14 +19672,14 @@ test_int_pow2_576460752303423488_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_576460752303423488_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -576460752303423487
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 248, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 248, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -19712,14 +19710,14 @@ test_sint_pow2_576460752303423488_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_576460752303423488_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 576460752303423488
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 8, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 8, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -19750,14 +19748,14 @@ test_int_pow2_576460752303423488_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_576460752303423488_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -576460752303423488
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 248, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 248, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -19788,14 +19786,14 @@ test_sint_pow2_576460752303423488_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_576460752303423488_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 576460752303423489
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 8, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 8, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -19826,14 +19824,14 @@ test_int_pow2_576460752303423488_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_576460752303423488_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -576460752303423489
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 247, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 247, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -19864,14 +19862,14 @@ test_sint_pow2_576460752303423488_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1152921504606846976_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1152921504606846974
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 15, 255, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 15, 255, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -19902,14 +19900,14 @@ test_int_pow2_1152921504606846976_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1152921504606846976_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1152921504606846974
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 240, 0, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 240, 0, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -19940,14 +19938,14 @@ test_sint_pow2_1152921504606846976_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1152921504606846976_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1152921504606846975
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 15, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 15, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -19978,14 +19976,14 @@ test_int_pow2_1152921504606846976_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1152921504606846976_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1152921504606846975
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 240, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 240, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -20016,14 +20014,14 @@ test_sint_pow2_1152921504606846976_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1152921504606846976_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1152921504606846976
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 16, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 16, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -20054,14 +20052,14 @@ test_int_pow2_1152921504606846976_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1152921504606846976_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1152921504606846976
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 240, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 240, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -20092,14 +20090,14 @@ test_sint_pow2_1152921504606846976_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_1152921504606846976_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1152921504606846977
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 16, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 16, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -20130,14 +20128,14 @@ test_int_pow2_1152921504606846976_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_1152921504606846976_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1152921504606846977
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 239, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 239, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -20168,14 +20166,14 @@ test_sint_pow2_1152921504606846976_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2305843009213693952_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2305843009213693950
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 31, 255, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 31, 255, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -20206,14 +20204,14 @@ test_int_pow2_2305843009213693952_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2305843009213693952_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2305843009213693950
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 224, 0, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 224, 0, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -20244,14 +20242,14 @@ test_sint_pow2_2305843009213693952_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2305843009213693952_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2305843009213693951
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 31, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 31, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -20282,14 +20280,14 @@ test_int_pow2_2305843009213693952_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2305843009213693952_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2305843009213693951
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 224, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 224, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -20320,14 +20318,14 @@ test_sint_pow2_2305843009213693952_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2305843009213693952_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2305843009213693952
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 32, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 32, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -20358,14 +20356,14 @@ test_int_pow2_2305843009213693952_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2305843009213693952_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2305843009213693952
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 224, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 224, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -20396,14 +20394,14 @@ test_sint_pow2_2305843009213693952_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_2305843009213693952_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2305843009213693953
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 32, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 32, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -20434,14 +20432,14 @@ test_int_pow2_2305843009213693952_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_2305843009213693952_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2305843009213693953
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 223, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 223, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -20472,14 +20470,14 @@ test_sint_pow2_2305843009213693952_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4611686018427387904_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4611686018427387902
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 63, 255, 255, 255, 255, 255, 255, 254})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 63, 255, 255, 255, 255, 255, 255, 254})
+
 }
 
 
@@ -20510,14 +20508,14 @@ test_int_pow2_4611686018427387904_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4611686018427387904_m2_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4611686018427387902
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 2})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 2})
+
 }
 
 
@@ -20548,14 +20546,14 @@ test_sint_pow2_4611686018427387904_m2_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4611686018427387904_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4611686018427387903
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 63, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 63, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -20586,14 +20584,14 @@ test_int_pow2_4611686018427387904_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4611686018427387904_m1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4611686018427387903
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -20624,14 +20622,14 @@ test_sint_pow2_4611686018427387904_m1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4611686018427387904_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4611686018427387904
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 64, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 64, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -20662,14 +20660,14 @@ test_int_pow2_4611686018427387904_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4611686018427387904_0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4611686018427387904
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 192, 0, 0, 0, 0, 0, 0, 0})
+
 }
 
 
@@ -20700,14 +20698,14 @@ test_sint_pow2_4611686018427387904_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_int_pow2_4611686018427387904_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 4611686018427387905
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{207, 64, 0, 0, 0, 0, 0, 0, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{207, 64, 0, 0, 0, 0, 0, 0, 1})
+
 }
 
 
@@ -20738,14 +20736,14 @@ test_int_pow2_4611686018427387904_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_sint_pow2_4611686018427387904_1_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -4611686018427387905
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{211, 191, 255, 255, 255, 255, 255, 255, 255})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{211, 191, 255, 255, 255, 255, 255, 255, 255})
+
 }
 
 
@@ -20776,14 +20774,14 @@ test_sint_pow2_4611686018427387904_1_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1.0
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 63, 128, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 63, 128, 0, 0})
+
 }
 
 
@@ -20814,14 +20812,14 @@ test_float_exp0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp0_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1.0
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 191, 128, 0, 0})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 191, 128, 0, 0})
+
 }
 
 
@@ -20852,14 +20850,14 @@ test_float_nexp0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp10_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 22026.465794806703
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 70, 172, 20, 238})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 70, 172, 20, 238})
+
 }
 
 
@@ -20890,14 +20888,14 @@ test_float_exp10_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp10_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -22026.465794806703
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 198, 172, 20, 238})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 198, 172, 20, 238})
+
 }
 
 
@@ -20928,14 +20926,14 @@ test_float_nexp10_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp20_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 485165195.40978974
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 77, 231, 88, 68})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 77, 231, 88, 68})
+
 }
 
 
@@ -20966,14 +20964,14 @@ test_float_exp20_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp20_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -485165195.40978974
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 205, 231, 88, 68})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 205, 231, 88, 68})
+
 }
 
 
@@ -21004,14 +21002,14 @@ test_float_nexp20_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp30_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 10686474581524.445
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 85, 27, 130, 56})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 85, 27, 130, 56})
+
 }
 
 
@@ -21042,14 +21040,14 @@ test_float_exp30_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp30_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -10686474581524.445
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 213, 27, 130, 56})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 213, 27, 130, 56})
+
 }
 
 
@@ -21080,14 +21078,14 @@ test_float_nexp30_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp40_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2.353852668370195e+17
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 92, 81, 16, 106})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 92, 81, 16, 106})
+
 }
 
 
@@ -21118,14 +21116,14 @@ test_float_exp40_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp40_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2.353852668370195e+17
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 220, 81, 16, 106})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 220, 81, 16, 106})
+
 }
 
 
@@ -21156,14 +21154,14 @@ test_float_nexp40_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp50_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 5.184705528587058e+21
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 99, 140, 136, 31})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 99, 140, 136, 31})
+
 }
 
 
@@ -21194,14 +21192,14 @@ test_float_exp50_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp50_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -5.184705528587058e+21
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 227, 140, 136, 31})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 227, 140, 136, 31})
+
 }
 
 
@@ -21232,14 +21230,14 @@ test_float_nexp50_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp60_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1.1420073898156806e+26
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 106, 188, 237, 229})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 106, 188, 237, 229})
+
 }
 
 
@@ -21270,14 +21268,14 @@ test_float_exp60_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp60_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1.1420073898156806e+26
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 234, 188, 237, 229})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 234, 188, 237, 229})
+
 }
 
 
@@ -21308,14 +21306,14 @@ test_float_nexp60_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp70_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2.5154386709191576e+30
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 113, 253, 254, 145})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 113, 253, 254, 145})
+
 }
 
 
@@ -21346,14 +21344,14 @@ test_float_exp70_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp70_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2.5154386709191576e+30
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 241, 253, 254, 145})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 241, 253, 254, 145})
+
 }
 
 
@@ -21384,14 +21382,14 @@ test_float_nexp70_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp80_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 5.540622384393487e+34
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 121, 42, 187, 206})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 121, 42, 187, 206})
+
 }
 
 
@@ -21422,14 +21420,14 @@ test_float_exp80_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp80_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -5.540622384393487e+34
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{202, 249, 42, 187, 206})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{202, 249, 42, 187, 206})
+
 }
 
 
@@ -21460,14 +21458,14 @@ test_float_nexp80_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp90_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1.220403294317835e+39
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 72, 12, 177, 8, 255, 190, 193, 61})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 72, 12, 177, 8, 255, 190, 193, 61})
+
 }
 
 
@@ -21498,14 +21496,14 @@ test_float_exp90_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp90_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1.220403294317835e+39
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 200, 12, 177, 8, 255, 190, 193, 61})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 200, 12, 177, 8, 255, 190, 193, 61})
+
 }
 
 
@@ -21536,14 +21534,14 @@ test_float_nexp90_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp100_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2.6881171418161212e+43
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 72, 243, 73, 74, 155, 23, 27, 216})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 72, 243, 73, 74, 155, 23, 27, 216})
+
 }
 
 
@@ -21574,14 +21572,14 @@ test_float_exp100_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp100_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2.6881171418161212e+43
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 200, 243, 73, 74, 155, 23, 27, 216})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 200, 243, 73, 74, 155, 23, 27, 216})
+
 }
 
 
@@ -21612,14 +21610,14 @@ test_float_nexp100_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp110_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 5.920972027664636e+47
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 73, 217, 237, 163, 163, 30, 88, 84})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 73, 217, 237, 163, 163, 30, 88, 84})
+
 }
 
 
@@ -21650,14 +21648,14 @@ test_float_exp110_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp110_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -5.920972027664636e+47
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 201, 217, 237, 163, 163, 30, 88, 84})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 201, 217, 237, 163, 163, 30, 88, 84})
+
 }
 
 
@@ -21688,14 +21686,14 @@ test_float_nexp110_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp120_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1.304180878393624e+52
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 74, 193, 109, 200, 169, 239, 102, 236})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 74, 193, 109, 200, 169, 239, 102, 236})
+
 }
 
 
@@ -21726,14 +21724,14 @@ test_float_exp120_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp120_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1.304180878393624e+52
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 202, 193, 109, 200, 169, 239, 102, 236})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 202, 193, 109, 200, 169, 239, 102, 236})
+
 }
 
 
@@ -21764,14 +21762,14 @@ test_float_nexp120_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp130_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 2.872649550817812e+56
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 75, 167, 110, 95, 68, 206, 156, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 75, 167, 110, 95, 68, 206, 156, 1})
+
 }
 
 
@@ -21802,14 +21800,14 @@ test_float_exp130_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp130_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -2.872649550817812e+56
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 203, 167, 110, 95, 68, 206, 156, 1})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 203, 167, 110, 95, 68, 206, 156, 1})
+
 }
 
 
@@ -21840,14 +21838,14 @@ test_float_nexp130_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp140_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 6.327431707155538e+60
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 76, 143, 128, 36, 235, 99, 58, 219})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 76, 143, 128, 36, 235, 99, 58, 219})
+
 }
 
 
@@ -21878,14 +21876,14 @@ test_float_exp140_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp140_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -6.327431707155538e+60
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 204, 143, 128, 36, 235, 99, 58, 219})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 204, 143, 128, 36, 235, 99, 58, 219})
+
 }
 
 
@@ -21916,14 +21914,14 @@ test_float_nexp140_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp150_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1.3937095806663685e+65
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 77, 117, 44, 172, 41, 130, 37, 99})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 77, 117, 44, 172, 41, 130, 37, 99})
+
 }
 
 
@@ -21954,14 +21952,14 @@ test_float_exp150_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp150_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1.3937095806663685e+65
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 205, 117, 44, 172, 41, 130, 37, 99})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 205, 117, 44, 172, 41, 130, 37, 99})
+
 }
 
 
@@ -21992,14 +21990,14 @@ test_float_nexp150_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp160_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 3.0698496406442164e+69
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 78, 92, 119, 125, 198, 92, 148, 68})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 78, 92, 119, 125, 198, 92, 148, 68})
+
 }
 
 
@@ -22030,14 +22028,14 @@ test_float_exp160_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp160_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -3.0698496406442164e+69
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 206, 92, 119, 125, 198, 92, 148, 68})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 206, 92, 119, 125, 198, 92, 148, 68})
+
 }
 
 
@@ -22068,14 +22066,14 @@ test_float_nexp160_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp170_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 6.761793810484949e+73
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 79, 67, 34, 156, 92, 13, 53, 95})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 79, 67, 34, 156, 92, 13, 53, 95})
+
 }
 
 
@@ -22106,14 +22104,14 @@ test_float_exp170_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp170_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -6.761793810484949e+73
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 207, 67, 34, 156, 92, 13, 53, 95})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 207, 67, 34, 156, 92, 13, 53, 95})
+
 }
 
 
@@ -22144,14 +22142,14 @@ test_float_nexp170_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp180_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 1.4893842007818241e+78
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 80, 41, 185, 163, 43, 29, 136, 64})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 80, 41, 185, 163, 43, 29, 136, 64})
+
 }
 
 
@@ -22182,14 +22180,14 @@ test_float_exp180_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp180_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -1.4893842007818241e+78
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 208, 41, 185, 163, 43, 29, 136, 64})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 208, 41, 185, 163, 43, 29, 136, 64})
+
 }
 
 
@@ -22220,14 +22218,14 @@ test_float_nexp180_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_exp190_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := 3.280587015384637e+82
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 81, 17, 74, 212, 24, 211, 185, 26})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 81, 17, 74, 212, 24, 211, 185, 26})
+
 }
 
 
@@ -22258,14 +22256,14 @@ test_float_exp190_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_float_nexp190_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := -3.280587015384637e+82
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{203, 209, 17, 74, 212, 24, 211, 185, 26})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{203, 209, 17, 74, 212, 24, 211, 185, 26})
+
 }
 
 
@@ -22293,3 +22291,4 @@ test_float_nexp190_de_into :: proc(t: ^testing.T) {
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-3.280587015384637e+82))
 }
+

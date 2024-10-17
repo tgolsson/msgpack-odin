@@ -61,14 +61,14 @@ def write_test_generic(
             f"""\
         @(test)
         test_{name}_ser :: proc(t: ^testing.T) {{
-            store := make([dynamic]u8, 0, 10)
-            p: m.Packer = {{ store, {{ {flags} }} }}
             {extras}
             value := {odin_value}
-            m.write(&p, value)
+            data, err := m.pack_into_bytes(value, {{ {flags} }})
+            defer delete(data)
+
             {"delete(value)" if 'map' in str(odin_value) else ""}
-            slice_eq(t, p.buf[:], []u8{{{expectation}}})
-            delete(p.buf)
+            slice_eq(t, data[:], []u8{{{expectation}}})
+
         }}\n
 
         @(test)

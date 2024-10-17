@@ -4,16 +4,17 @@ import "core:fmt"
 import m "../"
 
 import "core:time"
+
 @(test)
 test_timestamp_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := time.unix(171798691, 69)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{215, 255, 0, 0, 1, 20, 10, 61, 112, 163})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{215, 255, 0, 0, 1, 20, 10, 61, 112, 163})
+
 }
 
 
@@ -27,6 +28,18 @@ test_timestamp_de :: proc(t: ^testing.T) {
     expected: m.Object = time.unix(171798691, 69)
     testing.expectf(t, m.object_equals(&res, &expected), "mismatch: %v !=  %v", res, expected)
     m.object_delete(res)
+}
+
+@(test)
+test_timestamp_ptr_ser :: proc(t: ^testing.T) {
+
+    value := time.unix(171798691, 69)
+    data, err := m.pack_into_bytes(&value, {  })
+    defer delete(data)
+
+
+    slice_eq(t, data[:], []u8{215, 255, 0, 0, 1, 20, 10, 61, 112, 163})
+
 }
 
 
@@ -44,14 +57,14 @@ test_timestamp_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_timestamp_no_ns_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
 
     value := time.unix(171798691, 0)
-    m.write(&p, value)
+    data, err := m.pack_into_bytes(value, {  })
+    defer delete(data)
 
-    slice_eq(t, p.buf[:], []u8{214, 255, 10, 61, 112, 163})
-    delete(p.buf)
+
+    slice_eq(t, data[:], []u8{214, 255, 10, 61, 112, 163})
+
 }
 
 
@@ -79,4 +92,3 @@ test_timestamp_no_ns_de_into :: proc(t: ^testing.T) {
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (time.Time)(time.unix(171798691, 0)))
 }
-

@@ -3,18 +3,30 @@ package tests
 import "core:testing"
 import "core:fmt"
 import m "../"
+import "core:strings"
+
+make_packer :: proc() -> (p: m.Packer, b: ^strings.Builder) {
+	b = new(strings.Builder)
+	strings.builder_init(b)
+	w := strings.to_writer(b)
+	p = m.Packer {
+		w,
+		{},
+		context.temp_allocator,
+	}
+
+	return
+}
 
 @(test)
 test_array_tag :: proc(t: ^testing.T) {
     for length in 0..<20 {
-            
-        packer := m.Packer{
-            make([dynamic]u8, 0, 10),
-            {}
-        }
-        defer delete(packer.buf)
 
-     
+        packer, buf := make_packer()
+		defer strings.builder_destroy(buf)
+        defer free(buf)
+
+
         expected_length: int
         if length < (1 << 4) {
             expected_length = 1
@@ -25,21 +37,20 @@ test_array_tag :: proc(t: ^testing.T) {
         }
 
         m.encode_tag(&packer, m.Array{length})
-        testing.expect_value(t, len(packer.buf), expected_length)
-        
-        decoded := m.decode_tag(&m.Unpacker{raw_data(packer.buf[:]), {}})
+        testing.expect_value(t, len(buf.buf), expected_length)
+
+        decoded := m.decode_tag(&m.Unpacker{raw_data(buf.buf[:]), {}})
         testing.expect_value(t, decoded, m.Array{length})
     }
 }
-    
+
 @(test)
 test_map_tag :: proc(t: ^testing.T) {
     for length in 0..<20 {
-        packer := m.Packer{
-            make([dynamic]u8, 0, 10),
-            {}
-        }
-        defer delete(packer.buf)   
+
+        packer, buf := make_packer()
+		defer strings.builder_destroy(buf)
+        defer free(buf)
 
         expected_length: int
         if length < (1 << 4) {
@@ -52,9 +63,8 @@ test_map_tag :: proc(t: ^testing.T) {
         }
 
         m.encode_tag(&packer, m.Map{length})
-        testing.expect_value(t, len(packer.buf), expected_length)        
-        decoded := m.decode_tag(&m.Unpacker{raw_data(packer.buf[:]), {}})
+        testing.expect_value(t, len(buf.buf), expected_length)
+        decoded := m.decode_tag(&m.Unpacker{raw_data(buf.buf[:]), {}})
         testing.expect_value(t, decoded, m.Map{length})
     }
 }
-

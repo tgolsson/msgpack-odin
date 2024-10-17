@@ -3,19 +3,19 @@ package tests
 import "core:testing"
 import "core:fmt"
 import m "../"
-
+import "core:strings"
 // XXXX: Not generated tests.
 
 @(test)
 test_nil_ser :: proc(t: ^testing.T) {
-    store := make([dynamic]u8, 0, 10)
-    p: m.Packer = { store, {  } }
+    p, buf := make_packer()
+	defer strings.builder_destroy(buf)
+    defer free(buf)
 
     value := rawptr(nil)
     m.write(&p, value)
 
-    slice_eq(t, p.buf[:], []u8{192})
-    delete(p.buf)
+    slice_eq(t, buf.buf[:], []u8{192})
 }
 
 
