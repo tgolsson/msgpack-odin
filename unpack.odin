@@ -183,7 +183,7 @@ read_fixext :: proc(u: ^Unpacker, type: i8, size: int) -> (Object, Error) {
 	if type == -1 {
 		return read_timestamp_ext1(bytes), nil
 	} else {
-		return nil, Unexpected { "a known ext", "unknown ext" }
+		return nil, Unexpected{"a known ext", "unknown ext"}
 	}
 }
 
@@ -381,7 +381,14 @@ read_into :: proc(u: ^Unpacker, t: any) -> Error {
 	return read_into_value(u, data)
 }
 
-read_map_into :: proc(u: ^Unpacker, v: any, info: runtime.Type_Info_Map, length: u64) -> (err: Error) {
+read_map_into :: proc(
+	u: ^Unpacker,
+	v: any,
+	info: runtime.Type_Info_Map,
+	length: u64,
+) -> (
+	err: Error,
+) {
 	raw_map := (^runtime.Raw_Map)(v.data)
 
 	if raw_map.allocator.procedure == nil {
@@ -397,22 +404,35 @@ read_map_into :: proc(u: ^Unpacker, v: any, info: runtime.Type_Info_Map, length:
 	key_type := info.key.id
 	value_type := info.value.id
 
-	key_temp := mem.alloc_bytes_non_zeroed(info.key.size, info.key.align, context.temp_allocator) or_return
+	key_temp := mem.alloc_bytes_non_zeroed(
+		info.key.size,
+		info.key.align,
+		context.temp_allocator,
+	) or_return
 	defer mem.free(raw_data(key_temp), context.temp_allocator)
-	key_value := any{ raw_data(key_temp), key_type }
+	key_value := any{raw_data(key_temp), key_type}
 
 
-	value_temp := mem.alloc_bytes_non_zeroed(info.value.size, info.value.align, context.temp_allocator) or_return
-	defer mem.free(raw_data(value_temp)	, context.temp_allocator)
-	value_value := any{ raw_data(value_temp), value_type }
+	value_temp := mem.alloc_bytes_non_zeroed(
+		info.value.size,
+		info.value.align,
+		context.temp_allocator,
+	) or_return
+	defer mem.free(raw_data(value_temp), context.temp_allocator)
+	value_value := any{raw_data(value_temp), value_type}
 
-	for i in 0..<length {
+	for i in 0 ..< length {
 		mem.zero_slice(key_temp[:])
 		mem.zero_slice(value_temp[:])
 		read_into_value(u, key_value) or_return
 		read_into_value(u, value_value) or_return
 
-		set_ptr := runtime.__dynamic_map_set_without_hash(raw_map, info.map_info, key_value.data, value_value.data)
+		set_ptr := runtime.__dynamic_map_set_without_hash(
+			raw_map,
+			info.map_info,
+			key_value.data,
+			value_value.data,
+		)
 	}
 
 
@@ -427,7 +447,7 @@ read_struct_into :: proc(
 	info: runtime.Type_Info_Struct,
 	length: u64,
 ) -> Error {
-	for i in 0..<length {
+	for i in 0 ..< length {
 		key, err := read_key(u)
 		if err != nil {
 			return err
@@ -438,20 +458,30 @@ read_struct_into :: proc(
 		field_offset := field_info.offset
 		field_type := field_info.type
 		field_data := rawptr(uintptr(v.data) + field_offset)
-		field_any := any{data = field_data, id = field_type.id}
+		field_any := any {
+			data = field_data,
+			id   = field_type.id,
+		}
 		field_type_info := type_info_of(field_type.id)
 		err = read_into_value(u, field_any)
 		if err != nil {
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
 import "core:io"
 
-read_bytes_into :: proc(u: ^Unpacker, v: any, info: ^runtime.Type_Info, length: int) -> (err: Error) {
+read_bytes_into :: proc(
+	u: ^Unpacker,
+	v: any,
+	info: ^runtime.Type_Info,
+	length: int,
+) -> (
+	err: Error,
+) {
 	// bytes are guaranteed to be homogenous, so no need to delegate per-item etc.
 	#partial switch info in info.variant {
 	case runtime.Type_Info_Array:
@@ -469,7 +499,7 @@ read_bytes_into :: proc(u: ^Unpacker, v: any, info: ^runtime.Type_Info, length: 
 		target_length := raw_slice.len / info.elem_size
 
 		bytes := u.data[u.offset:u.offset + u64(length)]
-		raw_slice^   = transmute(mem.Raw_Slice)bytes
+		raw_slice^ = transmute(mem.Raw_Slice)bytes
 		u.offset += u64(length)
 
 	case runtime.Type_Info_Dynamic_Array:
@@ -477,12 +507,12 @@ read_bytes_into :: proc(u: ^Unpacker, v: any, info: ^runtime.Type_Info, length: 
 		target_length := raw_dynamic_array.len / info.elem_size
 
 		buf := strings.builder_make(0, length) or_return
-		defer if err != nil { strings.builder_destroy(&buf) }
-		copy(buf.buf[:], u.data[u.offset:u.offset+u64(length)])
+		defer if err != nil {strings.builder_destroy(&buf)}
+		copy(buf.buf[:], u.data[u.offset:u.offset + u64(length)])
 		u.offset += u64(length)
 
 		raw_dynamic_array.data = raw_data(buf.buf[:])
-		raw_dynamic_array.len = length	
+		raw_dynamic_array.len = length
 		raw_dynamic_array.cap = length
 		raw_dynamic_array.allocator = context.allocator
 
@@ -495,7 +525,14 @@ read_bytes_into :: proc(u: ^Unpacker, v: any, info: ^runtime.Type_Info, length: 
 	return err
 }
 
-read_array_into :: proc(u: ^Unpacker, v: any, info: ^runtime.Type_Info, length: int) -> (err: Error) {
+read_array_into :: proc(
+	u: ^Unpacker,
+	v: any,
+	info: ^runtime.Type_Info,
+	length: int,
+) -> (
+	err: Error,
+) {
 	#partial switch info in info.variant {
 	case runtime.Type_Info_Array:
 		target_length := info.count
@@ -503,7 +540,7 @@ read_array_into :: proc(u: ^Unpacker, v: any, info: ^runtime.Type_Info, length: 
 			return Slice_Length_Mismatch{target_length, length}
 		}
 
-		for i in 0..<length {
+		for i in 0 ..< length {
 			elem := any{rawptr(uintptr(v.data) + uintptr(i * info.elem_size)), info.elem.id}
 			err = read_into_value(u, elem)
 			if err != nil {
@@ -519,8 +556,11 @@ read_array_into :: proc(u: ^Unpacker, v: any, info: ^runtime.Type_Info, length: 
 			return Slice_Length_Mismatch{target_length, length}
 		}
 
-		for i in 0..<length {
-			elem := any{rawptr(uintptr(raw_slice.data) + uintptr(i * info.elem_size)), info.elem.id}
+		for i in 0 ..< length {
+			elem := any {
+				rawptr(uintptr(raw_slice.data) + uintptr(i * info.elem_size)),
+				info.elem.id,
+			}
 			read_into_value(u, elem) or_return
 
 		}
@@ -537,8 +577,11 @@ read_array_into :: proc(u: ^Unpacker, v: any, info: ^runtime.Type_Info, length: 
 			raw_dynamic_array.cap = length
 		}
 
-		for i in 0..<length {
-			elem := any{rawptr(uintptr(raw_dynamic_array.data) + uintptr(i * info.elem_size)), info.elem.id}
+		for i in 0 ..< length {
+			elem := any {
+				rawptr(uintptr(raw_dynamic_array.data) + uintptr(i * info.elem_size)),
+				info.elem.id,
+			}
 			read_into_value(u, elem) or_return
 
 		}
@@ -603,16 +646,28 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Error) {
 		case runtime.Type_Info_Map:
 			read_map_into(u, v, info, length) or_return
 		case runtime.Type_Info_Struct:
-			read_struct_into(u, v, info, length) or_return	
+			read_struct_into(u, v, info, length) or_return
 		case:
 			return Unexpected{"a map", "not a map"}
 		}
 
 	case Bin:
-	    length := variant.length
+		length := variant.length
 		read_bytes_into(u, v, ti, length) or_return
 
 	case Ext:
+		if variant.type == -1 {
+			bytes := u.data[u.offset:u.offset + u64(variant.length)]
+			u.offset += u64(variant.length)
+
+			if v.id == time.Time {
+				(^time.Time)(v.data)^ = read_timestamp_ext1(bytes)
+			} else {
+				return Unexpected {
+					"a time.Time", "not a time.Time"
+				}
+			}
+		}
 	case Float:
 		if variant.is_double {
 			assign_num(v, v.id, read_number(u, f64))
@@ -643,26 +698,27 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Error) {
 					read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
 				}
 			} else {
-				data := mem.alloc_bytes_non_zeroed(info.elem.size * length, info.elem.align, allocator=context.temp_allocator) or_return
-				defer if err != nil { mem.free_bytes(data, allocator=context.temp_allocator) }
-				da := mem.Raw_Dynamic_Array{raw_data(data), length, length, context.temp_allocator }
+				data := mem.alloc_bytes_non_zeroed(
+					info.elem.size * length,
+					info.elem.align,
+					allocator = context.temp_allocator,
+				) or_return
+				defer if err != nil {mem.free_bytes(data, allocator = context.temp_allocator)}
+				da := mem.Raw_Dynamic_Array{raw_data(data), length, length, context.temp_allocator}
 
 				for i in 0 ..< length {
 					dest := uintptr(da.data) + uintptr(int(i) * info.elem_size)
 					read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
 				}
 
-				raw      := (^mem.Raw_Slice)(v.data)
-				raw.data  = da.data
-				raw.len   = da.len
-
-				fmt.println("HERE", raw)
+				raw := (^mem.Raw_Slice)(v.data)
+				raw.data = da.data
+				raw.len = da.len
 			}
 
 		case:
 			panic(fmt.aprintfln("foobar: %v", info))
 		}
-
 	}
 
 	return nil
