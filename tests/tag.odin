@@ -5,13 +5,13 @@ import "core:fmt"
 import m "../"
 import "core:strings"
 
-make_packer :: proc() -> (p: m.Packer, b: ^strings.Builder) {
+make_packer :: proc(flags: m.PackerFlags_Set = {}) -> (p: m.Packer, b: ^strings.Builder) {
 	b = new(strings.Builder)
 	strings.builder_init(b)
 	w := strings.to_writer(b)
 	p = m.Packer {
 		w,
-		{},
+		flags,
 		context.temp_allocator,
 	}
 

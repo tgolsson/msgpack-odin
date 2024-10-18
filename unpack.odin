@@ -472,6 +472,67 @@ read_struct_into :: proc(
 	return nil
 }
 
+read_union_into :: proc(
+	u: ^Unpacker,
+	v: any,
+	info: runtime.Type_Info_Union,
+	length: u64,
+) -> Error {
+
+	key, err := read_key(u)
+	if err != nil {
+		return err
+	}
+
+	variant_info: ^runtime.Type_Info
+	found_tag: i64
+
+	#partial switch variant in key {
+		case u64:
+		tag := i64(variant)
+		if !info.no_nil {
+
+		}
+		variant_info = info.variants[tag - 1]
+		found_tag = tag
+
+	case string:
+		variant_name := variant
+		for variant, i in info.variants {
+			tag := i64(i)
+			if !info.no_nil {
+				tag += 1
+			}
+
+			#partial switch vti in variant.variant {
+			case reflect.Type_Info_Named:
+				if vti.name == variant_name {
+					found_tag = tag
+					variant_info = variant
+				}
+
+			case:
+				builder := strings.builder_make(context.temp_allocator)
+				defer strings.builder_destroy(&builder)
+
+				reflect.write_type(&builder, variant)
+				variant_name := strings.to_string(builder)
+
+				if variant_name == variant_name {
+					variant_info = variant
+					found_tag = tag
+				}
+			}
+		}
+	}
+
+	if variant_info != nil {
+		reflect.set_union_variant_raw_tag(v, found_tag)
+		read_into_value(u, any{v.data, variant_info.id}) or_return
+	}
+	return nil
+}
+
 import "core:io"
 
 read_bytes_into :: proc(
@@ -647,6 +708,8 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Error) {
 			read_map_into(u, v, info, length) or_return
 		case runtime.Type_Info_Struct:
 			read_struct_into(u, v, info, length) or_return
+		case runtime.Type_Info_Union:
+			read_union_into(u, v, info, length) or_return
 		case:
 			return Unexpected{"a map", "not a map"}
 		}

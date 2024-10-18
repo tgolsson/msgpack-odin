@@ -1,11 +1,12 @@
 package msgpack
 
 import "base:intrinsics"
-
+import "base:runtime"
 import "core:encoding/endian"
-import "core:reflect"
 import "core:fmt"
+import "core:io"
 import "core:math"
+import "core:reflect"
 import "core:sort"
 import "core:time"
 
@@ -61,8 +62,6 @@ Slice_Length_Mismatch :: struct {
 	source_length: int,
 }
 
-import "base:runtime"
-import "core:io"
 Error :: union {
 	Unexpected,
 	Unhandled_Tag,

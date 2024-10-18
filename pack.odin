@@ -15,6 +15,8 @@ import "core:time"
 
 PackerFlags :: enum {
 	StableMaps = 0,
+	UnionNames = 1,
+	EnumNames  = 2,
 }
 
 PackerFlags_Set :: bit_set[PackerFlags]
@@ -72,6 +74,7 @@ pack_into_writer :: proc(
 Pack_Error :: union {
 	io.Error,
 	Invalid_Parameter,
+	runtime.Allocator_Error,
 }
 
 pack_any :: proc(p: ^Packer, value: any) -> (err: Pack_Error) {
@@ -493,7 +496,9 @@ write_ext :: proc(p: ^Packer, type: i8, size: u32) {
 		bytes := transmute([4]u8)u32(size)
 		write_bytes(p, {0xc9, bytes[3], bytes[2], bytes[1], bytes[0], transmute(u8)type})
 	}
+
 }
+
 write_timestamp_ext1 :: proc(p: ^Packer, v: time.Time) {
 	unix_nanos := time.time_to_unix_nano(v)
 	sec := u64(unix_nanos / 1000_000_000)
@@ -523,7 +528,7 @@ write_timestamp_ext1 :: proc(p: ^Packer, v: time.Time) {
 
 }
 
-write :: proc(p: ^Packer, data: any) {
+write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 	ti := runtime.type_info_base(type_info_of(data.id))
 	a := any{data.data, ti.id}
 
@@ -557,6 +562,32 @@ write :: proc(p: ^Packer, data: any) {
 		case u64:
 			write_number(p, a.(u64))
 		}
+	case runtime.Type_Info_Union:
+		v := data
+		id := reflect.union_variant_typeid(v)
+		if v.data == nil || id == nil {
+			encode_tag(p, Nil{})
+			return
+		}
+
+		encode_tag(p, Map { length =  1})
+		vti := reflect.union_variant_type_info(v)
+		if .UnionNames in p.flags {
+			#partial switch vt in vti.variant {
+				case reflect.Type_Info_Named:
+				write_str(p, vt.name)
+
+				case:
+				builder := strings.builder_make(p.temp_allocator) or_return
+
+				defer strings.builder_destroy(&builder)
+				reflect.write_type(&builder, vti)
+				write_str(p, strings.to_string(builder))
+			}
+		} else {
+			write_number(p, reflect.get_union_variant_raw_tag(v))
+		}
+		return write(p, any{v.data, vti.id})
 
 	case runtime.Type_Info_Rune,
 	     runtime.Type_Info_Complex,
@@ -564,7 +595,7 @@ write :: proc(p: ^Packer, data: any) {
 	     runtime.Type_Info_Enumerated_Array,
 	     runtime.Type_Info_Dynamic_Array,
 	     runtime.Type_Info_Parameters,
-	     runtime.Type_Info_Union,
+
 	     runtime.Type_Info_Bit_Set,
 	     runtime.Type_Info_Simd_Vector,
 	     runtime.Type_Info_Relative_Pointer,
@@ -758,4 +789,6 @@ write :: proc(p: ^Packer, data: any) {
 	case:
 		panic(fmt.aprintf("unhandled case: %v", info))
 	}
+
+	return
 }

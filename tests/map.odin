@@ -74,9 +74,10 @@ test_map_int_to_int_de_into :: proc(t: ^testing.T) {
     out: map[u8]u8
     err := m.read_into(&u, &out)
 
-
     testing.expect_value(t, err, nil)
     v := map[u8]u8{0  = 10}; map_eq(t, out, v)
+	delete(v)
+	delete(out)
 }
 
 @(test)
@@ -115,6 +116,8 @@ test_map_str_str_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     v := map[string]string{"foo" = "bar"}; map_eq(t, out, v)
+	delete(v)
+	delete(out)
 }
 
 @(test)
@@ -153,6 +156,8 @@ test_map_str_bytes_de_into :: proc(t: ^testing.T) {
     bd := [?]m.bin{1, 2, 3}
     testing.expect_value(t, err, nil)
     v := map[string][]m.bin{"foo" = bd[:]}; map_slice_eq(t, out, v)
+	delete(v)
+	delete(out)
 }
 
 @(test)
@@ -191,6 +196,8 @@ test_map_str_array_de_into :: proc(t: ^testing.T) {
     bd := [?]u16{1, 2, 3}
     testing.expect_value(t, err, nil)
     v := map[string][]u16{"foo" = bd[:]}; map_slice_eq(t, out, v)
+	delete(v)
+	delete(out)
 }
 
 @(test)
@@ -229,6 +236,8 @@ test_map_str_float2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     v := map[string]f32{"b" = 2.2, "a" = 1.1, }; map_eq(t, out, v)
+	delete(v)
+	delete(out)
 }
 
 @(test)
@@ -267,6 +276,8 @@ test_map_str_float5_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     v := map[string]f32{"e" = 5.1, "d" = 4.5, "c" = 3.4, "b" = 2.3, "a" = 1.1, }; map_eq(t, out, v)
+	delete(v)
+	delete(out)
 }
 
 @(test)
@@ -305,5 +316,6 @@ test_map_str_float6_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     v := map[string]f32{"f" = 1.3, "e" = 5.1, "d" = 4.5, "c" = 3.4, "b" = 2.3, "a" = 1.1, }; map_eq(t, out, v)
+	delete(v)
+	delete(out)
 }
-
