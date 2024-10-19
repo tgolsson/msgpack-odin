@@ -2,6 +2,7 @@ package msgpack
 
 import "base:intrinsics"
 import "base:runtime"
+import "core:bytes"
 import "core:encoding/endian"
 import "core:fmt"
 import "core:math"
@@ -13,62 +14,84 @@ import "core:strings"
 import "core:time"
 
 Unpacker :: struct {
-	data:   [^]u8,
-	offset: u64,
+	reader:         io.Reader,
+	temp_allocator: runtime.Allocator,
 }
 
-read_byte :: proc(u: ^Unpacker) -> u8 {
-	u.offset += 1
-	return u.data[u.offset - 1]
+Unpack_Error :: union {
+	io.Error,
+	Unexpected,
+	Invalid_Parameter,
+	Slice_Length_Mismatch,
+	Unhandled_Tag,
+	runtime.Allocator_Error
+}
+
+unpack_into_from_bytes :: proc(
+	bytes: []u8,
+	ptr: ^$T,
+	allocator := context.allocator,
+) -> (
+	err: Unpack_Error,
+) {
+	reader: bytes.Reader
+	stream := bytes.reader_init(&reader, bytes)
+	io_reader := io.to_reader(stream)
+	return unpack_into_from_reader(stream, ptr, allocator)
+}
+
+unpack_into_from_reader :: proc(
+	reader: io.Reader,
+	ptr: ^$T,
+	allocator := context.allocator,
+) -> (
+	err: Unpack_Error,
+) {
+	unpacker := Unpacker{reader, temp_allocator}
+	return read_into(&u, ptr)
+}
+
+read_byte :: proc(u: ^Unpacker) -> (b: u8, err: Unpack_Error) {
+	return io.read_byte(u.reader)
 }
 
 read_multibyte :: read_nbytes_r when NEEDS_SWAP else read_nbytes
 
-read_nbytes :: proc(u: ^Unpacker, $bytes: u64) -> [bytes]u8 {
-	out: [bytes]u8
-	copy(out[:], u.data[u.offset:u.offset + bytes])
-	u.offset += bytes
-	return out
+read_nbytes :: proc(u: ^Unpacker, $bytes: u64) -> (out: [bytes]u8, err: Unpack_Error) {
+	io.read(u.reader, out[:]) or_return
+	return out, nil
 }
 
-read_nbytes_r :: proc(u: ^Unpacker, $bytes: u64) -> [bytes]u8 {
-	out := read_nbytes(u, bytes)
+read_nbytes_r :: proc(u: ^Unpacker, $bytes: u64) -> (out: [bytes]u8, err: Unpack_Error) {
+	out = read_nbytes(u, bytes) or_return
 	slice.reverse(out[:])
-	return out
+	return out, nil
 }
 
-read_number :: proc(u: ^Unpacker, $T: typeid) -> T {
-	res := read_multibyte(u, size_of(T))
-	return transmute(T)(res)
+read_number :: proc(u: ^Unpacker, $T: typeid) -> (out: T, err: Unpack_Error) {
+	res := read_multibyte(u, size_of(T)) or_return
+	return transmute(T)(res), nil
 }
 
 
-read_size :: proc(u: ^Unpacker, width: u64) -> u64 {
-	size: u64 = 0
+read_size :: proc(u: ^Unpacker, width: u64) -> (size: u64, err: Unpack_Error) {
 	for i in 0 ..< width {
-		size = size << 8 | u64(u.data[u.offset + i])
+		b := io.read_byte(u.reader) or_return
+		size = size << 8 | u64(b)
+	}
+}
+
+read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {
+	out := make(map[ObjectKey]Object)
+	defer if err != nil {
+		delete(out)
 	}
 
-	u.offset += width
-	return size
-}
-
-read_map :: proc(u: ^Unpacker, size: int) -> (Object, Error) {
-	out := make(map[ObjectKey]Object)
 	for _ in 0 ..< size {
 		key: ObjectKey
 		value: Object
-		err: Error
-		key, err = read_key(u)
-		if err != nil {
-			delete(out)
-			return nil, err
-		}
-
-		value, err = read(u)
-		if err != nil {
-			delete(out)
-		}
+		key = read_key(u) or_return
+		value = read(u) or_return
 
 		map_insert(&out, key, value)
 	}
@@ -76,28 +99,28 @@ read_map :: proc(u: ^Unpacker, size: int) -> (Object, Error) {
 	return out, nil
 }
 
-read_string :: proc(u: ^Unpacker, size: int) -> (string, Error) {
-	bytes := u.data[u.offset:u.offset + u64(size)]
-	u.offset += u64(size)
-
-	return string(bytes), nil
+read_string :: proc(u: ^Unpacker, size: int) -> (value: string, err: Unpack_Error) {
+	buffer := make([]u8, size, u.temp_allocator)
+	io.read(u.reader, buffer[:]) or_return
+	s := string(buffer[:])
+	return s, nil
 }
 
-read_bin :: proc(u: ^Unpacker, size: int) -> ([]bin, Error) {
-	bytes := u.data[u.offset:u.offset + u64(size)]
-	u.offset += u64(size)
+read_bin :: proc(u: ^Unpacker, size: int) -> (value: []bin, err: Unpack_Error) {
+	buffer := make([]u8, size, u.temp_allocator)
+	io.read(u.reader, buffer[:]) or_return
 
-	return transmute([]bin)bytes[:], nil
+	return transmute([]bin)buffer, nil
 }
 
-read_array :: proc(u: ^Unpacker, size: int) -> ([]Object, Error) {
-
+read_array :: proc(u: ^Unpacker, size: int) -> (item: []Object, err: Unpack_Error) {
 	out := make([]Object, size)
+	defer if err != nil {
+		delete(out)
+	}
+
 	for i in 0 ..< size {
-		o, err := read(u)
-		if err != nil {
-			return nil, err
-		}
+		o := read(u) or_return
 		out[i] = o
 	}
 
@@ -105,110 +128,126 @@ read_array :: proc(u: ^Unpacker, size: int) -> ([]Object, Error) {
 }
 
 
-read_uint :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
+read_uint :: proc(u: ^Unpacker, tag: u8) -> (item: Object, err: Unpack_Error) {
 	size: u64 = 0
 
 	switch {
 	case tag == 0xCC:
-		size = read_size(u, 1)
+		size = read_size(u, 1) or_return
 	case tag == 0xCD:
-		size = read_size(u, 2)
+		size = read_size(u, 2) or_return
 	case tag == 0xCE:
-		size = read_size(u, 4)
+		size = read_size(u, 4) or_return
 	case tag == 0xCF:
-		size = read_size(u, 8)
+		size = read_size(u, 8) or_return
 	}
 
 	return size, nil
 }
 
-read_float :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
+read_float :: proc(u: ^Unpacker, tag: u8) -> (item: Object, err: Unpack_Error) {
 	switch {
 	case tag == 0xCA:
-		bits := read_size(u, 4)
+		bits := read_size(u, 4) or_return
 		return transmute(f32)u32(bits), nil
 	case tag == 0xCB:
-		bits := read_size(u, 8)
+		bits := read_size(u, 8) or_return
 		return transmute(f64)bits, nil
 	}
 
 	return nil, nil
 }
 
-read_sint :: proc(u: ^Unpacker, tag: u8) -> (Object, Error) {
+read_sint :: proc(u: ^Unpacker, tag: u8) -> (item: Object, err: Unpack_Error) {
 	size: Object
 
 	switch {
 	case tag == 0xD0:
-		return i64(transmute(i8)u8(read_size(u, 1))), nil
+		data := read_size(u, 1) or_return
+		return i64(transmute(i8)u8(data)), nil
 	case tag == 0xD1:
-		return i64(transmute(i16)u16(read_size(u, 2))), nil
+		data := read_size(u, 2) or_return
+		return i64(transmute(i16)u16(data)), nil
 	case tag == 0xD2:
-		return i64(transmute(i32)u32(read_size(u, 4))), nil
+		data := read_size(u, 4) or_return
+		return i64(transmute(i32)u32(data)), nil
 	case tag == 0xD3:
-		return transmute(i64)read_size(u, 8), nil
+		data := read_size(u, 8) or_return
+		return transmute(i64)data, nil
 	}
 
 	// TODO
 	return transmute(i64)size.(u64), nil
 }
 
+
 read_timestamp_ext1 :: proc(b: []u8) -> time.Time {
+	defer delete(b)
 	count := len(b)
+	t: time.Time
 
 	switch count {
 	case 4:
 		// 32-bit unix-seconds
 
 		seconds, _ := endian.get_u32(b[:4], .Big)
-		return time.unix(i64(seconds), 0)
+		t = time.unix(i64(seconds), 0)
 	case 8:
 		data, _ := endian.get_u64(b[:8], .Big)
 		ns := i64(data >> 34)
 		seconds := i64(data & 0x3FFFFFFFF)
-		return time.unix(seconds, ns)
+		t = time.unix(seconds, ns)
 	case 12:
 		nsec, _ := endian.get_u32(b, .Big)
 		sec, _ := endian.get_u64(b[4:], .Big)
-		return time.unix(i64(sec), i64(nsec))
+		t = time.unix(i64(sec), i64(nsec))
 	}
 
-	panic("unreachable")
+	return t
 }
 
-read_fixext :: proc(u: ^Unpacker, type: i8, size: int) -> (Object, Error) {
-	bytes := u.data[u.offset:u.offset + u64(size)]
-	u.offset += u64(size)
+read_fixext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpack_Error) {
+	bytes := make([]u8, size, u.temp_allocator)
+	defer if err != nil {
+		delete(bytes)
+	}
+
+	io.read(u.reader, bytes) or_return
 
 	if type == -1 {
 		return read_timestamp_ext1(bytes), nil
 	} else {
-		return nil, Unexpected{"a known ext", "unknown ext"}
+		delete(bytes)
+		err = Unexpected{"a known ext", "unknown ext"}
 	}
 }
 
 
-read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (Object, Error) {
-	bytes := u.data[u.offset:u.offset + u64(size)]
-	u.offset += u64(size)
+read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpack_Error) {
+	bytes := make([]u8, size, u.temp_allocator)
+	defer if err != nil {
+		delete(bytes)
+	}
+
+	io.read(u.reader, bytes) or_return
+
 	if i8(type) == -1 {
 		return read_timestamp_ext1(bytes), nil
 	} else {
-		return "asd", nil
+		err = Unexpected{"a known ext", "unknown ext"}
 	}
+
+	return
 }
 
 
-read_key :: proc(u: ^Unpacker) -> (ObjectKey, Error) {
+read_key :: proc(u: ^Unpacker) -> (item: ObjectKey, err: Unpack_Error) {
 	// XXXX[TS]: This is mostly copied from below.
 	tag := decode_tag(u)
 
 	#partial switch variant in tag {
 	case Str:
-		str, err := read_string(u, int(variant.length))
-		if err != nil {
-			return nil, err
-		}
+		str := read_string(u, int(variant.length)) or_return
 		return ObjectKey(str), nil
 
 	case Positive_Fixint:
@@ -220,31 +259,31 @@ read_key :: proc(u: ^Unpacker) -> (ObjectKey, Error) {
 	case Uint:
 		switch variant.width {
 		case 1:
-			return u64(read_number(u, u8)), nil
+			return u64(read_number(u, u8) or_return), nil
 		case 2:
-			return u64(read_number(u, u16)), nil
+			return u64(read_number(u, u16) or_return), nil
 		case 4:
-			return u64(read_number(u, u32)), nil
+			return u64(read_number(u, u32) or_return), nil
 		case 8:
-			return u64(read_number(u, u64)), nil
+			return u64(read_number(u, u64) or_return), nil
 		}
 	case Int:
 		switch variant.width {
 		case 1:
-			return i64(read_number(u, i8)), nil
+			return i64(read_number(u, i8) or_return), nil
 		case 2:
-			return i64(read_number(u, i16)), nil
+			return i64(read_number(u, i16) or_return), nil
 		case 4:
-			return i64(read_number(u, i32)), nil
+			return i64(read_number(u, i32) or_return), nil
 		case 8:
-			return i64(read_number(u, i64)), nil
+			return i64(read_number(u, i64) or_return), nil
 		}
 
 	case Float:
 		if variant.is_double {
-			return ObjectKey(read_number(u, f64)), nil
+			return ObjectKey(read_number(u, f64) or_return), nil
 		} else {
-			return ObjectKey(read_number(u, f32)), nil
+			return ObjectKey(read_number(u, f32) or_return), nil
 		}
 
 	case Bool:
@@ -257,7 +296,7 @@ read_key :: proc(u: ^Unpacker) -> (ObjectKey, Error) {
 	unreachable()
 }
 
-read :: proc(u: ^Unpacker) -> (Object, Error) {
+read :: proc(u: ^Unpacker) -> (item: Object, err: Unpack_Error) {
 	tag := decode_tag(u)
 	// XXXX: we handle these separately in a blanks switch as they
 	// require bitmasking, while the "non-bitmasked" fields below can
@@ -281,36 +320,34 @@ read :: proc(u: ^Unpacker) -> (Object, Error) {
 		return read_ext(u, variant.type, variant.length)
 	case Float:
 		if variant.is_double {
-			return read_number(u, f64), nil
+			return read_number(u, f64)
 		} else {
-			return read_number(u, f32), nil
+			return read_number(u, f32)
 		}
 	case Uint:
 		switch variant.width {
 		case 1:
-			return u64(read_number(u, u8)), nil
+			return u64(read_number(u, u8) or_return), nil
 		case 2:
-			return u64(read_number(u, u16)), nil
+			return u64(read_number(u, u16) or_return), nil
 		case 4:
-			return u64(read_number(u, u32)), nil
+			return u64(read_number(u, u32) or_return), nil
 		case 8:
-			return u64(read_number(u, u64)), nil
+			return u64(read_number(u, u64) or_return), nil
 		}
 	case Int:
 		switch variant.width {
 		case 1:
-			return i64(read_number(u, i8)), nil
+			return i64(read_number(u, i8) or_return), nil
 		case 2:
-			return i64(read_number(u, i16)), nil
+			return i64(read_number(u, i16) or_return), nil
 		case 4:
-			return i64(read_number(u, i32)), nil
+			return i64(read_number(u, i32) or_return), nil
 		case 8:
-			return i64(read_number(u, i64)), nil
+			return i64(read_number(u, i64) or_return), nil
 		}
 	case Negative_Fixint:
 		return i64(variant.value), nil
-
-
 	}
 
 	return nil, Unhandled_Tag{tag}
@@ -363,7 +400,7 @@ assign_str :: proc(v: any, t: typeid, value: $T) {
 }
 
 
-read_into :: proc(u: ^Unpacker, t: any) -> Error {
+read_into :: proc(u: ^Unpacker, t: any) -> Unpack_Error {
 	v := t
 
 	if v == nil || v.id == nil {
@@ -387,7 +424,7 @@ read_map_into :: proc(
 	info: runtime.Type_Info_Map,
 	length: u64,
 ) -> (
-	err: Error,
+	err: Unpack_Error,
 ) {
 	raw_map := (^runtime.Raw_Map)(v.data)
 
@@ -446,12 +483,9 @@ read_struct_into :: proc(
 	v: any,
 	info: runtime.Type_Info_Struct,
 	length: u64,
-) -> Error {
+) -> Unpack_Error {
 	for i in 0 ..< length {
-		key, err := read_key(u)
-		if err != nil {
-			return err
-		}
+		key := read_key(u) or_return
 
 		field_name := key.(string)
 		field_info := reflect.struct_field_by_name(v.id, field_name)
@@ -463,10 +497,7 @@ read_struct_into :: proc(
 			id   = field_type.id,
 		}
 		field_type_info := type_info_of(field_type.id)
-		err = read_into_value(u, field_any)
-		if err != nil {
-			return err
-		}
+		read_into_value(u, field_any) or_return
 	}
 
 	return nil
@@ -477,7 +508,7 @@ read_union_into :: proc(
 	v: any,
 	info: runtime.Type_Info_Union,
 	length: u64,
-) -> Error {
+) -> Unpack_Error {
 
 	key, err := read_key(u)
 	if err != nil {
@@ -488,7 +519,7 @@ read_union_into :: proc(
 	found_tag: i64
 
 	#partial switch variant in key {
-		case u64:
+	case u64:
 		tag := i64(variant)
 		if !info.no_nil {
 
@@ -541,7 +572,7 @@ read_bytes_into :: proc(
 	info: ^runtime.Type_Info,
 	length: int,
 ) -> (
-	err: Error,
+	err: Unpack_Error,
 ) {
 	// bytes are guaranteed to be homogenous, so no need to delegate per-item etc.
 	#partial switch info in info.variant {
@@ -552,16 +583,15 @@ read_bytes_into :: proc(
 		}
 
 		slice := ([^]byte)(v.data)[:length]
-		copy(slice[:length], u.data[u.offset:u.offset + u64(length)])
-		u.offset += u64(length)
+		io.read(u.reader, slice) or_return
 
 	case runtime.Type_Info_Slice:
 		raw_slice := (^mem.Raw_Slice)(v.data)
 		target_length := raw_slice.len / info.elem_size
 
-		bytes := u.data[u.offset:u.offset + u64(length)]
-		raw_slice^ = transmute(mem.Raw_Slice)bytes
-		u.offset += u64(length)
+		slice := ([^]byte)(v.data)[:length]
+		io.read(u.reader, slice) or_return
+		raw_slice^ = transmute(mem.Raw_Slice)slice
 
 	case runtime.Type_Info_Dynamic_Array:
 		raw_dynamic_array := (^mem.Raw_Dynamic_Array)(v.data)
@@ -569,8 +599,9 @@ read_bytes_into :: proc(
 
 		buf := strings.builder_make(0, length) or_return
 		defer if err != nil {strings.builder_destroy(&buf)}
-		copy(buf.buf[:], u.data[u.offset:u.offset + u64(length)])
-		u.offset += u64(length)
+
+		slice := ([^]byte)(v.data)[:length]
+		io.read(u.reader, buf.buf[:]) or_return
 
 		raw_dynamic_array.data = raw_data(buf.buf[:])
 		raw_dynamic_array.len = length
@@ -592,7 +623,7 @@ read_array_into :: proc(
 	info: ^runtime.Type_Info,
 	length: int,
 ) -> (
-	err: Error,
+	err: Unpack_Error,
 ) {
 	#partial switch info in info.variant {
 	case runtime.Type_Info_Array:
@@ -654,7 +685,7 @@ read_array_into :: proc(
 	return err
 }
 
-read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Error) {
+read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 	v := t
 	ti := reflect.type_info_base(type_info_of(v.id))
 	tag := decode_tag(u)
@@ -672,24 +703,24 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Error) {
 	case Uint:
 		switch variant.width {
 		case 1:
-			assign_num(v, v.id, read_number(u, u8))
+			assign_num(v, v.id, read_number(u, u8) or_return)
 		case 2:
-			assign_num(v, v.id, read_number(u, u16))
+			assign_num(v, v.id, read_number(u, u16) or_return)
 		case 4:
-			assign_num(v, v.id, read_number(u, u32))
+			assign_num(v, v.id, read_number(u, u32) or_return)
 		case 8:
-			assign_num(v, v.id, read_number(u, u64))
+			assign_num(v, v.id, read_number(u, u64) or_return)
 		}
 	case Int:
 		switch variant.width {
 		case 1:
-			assign_num(v, v.id, read_number(u, i8))
+			assign_num(v, v.id, read_number(u, i8) or_return)
 		case 2:
-			assign_num(v, v.id, read_number(u, i16))
+			assign_num(v, v.id, read_number(u, i16) or_return)
 		case 4:
-			assign_num(v, v.id, read_number(u, i32))
+			assign_num(v, v.id, read_number(u, i32) or_return)
 		case 8:
-			assign_num(v, v.id, read_number(u, i64))
+			assign_num(v, v.id, read_number(u, i64) or_return)
 		}
 	case Bool:
 		if v.id == bool {
@@ -720,22 +751,21 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Error) {
 
 	case Ext:
 		if variant.type == -1 {
-			bytes := u.data[u.offset:u.offset + u64(variant.length)]
-			u.offset += u64(variant.length)
+			bytes := make([]u8, variant.length, u.temp_allocator)
+			io.read(u.reader, bytes) or_return
 
 			if v.id == time.Time {
 				(^time.Time)(v.data)^ = read_timestamp_ext1(bytes)
 			} else {
-				return Unexpected {
-					"a time.Time", "not a time.Time"
-				}
+				delete(bytes)
+				return Unexpected{"a time.Time", "not a time.Time"}
 			}
 		}
 	case Float:
 		if variant.is_double {
-			assign_num(v, v.id, read_number(u, f64))
+			assign_num(v, v.id, read_number(u, f64) or_return)
 		} else {
-			assign_num(v, v.id, read_number(u, f32))
+			assign_num(v, v.id, read_number(u, f32) or_return)
 		}
 	case Array:
 		// fixarray

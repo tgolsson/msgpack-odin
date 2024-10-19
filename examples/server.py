@@ -12,7 +12,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         print("Got message!")
 
-        data = msgpack.unpackb(self.request.recv(19))
+        with self.request.makefile("rb") as f:
+            data = msgpack.unpackb(f.read(19))
         print("Received from {}:".format(self.client_address[0]))
 
         key, data = next(iter(data.items()))

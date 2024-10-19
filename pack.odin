@@ -67,7 +67,6 @@ pack_into_writer :: proc(
 ) {
 	packer := Packer{ writer, flags, temp_allocator}
 
-
 	return pack_any(&packer, v)
 }
 
