@@ -8,9 +8,16 @@ good reason.
 A few notes on compatibility:
 
 * Integers are packed into the smallest possible variant
-* ~Floats are packed as is and deserialized as is~ TODO: Fix.
+* ~Floats are packed as is and deserialized as is~ TODO: Unit tests assume efficient packing so right now, anything < F32_MAX is packed as f32. This is temporary.
 * `[]u8` and friends are packed as Array[Number]. This is also true for `[]byte`, which is a soft alias for the former. For true binary data, use `[]m.bin` or `m.binary`.
 * Packing internally uses a `bufio.Writer`. `pack_into_from_` will flush this, but manual packing requires flushing this explicitly.
+* Unions are packed as `{variant_name_or_index: variant_value}`
+* `.StableMaps` do not apply to structs, only actual maps.
+
+# Missing functionality
+
+- There's no support for enums (yet)
+- No support for `using` in structs
 
 # Performance
 
