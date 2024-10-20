@@ -74,8 +74,7 @@ def write_test_generic(
         @(test)
         test_{name}_de :: proc(t: ^testing.T) {{
             bytes := [?]u8{{{expectation}}}
-            u: m.Unpacker = {{ raw_data(bytes[:]), 0 }}
-            res, err := m.read(&u)
+            res, err := m.unpack_from_bytes(bytes[:])
 
             testing.expect_value(t, err, nil)
             {output_value}
@@ -86,9 +85,8 @@ def write_test_generic(
         @(test)
         test_{name}_de_into :: proc(t: ^testing.T) {{
             bytes := [?]u8{{{expectation}}}
-            u: m.Unpacker = {{ raw_data(bytes[:]), 0 }}
             out: {odin_type}
-            err := m.read_into(&u, &out)
+            err := m.unpack_into_from_bytes(bytes[:], &out)
 
             {extras}
             testing.expect_value(t, err, nil)

@@ -28,37 +28,70 @@ Unpack_Error :: union {
 }
 
 unpack_into_from_bytes :: proc(
-	bytes: []u8,
+	b: []u8,
 	ptr: ^$T,
 	allocator := context.allocator,
 ) -> (
 	err: Unpack_Error,
 ) {
 	reader: bytes.Reader
-	stream := bytes.reader_init(&reader, bytes)
+	stream := bytes.reader_init(&reader, b)
 	io_reader := io.to_reader(stream)
-	return unpack_into_from_reader(stream, ptr, allocator)
+	return unpack_into_from_reader(io_reader, ptr, allocator)
 }
 
 unpack_into_from_reader :: proc(
 	reader: io.Reader,
 	ptr: ^$T,
-	allocator := context.allocator,
+	temp_allocator := context.allocator,
 ) -> (
 	err: Unpack_Error,
 ) {
 	unpacker := Unpacker{reader, temp_allocator}
-	return read_into(&u, ptr)
+	return read_into(&unpacker, ptr)
+}
+
+unpack_from_bytes :: proc(
+	b: []u8,
+	temp_allocator := context.allocator,
+) -> (
+	obj: Object,
+	err: Unpack_Error,
+) {
+	reader: bytes.Reader
+	stream := bytes.reader_init(&reader, b)
+	io_reader := io.to_reader(stream)
+	return unpack_from_reader(stream, temp_allocator)
+}
+
+unpack_from_reader :: proc(
+	reader: io.Reader,
+	temp_allocator := context.allocator,
+) -> (
+	obj: Object,
+	err: Unpack_Error,
+) {
+	unpacker := Unpacker{reader, temp_allocator}
+	return read(&unpacker)
 }
 
 read_byte :: proc(u: ^Unpacker) -> (b: u8, err: Unpack_Error) {
-	return io.read_byte(u.reader)
+	byt, ioerr := io.read_byte(u.reader)
+	if ioerr != .None {
+		err = ioerr
+	}
+	b = byt
+
+	return b, err
 }
 
 read_multibyte :: read_nbytes_r when NEEDS_SWAP else read_nbytes
 
 read_nbytes :: proc(u: ^Unpacker, $bytes: u64) -> (out: [bytes]u8, err: Unpack_Error) {
-	io.read(u.reader, out[:]) or_return
+	_, ioerr := io.read(u.reader, out[:])
+	if ioerr != .None {
+		err = nil
+	}
 	return out, nil
 }
 
@@ -76,9 +109,15 @@ read_number :: proc(u: ^Unpacker, $T: typeid) -> (out: T, err: Unpack_Error) {
 
 read_size :: proc(u: ^Unpacker, width: u64) -> (size: u64, err: Unpack_Error) {
 	for i in 0 ..< width {
-		b := io.read_byte(u.reader) or_return
+		b, ioerr := io.read_byte(u.reader)
+		if ioerr != .None {
+			err = ioerr
+			break
+		}
 		size = size << 8 | u64(b)
 	}
+
+	return
 }
 
 read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {
@@ -101,7 +140,12 @@ read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {
 
 read_string :: proc(u: ^Unpacker, size: int) -> (value: string, err: Unpack_Error) {
 	buffer := make([]u8, size, u.temp_allocator)
-	io.read(u.reader, buffer[:]) or_return
+	_, ioerr := io.read(u.reader, buffer[:])
+	if ioerr != .None {
+		err = ioerr
+		return
+	}
+
 	s := string(buffer[:])
 	return s, nil
 }
@@ -220,6 +264,8 @@ read_fixext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Un
 		delete(bytes)
 		err = Unexpected{"a known ext", "unknown ext"}
 	}
+
+	return
 }
 
 
@@ -243,7 +289,7 @@ read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpac
 
 read_key :: proc(u: ^Unpacker) -> (item: ObjectKey, err: Unpack_Error) {
 	// XXXX[TS]: This is mostly copied from below.
-	tag := decode_tag(u)
+	tag := decode_tag(u) or_return
 
 	#partial switch variant in tag {
 	case Str:
@@ -297,10 +343,8 @@ read_key :: proc(u: ^Unpacker) -> (item: ObjectKey, err: Unpack_Error) {
 }
 
 read :: proc(u: ^Unpacker) -> (item: Object, err: Unpack_Error) {
-	tag := decode_tag(u)
-	// XXXX: we handle these separately in a blanks switch as they
-	// require bitmasking, while the "non-bitmasked" fields below can
-	// use a regular switch.
+	tag := decode_tag(u) or_return
+
 	switch variant in tag {
 	case Positive_Fixint:
 		return u64(variant.value), nil
@@ -583,14 +627,21 @@ read_bytes_into :: proc(
 		}
 
 		slice := ([^]byte)(v.data)[:length]
-		io.read(u.reader, slice) or_return
+		n, ioerr := io.read(u.reader, slice)
+		if ioerr != .None {
+			err = ioerr
+		}
 
 	case runtime.Type_Info_Slice:
 		raw_slice := (^mem.Raw_Slice)(v.data)
-		target_length := raw_slice.len / info.elem_size
 
-		slice := ([^]byte)(v.data)[:length]
-		io.read(u.reader, slice) or_return
+		slice := make([]byte, length, u.temp_allocator)
+		n, ioerr := io.read(u.reader, slice)
+
+		if ioerr != .None {
+			err = ioerr
+		}
+
 		raw_slice^ = transmute(mem.Raw_Slice)slice
 
 	case runtime.Type_Info_Dynamic_Array:
@@ -601,16 +652,18 @@ read_bytes_into :: proc(
 		defer if err != nil {strings.builder_destroy(&buf)}
 
 		slice := ([^]byte)(v.data)[:length]
-		io.read(u.reader, buf.buf[:]) or_return
+		_, ioerr := io.read(u.reader, slice)
+		if ioerr != .None {
+			err = ioerr
+			return
+		}
 
 		raw_dynamic_array.data = raw_data(buf.buf[:])
 		raw_dynamic_array.len = length
 		raw_dynamic_array.cap = length
 		raw_dynamic_array.allocator = context.allocator
 
-
 	case:
-		fmt.eprintf("foobar: %v\n", info)
 		return Unexpected{"a bin", "not a bin"}
 	}
 
@@ -688,7 +741,7 @@ read_array_into :: proc(
 read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 	v := t
 	ti := reflect.type_info_base(type_info_of(v.id))
-	tag := decode_tag(u)
+	tag := decode_tag(u) or_return
 
 	switch variant in tag {
 	case Positive_Fixint:

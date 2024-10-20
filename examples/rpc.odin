@@ -61,9 +61,7 @@ main :: proc() {
 
 	{
 		response: Rpc
-		u := m.Unpacker{raw_data(out_bytes[:]), 0}
-		m.read_into(&u, &response)
-
+		m.unpack_into_from_reader(reader, &response)
 		fmt.println(response)
 	}
 

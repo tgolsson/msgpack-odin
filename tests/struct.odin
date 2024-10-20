@@ -17,11 +17,8 @@ test_write_struct :: proc(t: ^testing.T) {
 
 	m.write(&p, Foo { 1, 2 })
 
-
 	f: Foo
-	u :=  m.Unpacker { raw_data(buf.buf[:]), {} }
-	err := m.read_into(&u, &f)
-
+	err := m.unpack_into_from_bytes(buf.buf[:], &f)
 
 	testing.expect_value(t, err, nil)
 	testing.expect_value(t, f.foo, 1)
@@ -37,8 +34,7 @@ test_write_false :: proc(t: ^testing.T) {
 
 	m.write(&p, false)
 	f: bool
-	u :=  m.Unpacker { raw_data(buf.buf[0:]), {} }
-	m.read_into(&u, &f)
+	m.unpack_into_from_bytes(buf.buf[:], &f)
 	testing.expect_value(t, f, false)
 }
 
@@ -51,7 +47,6 @@ test_write_true :: proc(t: ^testing.T) {
 	m.write(&p, true)
 
 	f: bool
-	u :=  m.Unpacker { raw_data(buf.buf[0:]), {} }
-	m.read_into(&u, &f)
+	m.unpack_into_from_bytes(buf.buf[:], &f)
 	testing.expect_value(t, f, true)
 }

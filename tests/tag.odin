@@ -1,9 +1,12 @@
 package tests
 
-import "core:testing"
+import "core:bytes"
 import "core:fmt"
-import m "../"
+import "core:io"
 import "core:strings"
+import "core:testing"
+
+import m "../"
 
 make_packer :: proc(flags: m.PackerFlags_Set = {}) -> (p: m.Packer, b: ^strings.Builder) {
 	b = new(strings.Builder)
@@ -18,6 +21,15 @@ make_packer :: proc(flags: m.PackerFlags_Set = {}) -> (p: m.Packer, b: ^strings.
 	return
 }
 
+make_unpacker_from_bytes :: proc(b: []u8) -> (m.Unpacker, ^bytes.Reader) {
+	reader := new(bytes.Reader)
+	stream := bytes.reader_init(reader, b)
+	io_reader := io.to_reader(stream)
+
+	unpacker := m.Unpacker{io_reader, context.temp_allocator}
+	return unpacker, reader
+}
+
 @(test)
 test_array_tag :: proc(t: ^testing.T) {
     for length in 0..<20 {
@@ -25,7 +37,6 @@ test_array_tag :: proc(t: ^testing.T) {
         packer, buf := make_packer()
 		defer strings.builder_destroy(buf)
         defer free(buf)
-
 
         expected_length: int
         if length < (1 << 4) {
@@ -39,7 +50,10 @@ test_array_tag :: proc(t: ^testing.T) {
         m.encode_tag(&packer, m.Array{length})
         testing.expect_value(t, len(buf.buf), expected_length)
 
-        decoded := m.decode_tag(&m.Unpacker{raw_data(buf.buf[:]), {}})
+		u, r := make_unpacker_from_bytes(buf.buf[:])
+		defer free(r)
+        decoded, err := m.decode_tag(&u)
+		testing.expect_value(t, err, nil)
         testing.expect_value(t, decoded, m.Array{length})
     }
 }
@@ -64,7 +78,10 @@ test_map_tag :: proc(t: ^testing.T) {
 
         m.encode_tag(&packer, m.Map{length})
         testing.expect_value(t, len(buf.buf), expected_length)
-        decoded := m.decode_tag(&m.Unpacker{raw_data(buf.buf[:]), {}})
+		u, r := make_unpacker_from_bytes(buf.buf[:])
+		defer free(r)
+        decoded, err := m.decode_tag(&u)
+		testing.expect_value(t, err, nil)
         testing.expect_value(t, decoded, m.Map{length})
     }
 }

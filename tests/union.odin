@@ -20,8 +20,7 @@ test_write_enum :: proc(t: ^testing.T) {
 	m.write(&p, Example(Hello{}))
 
 	example: Example
-	u := m.Unpacker{raw_data(buf.buf[:]), {}}
-	err := m.read_into(&u, &example)
+	err := m.unpack_into_from_bytes(buf.buf[:], &example)
 
 	testing.expect_value(t, err, nil)
 	testing.expect_value(t, example.(Hello), Hello{})
@@ -47,8 +46,7 @@ test_write_enum_variant :: proc(t: ^testing.T) {
 	m.write(&p, Example(Goodbye{120}))
 
 	example: Example
-	u := m.Unpacker{raw_data(buf.buf[:]), {}}
-	err := m.read_into(&u, &example)
+	err := m.unpack_into_from_bytes(buf.buf[:], &example)
 
 	testing.expect_value(t, err, nil)
 	testing.expect_value(t, example.(Goodbye), Goodbye{120})
@@ -74,8 +72,7 @@ test_write_enum_variant_numeric :: proc(t: ^testing.T) {
 	m.write(&p, Example(Goodbye{120}))
 
 	example: Example
-	u := m.Unpacker{raw_data(buf.buf[:]), {}}
-	err := m.read_into(&u, &example)
+	err := m.unpack_into_from_bytes(buf.buf[:], &example)
 
 	testing.expect_value(t, err, nil)
 	testing.expect_value(t, example.(Goodbye), Goodbye{120})
@@ -97,8 +94,7 @@ test_write_enum_one_variant_numeric :: proc(t: ^testing.T) {
 	m.write(&p, Example(Hello{}))
 
 	example: Example
-	u := m.Unpacker{raw_data(buf.buf[:]), {}}
-	err := m.read_into(&u, &example)
+	err := m.unpack_into_from_bytes(buf.buf[:], &example)
 
 	testing.expect_value(t, err, nil)
 	testing.expect_value(t, example.(Hello), Hello{})
@@ -120,8 +116,7 @@ test_write_enum_one_variant_s :: proc(t: ^testing.T) {
 	m.write(&p, Example(Hello{}))
 
 	example: Example
-	u := m.Unpacker{raw_data(buf.buf[:]), {}}
-	err := m.read_into(&u, &example)
+	err := m.unpack_into_from_bytes(buf.buf[:], &example)
 
 	testing.expect_value(t, err, nil)
 	testing.expect_value(t, example.(Hello), Hello{})
@@ -144,7 +139,8 @@ test_write_enum_nil :: proc(t: ^testing.T) {
 	m.write(&p, u8(10))
 
 	example: Example
-	u := m.Unpacker{raw_data(buf.buf[:]), {}}
+	u, r := make_unpacker_from_bytes(buf.buf[:])
+	defer free(r)
 	err := m.read_into(&u, &example)
 
 	num: u8

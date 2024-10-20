@@ -1,5 +1,6 @@
 package msgpack
 
+import "core:fmt"
 
 Ext				:: struct { length: int, type: i8 }
 Map				:: struct { length: int }
@@ -100,8 +101,6 @@ write_size :: proc(p: ^Packer, size: $T) {
 encode_tag :: proc(p: ^Packer, tag: Tag) {
 	pack_tag(p, tag)
 }
-
-import "core:fmt"
 
 decode_tag :: proc(u: ^Unpacker) -> (t: Tag, err: Unpack_Error) {
 	raw := read_byte(u) or_return

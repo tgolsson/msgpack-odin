@@ -22,8 +22,7 @@ test_nil_ser :: proc(t: ^testing.T) {
 @(test)
 test_nil_de :: proc(t: ^testing.T) {
     bytes := [?]u8{192}
-    u: m.Unpacker = { raw_data(bytes[:]), 0 }
-    res, err := m.read(&u)
+    res, err := m.unpack_from_bytes(bytes[:])
 
     testing.expect_value(t, err, nil)
 	if res != nil {
@@ -35,9 +34,9 @@ test_nil_de :: proc(t: ^testing.T) {
 @(test)
 test_nil_de_into :: proc(t: ^testing.T) {
     bytes := [?]u8{192}
-    u: m.Unpacker = { raw_data(bytes[:]), 0 }
+
     out: rawptr
-    err := m.read_into(&u, &out)
+    err := m.unpack_into_from_bytes(bytes[:], &out)
 
 
     testing.expect_value(t, err, nil)
