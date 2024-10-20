@@ -70,14 +70,14 @@ test_map_int_to_int_de_into :: proc(t: ^testing.T) {
     out: map[u8]u8
     err := m.unpack_into_from_bytes(bytes[:], &out)
 
-
     testing.expect_value(t, err, nil)
     v := map[u8]u8{0  = 10}; map_eq(t, out, v)
+	delete(v)
+	delete(out)
 }
 
 @(test)
 test_map_str_str_ser :: proc(t: ^testing.T) {
-
     value := map[string]string{"foo" = "bar"}
     data, err := m.pack_into_bytes(value, {  })
     defer delete(data)
@@ -106,9 +106,15 @@ test_map_str_str_de_into :: proc(t: ^testing.T) {
     out: map[string]string
     err := m.unpack_into_from_bytes(bytes[:], &out)
 
-
     testing.expect_value(t, err, nil)
     v := map[string]string{"foo" = "bar"}; map_eq(t, out, v)
+	delete(v)
+
+	for k, v in out {
+		delete(k)
+		delete(v)
+	}
+	delete(out)
 }
 
 @(test)
@@ -145,6 +151,12 @@ test_map_str_bytes_de_into :: proc(t: ^testing.T) {
     bd := [?]m.bin{1, 2, 3}
     testing.expect_value(t, err, nil)
     v := map[string][]m.bin{"foo" = bd[:]}; map_slice_eq(t, out, v)
+	delete(v)
+	for k, v in out {
+		delete(k)
+		delete(v)
+	}
+	delete(out)
 }
 
 @(test)
@@ -181,6 +193,12 @@ test_map_str_array_de_into :: proc(t: ^testing.T) {
     bd := [?]u16{1, 2, 3}
     testing.expect_value(t, err, nil)
     v := map[string][]u16{"foo" = bd[:]}; map_slice_eq(t, out, v)
+	delete(v)
+
+	for k, _ in out {
+		delete(k)
+	}
+	delete(out)
 }
 
 @(test)
@@ -214,9 +232,14 @@ test_map_str_float2_de_into :: proc(t: ^testing.T) {
     out: map[string]f32
     err := m.unpack_into_from_bytes(bytes[:], &out)
 
-
     testing.expect_value(t, err, nil)
     v := map[string]f32{"b" = 2.2, "a" = 1.1, }; map_eq(t, out, v)
+	delete(v)
+
+	for k, _ in out {
+		delete(k)
+	}
+	delete(out)
 }
 
 @(test)
@@ -250,9 +273,14 @@ test_map_str_float5_de_into :: proc(t: ^testing.T) {
     out: map[string]f32
     err := m.unpack_into_from_bytes(bytes[:], &out)
 
-
     testing.expect_value(t, err, nil)
     v := map[string]f32{"e" = 5.1, "d" = 4.5, "c" = 3.4, "b" = 2.3, "a" = 1.1, }; map_eq(t, out, v)
+	delete(v)
+
+	for k, _ in out {
+		delete(k)
+	}
+	delete(out)
 }
 
 @(test)
@@ -279,15 +307,17 @@ test_map_str_float6_de :: proc(t: ^testing.T) {
     m.object_delete(res); delete(expected.(map[m.ObjectKey]m.Object))
 }
 
-
 @(test)
 test_map_str_float6_de_into :: proc(t: ^testing.T) {
     bytes := [?]u8{134, 161, 97, 202, 63, 140, 204, 205, 161, 98, 202, 64, 19, 51, 51, 161, 99, 202, 64, 89, 153, 154, 161, 100, 202, 64, 144, 0, 0, 161, 101, 202, 64, 163, 51, 51, 161, 102, 202, 63, 166, 102, 102}
     out: map[string]f32
     err := m.unpack_into_from_bytes(bytes[:], &out)
 
-
     testing.expect_value(t, err, nil)
     v := map[string]f32{"f" = 1.3, "e" = 5.1, "d" = 4.5, "c" = 3.4, "b" = 2.3, "a" = 1.1, }; map_eq(t, out, v)
+	delete(v)
+	for k, _ in out {
+		delete(k)
+	}
+	delete(out)
 }
-

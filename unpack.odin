@@ -3,19 +3,18 @@ package msgpack
 import "base:intrinsics"
 import "base:runtime"
 import "core:bytes"
-import "core:encoding/endian"
-import "core:fmt"
-import "core:math"
 import "core:mem"
 import "core:reflect"
 import "core:slice"
-import "core:sort"
 import "core:strings"
 import "core:time"
+import "core:encoding/endian"
 
 Unpacker :: struct {
 	reader:         io.Reader,
-	temp_allocator: runtime.Allocator,
+	allocator: runtime.Allocator,
+
+	bytes_reader: ^bytes.Reader,
 }
 
 Unpack_Error :: union {
@@ -24,7 +23,30 @@ Unpack_Error :: union {
 	Invalid_Parameter,
 	Slice_Length_Mismatch,
 	Unhandled_Tag,
-	runtime.Allocator_Error
+	runtime.Allocator_Error,
+}
+
+// Note: this will allocate a reader on the allocator, that has to be freed.
+unpacker_from_bytes :: proc(b: []u8, allocator := context.allocator) -> Unpacker {
+	reader := new(bytes.Reader, allocator)
+	stream := bytes.reader_init(reader, b)
+	io_reader := io.to_reader(stream)
+
+	u := unpacker_from_reader(io_reader, allocator)
+	u.bytes_reader = reader
+
+	return u
+}
+
+
+unpacker_from_reader :: proc(reader: io.Reader, allocator := context.allocator) -> Unpacker {
+	return Unpacker{reader, allocator, nil}
+}
+
+unpacker_destroy :: proc(u: Unpacker) {
+	if u.bytes_reader != nil {
+		free(u.bytes_reader)
+	}
 }
 
 unpack_into_from_bytes :: proc(
@@ -34,10 +56,10 @@ unpack_into_from_bytes :: proc(
 ) -> (
 	err: Unpack_Error,
 ) {
-	reader: bytes.Reader
-	stream := bytes.reader_init(&reader, b)
-	io_reader := io.to_reader(stream)
-	return unpack_into_from_reader(io_reader, ptr, allocator)
+	u := unpacker_from_bytes(b, allocator)
+	defer unpacker_destroy(u)
+
+	return read_into(&u, ptr)
 }
 
 unpack_into_from_reader :: proc(
@@ -47,31 +69,33 @@ unpack_into_from_reader :: proc(
 ) -> (
 	err: Unpack_Error,
 ) {
-	unpacker := Unpacker{reader, temp_allocator}
-	return read_into(&unpacker, ptr)
+	u := unpacker_from_reader(reader, allocator)
+	defer unpacker_destroy(u)
+
+	return read_into(&u, ptr)
 }
 
 unpack_from_bytes :: proc(
 	b: []u8,
-	temp_allocator := context.allocator,
+	allocator := context.allocator,
 ) -> (
 	obj: Object,
 	err: Unpack_Error,
 ) {
-	reader: bytes.Reader
-	stream := bytes.reader_init(&reader, b)
-	io_reader := io.to_reader(stream)
-	return unpack_from_reader(stream, temp_allocator)
+	u := unpacker_from_bytes(b, allocator)
+	defer unpacker_destroy(u)
+
+	return read(&u)
 }
 
 unpack_from_reader :: proc(
 	reader: io.Reader,
-	temp_allocator := context.allocator,
+	allocator := context.allocator,
 ) -> (
 	obj: Object,
 	err: Unpack_Error,
 ) {
-	unpacker := Unpacker{reader, temp_allocator}
+	unpacker := unpacker_from_reader(reader, allocator)
 	return read(&unpacker)
 }
 
@@ -139,7 +163,7 @@ read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {
 }
 
 read_string :: proc(u: ^Unpacker, size: int) -> (value: string, err: Unpack_Error) {
-	buffer := make([]u8, size, u.temp_allocator)
+	buffer := make([]u8, size, u.allocator)
 	_, ioerr := io.read(u.reader, buffer[:])
 	if ioerr != .None {
 		err = ioerr
@@ -151,7 +175,7 @@ read_string :: proc(u: ^Unpacker, size: int) -> (value: string, err: Unpack_Erro
 }
 
 read_bin :: proc(u: ^Unpacker, size: int) -> (value: []bin, err: Unpack_Error) {
-	buffer := make([]u8, size, u.temp_allocator)
+	buffer := make([]u8, size, u.allocator)
 	io.read(u.reader, buffer[:]) or_return
 
 	return transmute([]bin)buffer, nil
@@ -251,7 +275,7 @@ read_timestamp_ext1 :: proc(b: []u8) -> time.Time {
 }
 
 read_fixext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpack_Error) {
-	bytes := make([]u8, size, u.temp_allocator)
+	bytes := make([]u8, size, u.allocator)
 	defer if err != nil {
 		delete(bytes)
 	}
@@ -270,7 +294,7 @@ read_fixext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Un
 
 
 read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpack_Error) {
-	bytes := make([]u8, size, u.temp_allocator)
+	bytes := make([]u8, size, u.allocator)
 	defer if err != nil {
 		delete(bytes)
 	}
@@ -285,7 +309,6 @@ read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpac
 
 	return
 }
-
 
 read_key :: proc(u: ^Unpacker) -> (item: ObjectKey, err: Unpack_Error) {
 	// XXXX[TS]: This is mostly copied from below.
@@ -336,7 +359,7 @@ read_key :: proc(u: ^Unpacker) -> (item: ObjectKey, err: Unpack_Error) {
 		return ObjectKey(variant.value), nil
 
 	case:
-		return nil, Unexpected{"a valid key type", fmt.tprintf("%v", variant)}
+		return nil, Unexpected{"a valid key type", tag_name(tag) }
 	}
 
 	unreachable()
@@ -530,8 +553,8 @@ read_struct_into :: proc(
 ) -> Unpack_Error {
 	for i in 0 ..< length {
 		key := read_key(u) or_return
-
 		field_name := key.(string)
+		defer delete(field_name)
 		field_info := reflect.struct_field_by_name(v.id, field_name)
 		field_offset := field_info.offset
 		field_type := field_info.type
@@ -555,6 +578,7 @@ read_union_into :: proc(
 ) -> Unpack_Error {
 
 	key, err := read_key(u)
+	defer object_key_delete(key)
 	if err != nil {
 		return err
 	}
@@ -592,6 +616,7 @@ read_union_into :: proc(
 
 				reflect.write_type(&builder, variant)
 				variant_name := strings.to_string(builder)
+				defer delete(variant_name)
 
 				if variant_name == variant_name {
 					variant_info = variant
@@ -635,7 +660,7 @@ read_bytes_into :: proc(
 	case runtime.Type_Info_Slice:
 		raw_slice := (^mem.Raw_Slice)(v.data)
 
-		slice := make([]byte, length, u.temp_allocator)
+		slice := make([]byte, length, u.allocator)
 		n, ioerr := io.read(u.reader, slice)
 
 		if ioerr != .None {
@@ -804,7 +829,7 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 
 	case Ext:
 		if variant.type == -1 {
-			bytes := make([]u8, variant.length, u.temp_allocator)
+			bytes := make([]u8, variant.length, u.allocator)
 			io.read(u.reader, bytes) or_return
 
 			if v.id == time.Time {
@@ -862,10 +887,22 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 				raw.len = da.len
 			}
 
+		case runtime.Type_Info_Dynamic_Array:
+			d := cast(^mem.Raw_Dynamic_Array)v.data
+			if length > d.len {
+				runtime.__dynamic_array_resize(d, info.elem_size, info.elem.align, length)
+			}
+
+			for i in 0 ..< length {
+				dest := uintptr(d.data) + uintptr(int(i) * info.elem_size)
+				read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
+			}
+
+
 		case:
-			panic(fmt.aprintfln("foobar: %v", info))
+			err = Invalid_Parameter { "unhandled type" }
 		}
 	}
 
-	return nil
+	return err
 }

@@ -41,14 +41,11 @@ test_str_array_0_de_into :: proc(t: ^testing.T) {
 
 @(test)
 test_u16_array_0_ser :: proc(t: ^testing.T) {
-
     value := [0]u16{}
     data, err := m.pack_into_bytes(value, {  })
     defer delete(data)
 
-
     slice_eq(t, data[:], []u8{144})
-
 }
 
 
@@ -145,6 +142,9 @@ test_str_array_5_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     v := [5]string{"x", "x", "x", "x", "x"}; slice_eq(t, v[:], out[:])
+	for item in out {
+		delete(item)
+	}
 }
 
 @(test)
@@ -253,6 +253,9 @@ test_str_array_20_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     v := [20]string{"x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x", "x"}; slice_eq(t, v[:], out[:])
+	for item in out {
+		delete(item)
+	}
 }
 
 @(test)
@@ -326,4 +329,3 @@ test_f32_array_20_de_into :: proc(t: ^testing.T) {
     testing.expect_value(t, err, nil)
     v := [20]f32{1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5}; slice_eq(t, v[:], out[:])
 }
-

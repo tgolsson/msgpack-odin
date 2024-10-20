@@ -46,7 +46,8 @@ Object :: union {
 }
 
 Unexpected :: struct {
-	wanted, found: string,
+	wanted: string,
+	found: string,
 }
 
 Unhandled_Tag :: struct {
@@ -154,26 +155,32 @@ object_equals :: proc(left: ^Object, right: ^Object) -> bool {
 	return false
 }
 
+object_key_delete :: proc(object: ObjectKey) {
+	#partial switch l in object {
+	case string: delete(l)
+	}
+}
 object_delete :: proc(object: Object) {
 	switch l in object {
 	case Nil:
 	case bool:
 	case []bin:
+		delete(l)
 	case []Object:
 		for &lo in l {
 			object_delete(lo)
 		}
 
 		delete(l)
-
 	case string:
+		delete(transmute([]u8)l)
 	case u64:
 	case i64:
 	case f32:
 	case f64:
 	case map[ObjectKey]Object:
 		for key, &v in l {
-			// object_key_delete(key)
+			object_key_delete(key)
 			object_delete(v)
 		}
 

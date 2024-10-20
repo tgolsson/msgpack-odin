@@ -2,6 +2,7 @@ package msgpack
 
 import "base:intrinsics"
 import "base:runtime"
+import "core:bufio"
 import "core:encoding/endian"
 import "core:fmt"
 import "core:io"
@@ -22,12 +23,53 @@ PackerFlags :: enum {
 PackerFlags_Set :: bit_set[PackerFlags]
 
 Packer :: struct {
-	w:              io.Writer,
+	writer:         io.Writer,
+	bw:             bufio.Writer,
 	flags:          PackerFlags_Set,
 	temp_allocator: runtime.Allocator,
+	string_builder: ^strings.Builder,
 }
 
 NEEDS_SWAP :: endian.PLATFORM_BYTE_ORDER == .Little
+
+packer_for_bytes :: proc(
+	flags: PackerFlags_Set,
+	allocator := context.allocator,
+	temp_allocator := context.temp_allocator,
+) -> (
+	p: Packer,
+	err: Pack_Error,
+) {
+	b := new(strings.Builder, allocator) or_return
+	defer if err != nil {
+		free(b)
+	}
+
+	strings.builder_init(b, 0, 100, allocator) or_return
+	packer := packer_for_builder(b, flags, temp_allocator)
+	packer.string_builder = b
+	return packer, nil
+}
+
+packer_for_builder :: proc(
+	builder: ^strings.Builder,
+	flags: PackerFlags_Set,
+	temp_allocator := context.temp_allocator,
+) -> Packer {
+	writer := strings.to_writer(builder)
+	return packer_for_writer(writer, flags, temp_allocator)
+}
+
+packer_for_writer :: proc(
+	writer: io.Writer,
+	flags: PackerFlags_Set,
+	temp_allocator := context.temp_allocator,
+) -> Packer {
+	buffered_writer: bufio.Writer
+	bufio.writer_init(&buffered_writer, writer, allocator = temp_allocator)
+	packer := Packer{writer, buffered_writer, flags, temp_allocator, nil}
+	return packer
+}
 
 pack_into_bytes :: proc(
 	v: any,
@@ -37,11 +79,18 @@ pack_into_bytes :: proc(
 	loc := #caller_location,
 ) -> (
 	bytes: []u8,
-	err: Error,
+	err: Pack_Error,
 ) {
-	b := strings.builder_make(allocator, loc) or_return
-	pack_into_builder(&b, v, flags, temp_allocator, loc = loc)
-	return b.buf[:], nil
+	packer := packer_for_bytes(flags, allocator, temp_allocator) or_return
+	defer free(packer.string_builder)
+	defer if err != nil do strings.builder_destroy(packer.string_builder)
+	{
+		defer bufio.writer_destroy(&packer.bw)
+		defer bufio.writer_flush(&packer.bw)
+
+		pack_any(&packer, v) or_return
+	}
+	return packer.string_builder.buf[:], nil
 }
 
 pack_into_builder :: proc(
@@ -53,7 +102,13 @@ pack_into_builder :: proc(
 ) -> (
 	err: Pack_Error,
 ) {
-	return pack_into_writer(strings.to_writer(builder), v, flags, temp_allocator)
+	packer := packer_for_builder(builder, flags, temp_allocator)
+	defer free(packer.string_builder)
+	defer if err != nil do strings.builder_destroy(packer.string_builder)
+	defer bufio.writer_destroy(&packer.bw)
+	defer bufio.writer_flush(&packer.bw)
+
+	return pack_any(&packer, v)
 }
 
 pack_into_writer :: proc(
@@ -65,7 +120,9 @@ pack_into_writer :: proc(
 ) -> (
 	err: Pack_Error,
 ) {
-	packer := Packer{ writer, flags, temp_allocator}
+	packer := packer_for_writer(writer, flags, temp_allocator)
+	defer bufio.writer_destroy(&packer.bw)
+	defer bufio.writer_flush(&packer.bw)
 
 	return pack_any(&packer, v)
 }
@@ -111,132 +168,26 @@ pack_number :: proc(p: ^Packer, num: $T) -> (err: Pack_Error) {
 	}
 
 	bytes: [size_of(T)]u8 = transmute([size_of(T)]u8)num
-	io.write(p.w, bytes[:]) or_return
+	bufio.writer_write(&p.bw, bytes[:]) or_return
 	return nil
 }
 
-pack_tag :: proc(p: ^Packer, tag: Tag) -> (err: Pack_Error) {
-	switch variant in tag {
-	case Positive_Fixint:
-		err = io.write_byte(p.w, ~u8(POSITIVE_FIXINT_MASK) & variant.value)
 
-	case Map:
-		length := variant.length
-		switch length {
-		case 0 ..< (1 << 4):
-			io.write_byte(p.w, FIXMAP_VALUE | u8(length))
-		case (1 << 4) ..< (1 << 16):
-			io.write_byte(p.w, MAP_16)
-			pack_number(p, u16(length))
-		case (1 << 16) ..= ((1 << 32) - 1):
-			io.write_byte(p.w, MAP_32)
-			pack_number(p, u32(length))
-		}
-	case Array:
-		length := variant.length
-		switch length {
-		case 0 ..< (1 << 4):
-			io.write_byte(p.w, FIXARRAY_VALUE | u8(length))
-		case (1 << 4) ..< (1 << 16):
-			io.write_byte(p.w, ARRAY_16)
-			pack_number(p, u16(length))
-		case (1 << 16) ..= ((1 << 32) - 1):
-			io.write_byte(p.w, ARRAY_32)
-			pack_number(p, u32(length))
-		}
-	case Str:
-		length := variant.length
-		switch length {
-		case 0 ..< (1 << 5):
-			io.write_byte(p.w, FIXSTR_VALUE | u8(length))
-		case (1 << 5) ..< (1 << 16):
-			io.write_byte(p.w, STR_16)
-			pack_number(p, u16(length))
-		case (1 << 16) ..= ((1 << 32) - 1):
-			io.write_byte(p.w, STR_32)
-			pack_number(p, u32(length))
-		}
-	case Nil:
-		io.write_byte(p.w, NIL)
-	case Bool:
-		io.write_byte(p.w, TRUE if variant.value else FALSE)
-	case Bin:
-		length := variant.length
-		switch length {
-		case 0 ..< (1 << 8):
-			io.write_byte(p.w, BIN_8)
-			io.write_byte(p.w, u8(length))
-		case (1 << 8) ..< (1 << 16):
-			io.write_byte(p.w, BIN_16)
-			pack_number(p, u16(length))
-		case (1 << 16) ..= ((1 << 32) - 1):
-			io.write_byte(p.w, BIN_32)
-			pack_number(p, u32(length))
-		}
-	case Ext:
-		using variant
-		switch length {
-		case 1:
-			io.write_byte(p.w, FIXEXT_1)
-		case 2:
-			io.write_byte(p.w, FIXEXT_2)
-		case 4:
-			io.write_byte(p.w, FIXEXT_4)
-		case 8:
-			io.write_byte(p.w, FIXEXT_8)
-		case 16:
-			io.write_byte(p.w, FIXEXT_16)
-		case 0 ..< (1 << 8):
-			io.write_byte(p.w, EXT_8)
-			pack_number(p, u8(length))
-		case (1 << 8)..<(1<<16):
-			io.write_byte(p.w, EXT_16)
-			pack_number(p, u16(length))
-		case (1 << 16) ..= ((1 << 32) - 1):
-			io.write_byte(p.w, EXT_32)
-			pack_number(p, u32(length))
-		}
-		pack_number(p, type)
+write_byte :: #force_inline proc(p: ^Packer, b: u8) -> Pack_Error {
+	return bufio.writer_write_byte(&p.bw, b)
+}
 
-	case Float:
-		io.write_byte(p.w, FLOAT_64 if variant.is_double else FLOAT_32)
-	case Uint:
-		switch variant.width {
-		case 1: io.write_byte(p.w, UINT_8)
-		case 2: io.write_byte(p.w, UINT_16)
-		case 4: io.write_byte(p.w, UINT_32)
-		case 8: io.write_byte(p.w, UINT_64)
-		}
-	case Int:
-		switch variant.width {
-		case 1: io.write_byte(p.w, INT_8)
-		case 2: io.write_byte(p.w, INT_16)
-		case 4: io.write_byte(p.w, INT_32)
-		case 8: io.write_byte(p.w, INT_64)
-		}
-	case Negative_Fixint:
-		io.write_byte(p.w, NEGATIVE_FIXINT_MASK | transmute(u8)variant.value)
-	}
-
+write_bytes :: #force_inline proc(p: ^Packer, bytes: []u8) -> Pack_Error {
+	_, err := bufio.writer_write(&p.bw, bytes)
 	return err
 }
 
-
-write_byte :: proc(p: ^Packer, b: u8) -> Pack_Error {
-	return io.write_byte(p.w, b)
-}
-
-write_bytes :: proc(p: ^Packer, bytes: []u8) -> Pack_Error {
-	_, err := io.write(p.w, bytes)
-	return err
-}
-
-write_nbytes :: proc(p: ^Packer, bytes: [$N]u8) {
+write_nbytes :: #force_inline proc(p: ^Packer, bytes: [$N]u8) {
 	bytes := bytes
 	write_bytes(p, bytes[:])
 }
 
-write_nbytes_r :: proc(p: ^Packer, bytes: [$N]u8) {
+write_nbytes_r :: #force_inline proc(p: ^Packer, bytes: [$N]u8) {
 	bytes := bytes
 	slice.reverse(bytes[:])
 
@@ -259,6 +210,19 @@ write_bytes_2 :: proc(p: ^Packer, bytes: ..u8) {
 
 write_multibyte :: write_nbytes_r when NEEDS_SWAP else write_nbytes
 write_multibyte_head :: write_nbytes_head_r when NEEDS_SWAP else write_nbytes_head
+
+write_number_swapped :: #force_inline proc(p: ^Packer, tag: Tag, number: $T) -> (err: Pack_Error) {
+	number := number
+	when T != u8 && T != i8 {
+		number = intrinsics.byte_swap(number)
+	}
+
+	encode_tag(p, tag)
+	bytes := transmute([size_of(T)]u8)number
+	_, err = bufio.writer_write(&p.bw, bytes[:])
+
+	return
+}
 
 
 begin_map :: proc(p: ^Packer, length: u32) {
@@ -345,12 +309,10 @@ write_number :: proc(p: ^Packer, num: $T) where intrinsics.type_is_integer(T) {
 }
 
 write_generic_float :: proc(p: ^Packer, num: $T) where intrinsics.type_is_float(T) {
-	if abs(num) <= math.F32_MAX {
-		write_byte(p, 0xCA)
-		write_multibyte(p, transmute([4]u8)f32(num))
+	if num < math.F32_MAX {
+		write_number_swapped(p, Float{false}, f32(num))
 	} else {
-		write_byte(p, 0xCB)
-		write_multibyte(p, transmute([8]u8)f64(num))
+		write_number_swapped(p, Float{true}, f64(num))
 	}
 }
 
@@ -360,22 +322,8 @@ write_bool :: proc(p: ^Packer, v: bool) {
 
 write_str :: proc(p: ^Packer, v: string) {
 	data := transmute([]u8)v
-	switch len(v) {
-	case 0 ..< (1 << 5):
-		write_bytes_2(p, 0b10100000 | u8(len(v)))
 
-	case (1 << 5) ..< (1 << 8):
-		write_bytes_2(p, 0xd9, u8(len(v)))
-
-	case (1 << 8) ..< (1 << 16):
-		bytes := transmute([2]u8)u16(len(v))
-		write_bytes_2(p, 0xda, bytes[1], bytes[0])
-
-	case (1 << 16) ..< (1 << 32):
-		bytes := transmute([4]u8)u32(len(v))
-		write_bytes_2(p, 0xdb, bytes[3], bytes[2], bytes[1], bytes[0])
-	}
-
+	encode_tag(p, Str{len(v)})
 	write_bytes(p, data)
 }
 
@@ -527,6 +475,52 @@ write_timestamp_ext1 :: proc(p: ^Packer, v: time.Time) {
 
 }
 
+pack_array_specialized :: proc(
+	p: ^Packer,
+	$T: typeid,
+	base_ptr: rawptr,
+	count: int,
+) -> (
+	err: Pack_Error,
+) {
+	for i in 0 ..< count {
+		data := uintptr(base_ptr) + uintptr(i * size_of(T))
+		when T == f32 || T == f64 {
+			write_generic_float(p, ((^T)(data))^)
+		} else {
+			write_number(p, ((^T)(data))^)
+		}
+	}
+
+	return nil
+}
+
+
+pack_struct :: proc(
+	p: ^Packer,
+	info: runtime.Type_Info_Struct,
+	base_ptr: rawptr,
+) -> (
+	err: Pack_Error,
+) {
+	begin_map(p, u32(info.field_count))
+
+	for name, i in info.names[:info.field_count] {
+		write_str(p, name)
+		id := info.types[i].id
+		data := rawptr(uintptr(base_ptr) + info.offsets[i])
+		the_value := any{data, id}
+		// TODO
+		// if info.usings[i] && name == "_" {
+		// 	write_struct_fields(p, the_value, opt)
+		// } else {
+		write(p, the_value) or_return
+		//}
+	}
+
+	return nil
+}
+
 write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 	ti := runtime.type_info_base(type_info_of(data.id))
 	a := any{data.data, ti.id}
@@ -569,14 +563,14 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 			return
 		}
 
-		encode_tag(p, Map { length =  1})
+		encode_tag(p, Map{length = 1})
 		vti := reflect.union_variant_type_info(v)
 		if .UnionNames in p.flags {
 			#partial switch vt in vti.variant {
-				case reflect.Type_Info_Named:
+			case reflect.Type_Info_Named:
 				write_str(p, vt.name)
 
-				case:
+			case:
 				builder := strings.builder_make(p.temp_allocator) or_return
 
 				defer strings.builder_destroy(&builder)
@@ -592,9 +586,7 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 	     runtime.Type_Info_Complex,
 	     runtime.Type_Info_Quaternion,
 	     runtime.Type_Info_Enumerated_Array,
-	     runtime.Type_Info_Dynamic_Array,
 	     runtime.Type_Info_Parameters,
-
 	     runtime.Type_Info_Bit_Set,
 	     runtime.Type_Info_Simd_Vector,
 	     runtime.Type_Info_Relative_Pointer,
@@ -604,7 +596,46 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 	     runtime.Type_Info_Type_Id,
 	     runtime.Type_Info_Any:
 		unreachable()
+	case runtime.Type_Info_Dynamic_Array:
+		da := cast(^mem.Raw_Dynamic_Array)data.data
+		if info.elem.id == bin {
+			tag := Bin{da.len}
+			encode_tag(p, tag)
 
+			s := slice.from_ptr(cast(^u8)data.data, da.len)
+			bufio.writer_write(&p.bw, s) or_return
+		} else {
+			begin_array(p, u32(da.len))
+
+
+			switch info.elem.id {
+			case i8:
+				pack_array_specialized(p, i8, da.data, da.len)
+			case i16:
+				pack_array_specialized(p, i16, da.data, da.len)
+			case i32:
+				pack_array_specialized(p, i32, da.data, da.len)
+			case i64:
+				pack_array_specialized(p, i64, da.data, da.len)
+			case u8:
+				pack_array_specialized(p, u8, da.data, da.len)
+			case u16:
+				pack_array_specialized(p, u16, da.data, da.len)
+			case u32:
+				pack_array_specialized(p, u32, da.data, da.len)
+			case u64:
+				pack_array_specialized(p, u64, da.data, da.len)
+			case f32:
+				pack_array_specialized(p, f32, da.data, da.len)
+			case f64:
+				pack_array_specialized(p, f64, da.data, da.len)
+			case:
+				for i in 0 ..< da.len {
+					data := uintptr(da.data) + uintptr(i * info.elem_size)
+					write(p, any{rawptr(data), info.elem.id})
+				}
+			}
+		}
 	case runtime.Type_Info_Slice:
 		d := cast(^mem.Raw_Slice)data.data
 		if info.elem.id == bin {
@@ -624,12 +655,34 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 
 			write_bytes(p, slice.bytes_from_ptr(d.data, d.len))
 		} else {
-
 			begin_array(p, u32(d.len))
 
-			for i in 0 ..< d.len {
-				data := uintptr(d.data) + uintptr(i * info.elem_size)
-				write(p, any{rawptr(data), info.elem.id})
+			switch info.elem.id {
+			case i8:
+				pack_array_specialized(p, i8, d.data, d.len)
+			case i16:
+				pack_array_specialized(p, i16, d.data, d.len)
+			case i32:
+				pack_array_specialized(p, i32, d.data, d.len)
+			case i64:
+				pack_array_specialized(p, i64, d.data, d.len)
+			case u8:
+				pack_array_specialized(p, u8, d.data, d.len)
+			case u16:
+				pack_array_specialized(p, u16, d.data, d.len)
+			case u32:
+				pack_array_specialized(p, u32, d.data, d.len)
+			case u64:
+				pack_array_specialized(p, u64, d.data, d.len)
+			case f32:
+				pack_array_specialized(p, f32, d.data, d.len)
+			case f64:
+				pack_array_specialized(p, f64, d.data, d.len)
+			case:
+				for i in 0 ..< d.len {
+					data := uintptr(d.data) + uintptr(i * info.elem_size)
+					write(p, any{rawptr(data), info.elem.id})
+				}
 			}
 		}
 	case runtime.Type_Info_Array:
@@ -652,9 +705,32 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 		} else {
 			begin_array(p, u32(info.count))
 
-			for i in 0 ..< info.count {
-				data := uintptr(data.data) + uintptr(i * info.elem_size)
-				write(p, any{rawptr(data), info.elem.id})
+			switch info.elem.id {
+			case i8:
+				pack_array_specialized(p, i8, data.data, info.count)
+			case i16:
+				pack_array_specialized(p, i16, data.data, info.count)
+			case i32:
+				pack_array_specialized(p, i32, data.data, info.count)
+			case i64:
+				pack_array_specialized(p, i64, data.data, info.count)
+			case u8:
+				pack_array_specialized(p, u8, data.data, info.count)
+			case u16:
+				pack_array_specialized(p, u16, data.data, info.count)
+			case u32:
+				pack_array_specialized(p, u32, data.data, info.count)
+			case u64:
+				pack_array_specialized(p, u64, data.data, info.count)
+			case f32:
+				pack_array_specialized(p, f32, data.data, info.count)
+			case f64:
+				pack_array_specialized(p, f64, data.data, info.count)
+			case:
+				for i in 0 ..< info.count {
+					data := uintptr(data.data) + uintptr(i * info.elem_size)
+					write(p, any{rawptr(data), info.elem.id})
+				}
 			}
 		}
 
@@ -670,32 +746,17 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 		}
 
 	case runtime.Type_Info_Float:
-		switch data.id {
-		case f32:
+		if data.id == f32 {
 			write_generic_float(p, a.(f32))
-		case f64:
+		} else {
 			write_generic_float(p, a.(f64))
 		}
 
 	case runtime.Type_Info_Struct:
 		if data.id == time.Time {
-
 			write_timestamp_ext1(p, data.(time.Time))
 		} else {
-			begin_map(p, u32(info.field_count))
-			for name, i in info.names[:info.field_count] {
-				id := info.types[i].id
-				data := rawptr(uintptr(data.data) + info.offsets[i])
-				the_value := any{data, id}
-				write_str(p, name)
-
-				// TODO
-				// if info.usings[i] && name == "_" {
-				// 	write_struct_fields(p, the_value, opt)
-				// } else {
-				write(p, the_value)
-				//}
-			}
+			pack_struct(p, info, data.data) or_return
 		}
 	case runtime.Type_Info_Map:
 		m := (^mem.Raw_Map)(data.data)
@@ -758,8 +819,8 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 					write(p, s.key)
 					write(p, s.value)
 				}
-
 			}
+
 			switch info.key.id {
 			case string:
 				uintptr_to_string :: proc(ptr: uintptr) -> string {
