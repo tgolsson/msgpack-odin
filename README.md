@@ -14,7 +14,10 @@ A few notes on compatibility:
 
 # Performance
 
-I haven't measured against every encoding shipped by default with Odin, only CBOR. The reason for this is that CBOR is pretty much msgpack, so that's our baseline to beat.
+I haven't measured against every encoding shipped by default with Odin, only CBOR. The reason for
+this is that CBOR is pretty much msgpack, so that's our baseline to beat. As can be seen in the
+baseline below, we're slightly faster on unpack, but almost four times as fast when packing. A major
+difference here could be using bufio.Writer, as the serialization stack is fairly similar otherwise.
 
 ### Unpack
 
