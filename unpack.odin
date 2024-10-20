@@ -69,7 +69,7 @@ unpack_into_from_reader :: proc(
 ) -> (
 	err: Unpack_Error,
 ) {
-	u := unpacker_from_reader(reader, allocator)
+	u := unpacker_from_reader(reader, temp_allocator)
 	defer unpacker_destroy(u)
 
 	return read_into(&u, ptr)
