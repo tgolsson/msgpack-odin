@@ -30,6 +30,12 @@ Packer :: struct {
 	string_builder: ^strings.Builder,
 }
 
+Pack_Error :: union {
+	io.Error,
+	Invalid_Parameter,
+	runtime.Allocator_Error,
+}
+
 // Creates a packer
 packer_for_bytes :: proc(
 	flags: PackerFlags_Set,
@@ -86,7 +92,6 @@ pack_into_bytes :: proc(
 		defer destroy_packer(&packer, err != nil)
 		pack_any(&packer, v) or_return
 		bufio.writer_flush(&packer.bw)
-
 	}
 
 	return packer.string_builder.buf[:], nil
@@ -133,12 +138,6 @@ pack_into_writer :: proc(
 	defer destroy_packer(&packer, false)
 
 	return pack_any(&packer, v)
-}
-
-Pack_Error :: union {
-	io.Error,
-	Invalid_Parameter,
-	runtime.Allocator_Error,
 }
 
 pack_any :: proc(p: ^Packer, value: any) -> (err: Pack_Error) {
