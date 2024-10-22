@@ -2,6 +2,7 @@ package msgpack
 
 import "base:intrinsics"
 import "base:runtime"
+import "core:bufio"
 import "core:bytes"
 import "core:encoding/endian"
 import "core:mem"
@@ -11,7 +12,8 @@ import "core:strings"
 import "core:time"
 
 Unpacker :: struct {
-	reader:       io.Reader,
+	r:            io.Reader,
+	reader:       ^bufio.Reader,
 	allocator:    runtime.Allocator,
 	bytes_reader: ^bytes.Reader,
 }
@@ -38,10 +40,14 @@ unpacker_from_bytes :: proc(b: []u8, allocator := context.allocator) -> Unpacker
 }
 
 unpacker_from_reader :: proc(reader: io.Reader, allocator := context.allocator) -> Unpacker {
-	return Unpacker{reader, allocator, nil}
+	buffered_reader := new(bufio.Reader)
+	bufio.reader_init(buffered_reader, reader, allocator = allocator)
+
+	return Unpacker{reader, buffered_reader, allocator, nil}
 }
 
-unpacker_destroy :: proc(u: Unpacker) {
+unpacker_destroy :: proc(u: Unpacker)
+{
 	if u.bytes_reader != nil {
 		free(u.bytes_reader)
 	}
@@ -55,6 +61,7 @@ unpack_into_from_bytes :: proc(
 	err: Unpack_Error,
 ) {
 	u := unpacker_from_bytes(b, allocator)
+
 	defer unpacker_destroy(u)
 
 	return read_into(&u, ptr)
@@ -98,7 +105,7 @@ unpack_from_reader :: proc(
 }
 
 read_byte :: proc(u: ^Unpacker) -> (b: u8, err: Unpack_Error) {
-	byt, ioerr := io.read_byte(u.reader)
+	byt, ioerr := bufio.reader_read_byte(u.reader)
 	if ioerr != .None {
 		err = ioerr
 	}
@@ -108,11 +115,29 @@ read_byte :: proc(u: ^Unpacker) -> (b: u8, err: Unpack_Error) {
 }
 
 read_bytes :: proc(u: ^Unpacker, $bytes: u64) -> (out: [bytes]u8, err: Unpack_Error) {
-	_, ioerr := io.read(u.reader, out[:])
-	if ioerr != .None {
-		err = nil
+	n: u64 = 0
+	for n < bytes {
+		nn, ioerr := bufio.reader_read(u.reader, out[n:])
+		if ioerr != .None {
+			err = nil
+		}
+		n += u64(nn)
 	}
+
 	return out, nil
+}
+
+read_bytes_into_slice :: proc(u: ^Unpacker, out: []u8) -> (err: Unpack_Error) {
+	n: int = 0
+	for n < len(out) {
+		nn, ioerr := bufio.reader_read(u.reader, out[n:])
+		if ioerr != .None {
+			err = nil
+		}
+		n += nn
+	}
+
+	return nil
 }
 
 read_number_swapped :: proc(u: ^Unpacker, $T: typeid) -> (number: T, err: Unpack_Error) {
@@ -142,7 +167,9 @@ read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {
 	}
 
 	for _ in 0 ..< size {
+
 		key: ObjectKey
+
 		value: Object
 		key = read_key(u) or_return
 		value = read(u) or_return
@@ -155,11 +182,10 @@ read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {
 
 read_string :: proc(u: ^Unpacker, size: int) -> (value: string, err: Unpack_Error) {
 	buffer := make([]u8, size, u.allocator)
-	_, ioerr := io.read(u.reader, buffer[:])
-	if ioerr != .None {
-		err = ioerr
-		return
+	defer if err != nil {
+		delete(buffer)
 	}
+	read_bytes_into_slice(u,buffer[:]) or_return
 
 	s := string(buffer[:])
 	return s, nil
@@ -167,7 +193,7 @@ read_string :: proc(u: ^Unpacker, size: int) -> (value: string, err: Unpack_Erro
 
 read_bin :: proc(u: ^Unpacker, size: int) -> (value: []bin, err: Unpack_Error) {
 	buffer := make([]u8, size, u.allocator)
-	io.read(u.reader, buffer[:]) or_return
+	read_bytes_into_slice(u,buffer[:]) or_return
 
 	return transmute([]bin)buffer, nil
 }
@@ -250,7 +276,7 @@ read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpac
 		delete(bytes)
 	}
 
-	io.read(u.reader, bytes) or_return
+	read_bytes_into_slice(u,bytes) or_return
 
 	if type == -1 {
 		return read_timestamp_ext1(bytes), nil
@@ -311,7 +337,8 @@ read_key :: proc(u: ^Unpacker) -> (item: ObjectKey, err: Unpack_Error) {
 		return ObjectKey(variant.value), nil
 
 	case:
-		return nil, Unexpected{"a valid key type", tag_name(tag)}
+		panic("xxx")
+		// return nil, Unexpected{"a valid key type", tag_name(tag)}
 	}
 
 	unreachable()
@@ -395,7 +422,6 @@ assign_str :: proc(v: any, t: typeid, value: $T) {
 		}
 	}
 }
-
 
 read_into :: proc(u: ^Unpacker, t: any) -> Unpack_Error {
 	v := t
@@ -582,21 +608,14 @@ read_bytes_into :: proc(
 		}
 
 		slice := ([^]byte)(v.data)[:length]
-		n, ioerr := io.read(u.reader, slice)
-		if ioerr != .None {
-			err = ioerr
-		}
+		read_bytes_into_slice(u,slice) or_return
 
 	case runtime.Type_Info_Slice:
 		raw_slice := (^mem.Raw_Slice)(v.data)
 
 		slice := make([]byte, length, u.allocator)
-		n, ioerr := io.read(u.reader, slice)
-
-		if ioerr != .None {
-			err = ioerr
-		}
-
+		defer if err != nil do delete(slice)
+		read_bytes_into_slice(u,slice) or_return
 		raw_slice^ = transmute(mem.Raw_Slice)slice
 
 	case runtime.Type_Info_Dynamic_Array:
@@ -607,11 +626,7 @@ read_bytes_into :: proc(
 		defer if err != nil {strings.builder_destroy(&buf)}
 
 		slice := ([^]byte)(v.data)[:length]
-		_, ioerr := io.read(u.reader, slice)
-		if ioerr != .None {
-			err = ioerr
-			return
-		}
+		read_bytes_into_slice(u,slice) or_return
 
 		raw_dynamic_array.data = raw_data(buf.buf[:])
 		raw_dynamic_array.len = length
@@ -737,7 +752,7 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 		case runtime.Type_Info_Union:
 			read_union_into(u, v, info, length) or_return
 		case:
-			return Unexpected{"a map", "not a map"}
+			unreachable()
 		}
 
 	case Bin:
@@ -747,7 +762,7 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 	case Ext:
 		if variant.type == -1 {
 			bytes := make([]u8, variant.length, u.allocator)
-			io.read(u.reader, bytes) or_return
+			read_bytes_into_slice(u,bytes) or_return
 
 			if v.id == time.Time {
 				(^time.Time)(v.data)^ = read_timestamp_ext1(bytes)

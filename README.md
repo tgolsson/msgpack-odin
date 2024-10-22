@@ -10,7 +10,7 @@ A few notes on compatibility:
 * Integers are packed into the smallest possible variant
 * ~Floats are packed as is and deserialized as is~ TODO: Unit tests assume efficient packing so right now, anything < F32_MAX is packed as f32. This is temporary.
 * `[]u8` and friends are packed as Array[Number]. This is also true for `[]byte`, which is a soft alias for the former. For true binary data, use `[]m.bin` or `m.binary`.
-* Packing internally uses a `bufio.Writer`. `pack_into_from_` will flush this, but manual packing requires flushing this explicitly.
+* Packing internally uses a `bufio.Writer`. `pack_into_from_` will flush this, but manual packing requires flushing this explicitly. See `packer_flush`.
 * Unions are packed as `{variant_name_or_index: variant_value}`
 * `.StableMaps` do not apply to structs, only actual maps.
 
@@ -30,14 +30,14 @@ difference here could be using bufio.Writer, as the serialization stack is fairl
 
 | Size      | Proto   | Rounds | (K) Items | Time (ms) | Rounds/s  | Million Items/s | Relative |
 |-----------|---------|--------|-----------|-----------|-----------|-----------------|----------|
-| `small`   | `cbor`  | 100    | 22        | 6         | 16339.704 | 3.428           | -        |
-| `small`   | `mpack` | 100    | 22        | 5         | 19227.855 | 4.034           | 0.85     |
-| `medium`  | `cbor`  | 100    | 220       | 62        | 1611.088  | 3.380           | -        |
-| `medium`  | `mpack` | 100    | 220       | 52        | 1889.998  | 3.965           | 0.852    |
-| `large`   | `cbor`  | 100    | 2200      | 680       | 146.922   | 3.083           | -        |
-| `large`   | `mpack` | 100    | 2200      | 545       | 183.359   | 3.847           | 0.801    |
-| `massive` | `cbor`  | 100    | 11000     | 3154      | 31.700    | 3.325           | -        |
-| `massive` | `mpack` | 100    | 11000     | 2586      | 38.661    | 4.056           | 0.82     |
+| `small`   | `cbor`  | 100    | 22        | 10        | 9439.310  | 1.980           | -        |
+| `small`   | `mpack` | 100    | 22        | 4         | 22471.107 | 4.715           | 0.42     |
+| `medium`  | `cbor`  | 100    | 220       | 59        | 1669.285  | 3.502           | -        |
+| `medium`  | `mpack` | 100    | 220       | 45        | 2211.091  | 4.639           | 0.76    |
+| `large`   | `cbor`  | 100    | 2200      | 644       | 155.169   | 3.256           | -        |
+| `large`   | `mpack` | 100    | 2200      | 525       | 190.218   | 3.991           | 0.82    |
+| `massive` | `cbor`  | 100    | 11000     | 3360      | 29.758    | 3.122           | -        |
+| `massive` | `mpack` | 100    | 11000     | 2320      | 43.086    | 4.520           | 0.69     |
 
 ---
 

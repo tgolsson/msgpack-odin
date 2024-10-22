@@ -108,7 +108,10 @@ make_bytes_mpack :: proc(
 	tris := u16(options.bytes & 0xFFFF)
 	mesh := generate_mesh(vertices, tris)
 
-	mesh_bytes, _ := m.pack_into_bytes(&mesh, {})
+	mesh_bytes, perr := m.pack_into_bytes(&mesh, {})
+	if perr != nil {
+		panic(fmt.aprintfln("err: %v", perr))
+	}
 	options.input = mesh_bytes[:]
 
 	delete(mesh.vertices)
