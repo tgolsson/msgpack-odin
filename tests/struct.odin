@@ -12,10 +12,11 @@ Foo :: struct {
 @(test)
 test_write_struct :: proc(t: ^testing.T) {
     p, buf := make_packer()
-	defer strings.builder_destroy(buf)
-    defer free(buf)
+	defer m.destroy_packer(&p)
+	defer delete(p.string_builder.buf)
 
 	m.write(&p, Foo { 1, 2 })
+	m.flush_packer(&p)
 
 	f: Foo
 	err := m.unpack_into_from_bytes(buf.buf[:], &f)
@@ -29,10 +30,12 @@ test_write_struct :: proc(t: ^testing.T) {
 @(test)
 test_write_false :: proc(t: ^testing.T) {
     p, buf := make_packer()
-	defer strings.builder_destroy(buf)
-    defer free(buf)
+	defer m.destroy_packer(&p)
+	defer delete(p.string_builder.buf)
 
 	m.write(&p, false)
+	m.flush_packer(&p)
+
 	f: bool
 	m.unpack_into_from_bytes(buf.buf[:], &f)
 	testing.expect_value(t, f, false)
@@ -41,10 +44,11 @@ test_write_false :: proc(t: ^testing.T) {
 @(test)
 test_write_true :: proc(t: ^testing.T) {
     p, buf := make_packer()
-	defer strings.builder_destroy(buf)
-    defer free(buf)
+	defer m.destroy_packer(&p)
+	defer delete(p.string_builder.buf)
 
 	m.write(&p, true)
+	m.flush_packer(&p)
 
 	f: bool
 	m.unpack_into_from_bytes(buf.buf[:], &f)

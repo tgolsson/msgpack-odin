@@ -9,11 +9,12 @@ import "core:strings"
 @(test)
 test_nil_ser :: proc(t: ^testing.T) {
     p, buf := make_packer()
-	defer strings.builder_destroy(buf)
-    defer free(buf)
+	defer m.destroy_packer(&p)
+	defer delete(p.string_builder.buf)
 
     value := rawptr(nil)
     m.write(&p, value)
+	m.flush_packer(&p)
 
     slice_eq(t, buf.buf[:], []u8{192})
 }

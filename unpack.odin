@@ -3,17 +3,16 @@ package msgpack
 import "base:intrinsics"
 import "base:runtime"
 import "core:bytes"
+import "core:encoding/endian"
 import "core:mem"
 import "core:reflect"
 import "core:slice"
 import "core:strings"
 import "core:time"
-import "core:encoding/endian"
 
 Unpacker :: struct {
-	reader:         io.Reader,
-	allocator: runtime.Allocator,
-
+	reader:       io.Reader,
+	allocator:    runtime.Allocator,
 	bytes_reader: ^bytes.Reader,
 }
 
@@ -37,7 +36,6 @@ unpacker_from_bytes :: proc(b: []u8, allocator := context.allocator) -> Unpacker
 
 	return u
 }
-
 
 unpacker_from_reader :: proc(reader: io.Reader, allocator := context.allocator) -> Unpacker {
 	return Unpacker{reader, allocator, nil}
@@ -109,9 +107,7 @@ read_byte :: proc(u: ^Unpacker) -> (b: u8, err: Unpack_Error) {
 	return b, err
 }
 
-read_multibyte :: read_nbytes_r when NEEDS_SWAP else read_nbytes
-
-read_nbytes :: proc(u: ^Unpacker, $bytes: u64) -> (out: [bytes]u8, err: Unpack_Error) {
+read_bytes :: proc(u: ^Unpacker, $bytes: u64) -> (out: [bytes]u8, err: Unpack_Error) {
 	_, ioerr := io.read(u.reader, out[:])
 	if ioerr != .None {
 		err = nil
@@ -119,25 +115,20 @@ read_nbytes :: proc(u: ^Unpacker, $bytes: u64) -> (out: [bytes]u8, err: Unpack_E
 	return out, nil
 }
 
-read_nbytes_r :: proc(u: ^Unpacker, $bytes: u64) -> (out: [bytes]u8, err: Unpack_Error) {
-	out = read_nbytes(u, bytes) or_return
-	slice.reverse(out[:])
-	return out, nil
-}
+read_number_swapped :: proc(u: ^Unpacker, $T: typeid) -> (number: T, err: Unpack_Error) {
+	number = transmute(T)read_bytes(u, size_of(T)) or_return
+	when NEEDS_SWAP {
+		when T != u8 && T != i8 {
+			number = intrinsics.byte_swap(number)
+		}
+	}
 
-read_number :: proc(u: ^Unpacker, $T: typeid) -> (out: T, err: Unpack_Error) {
-	res := read_multibyte(u, size_of(T)) or_return
-	return transmute(T)(res), nil
+	return number, nil
 }
-
 
 read_size :: proc(u: ^Unpacker, width: u64) -> (size: u64, err: Unpack_Error) {
 	for i in 0 ..< width {
-		b, ioerr := io.read_byte(u.reader)
-		if ioerr != .None {
-			err = ioerr
-			break
-		}
+		b := read_byte(u) or_return
 		size = size << 8 | u64(b)
 	}
 
@@ -196,68 +187,47 @@ read_array :: proc(u: ^Unpacker, size: int) -> (item: []Object, err: Unpack_Erro
 }
 
 
-read_uint :: proc(u: ^Unpacker, tag: u8) -> (item: Object, err: Unpack_Error) {
-	size: u64 = 0
-
-	switch {
-	case tag == 0xCC:
-		size = read_size(u, 1) or_return
-	case tag == 0xCD:
-		size = read_size(u, 2) or_return
-	case tag == 0xCE:
-		size = read_size(u, 4) or_return
-	case tag == 0xCF:
-		size = read_size(u, 8) or_return
+read_uint :: proc(u: ^Unpacker, tag: Uint) -> (item: Object, err: Unpack_Error) {
+	switch tag.width {
+	case 1:	return u64(read_number_swapped(u, u8) or_return), nil
+	case 2:	return u64(read_number_swapped(u, u16) or_return), nil
+	case 4:	return u64(read_number_swapped(u, u32) or_return), nil
+	case 8:	return u64(read_number_swapped(u, u64) or_return), nil
 	}
 
-	return size, nil
+	unreachable()
 }
 
-read_float :: proc(u: ^Unpacker, tag: u8) -> (item: Object, err: Unpack_Error) {
-	switch {
-	case tag == 0xCA:
-		bits := read_size(u, 4) or_return
-		return transmute(f32)u32(bits), nil
-	case tag == 0xCB:
-		bits := read_size(u, 8) or_return
-		return transmute(f64)bits, nil
+read_float :: proc(u: ^Unpacker, tag: Float) -> (item: Object, err: Unpack_Error) {
+	if tag.is_double {
+		return read_number_swapped(u, f64)
+	} else {
+		return read_number_swapped(u, f32)
 	}
-
-	return nil, nil
 }
 
-read_sint :: proc(u: ^Unpacker, tag: u8) -> (item: Object, err: Unpack_Error) {
+read_sint :: proc(u: ^Unpacker, tag: Int) -> (item: Object, err: Unpack_Error) {
 	size: Object
 
-	switch {
-	case tag == 0xD0:
-		data := read_size(u, 1) or_return
-		return i64(transmute(i8)u8(data)), nil
-	case tag == 0xD1:
-		data := read_size(u, 2) or_return
-		return i64(transmute(i16)u16(data)), nil
-	case tag == 0xD2:
-		data := read_size(u, 4) or_return
-		return i64(transmute(i32)u32(data)), nil
-	case tag == 0xD3:
-		data := read_size(u, 8) or_return
-		return transmute(i64)data, nil
+	switch tag.width {
+	case 1:	 return i64(read_number_swapped(u, i8) or_return), nil
+	case 2: return i64(read_number_swapped(u, i16) or_return), nil
+	case 4: return i64(read_number_swapped(u, i32) or_return), nil
+	case 8: return i64(read_number_swapped(u, i64) or_return), nil
 	}
 
-	// TODO
-	return transmute(i64)size.(u64), nil
+	unreachable()
 }
-
 
 read_timestamp_ext1 :: proc(b: []u8) -> time.Time {
 	defer delete(b)
+
 	count := len(b)
 	t: time.Time
 
 	switch count {
 	case 4:
 		// 32-bit unix-seconds
-
 		seconds, _ := endian.get_u32(b[:4], .Big)
 		t = time.unix(i64(seconds), 0)
 	case 8:
@@ -274,7 +244,7 @@ read_timestamp_ext1 :: proc(b: []u8) -> time.Time {
 	return t
 }
 
-read_fixext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpack_Error) {
+read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpack_Error) {
 	bytes := make([]u8, size, u.allocator)
 	defer if err != nil {
 		delete(bytes)
@@ -286,24 +256,6 @@ read_fixext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Un
 		return read_timestamp_ext1(bytes), nil
 	} else {
 		delete(bytes)
-		err = Unexpected{"a known ext", "unknown ext"}
-	}
-
-	return
-}
-
-
-read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpack_Error) {
-	bytes := make([]u8, size, u.allocator)
-	defer if err != nil {
-		delete(bytes)
-	}
-
-	io.read(u.reader, bytes) or_return
-
-	if i8(type) == -1 {
-		return read_timestamp_ext1(bytes), nil
-	} else {
 		err = Unexpected{"a known ext", "unknown ext"}
 	}
 
@@ -328,38 +280,38 @@ read_key :: proc(u: ^Unpacker) -> (item: ObjectKey, err: Unpack_Error) {
 	case Uint:
 		switch variant.width {
 		case 1:
-			return u64(read_number(u, u8) or_return), nil
+			return u64(read_number_swapped(u, u8) or_return), nil
 		case 2:
-			return u64(read_number(u, u16) or_return), nil
+			return u64(read_number_swapped(u, u16) or_return), nil
 		case 4:
-			return u64(read_number(u, u32) or_return), nil
+			return u64(read_number_swapped(u, u32) or_return), nil
 		case 8:
-			return u64(read_number(u, u64) or_return), nil
+			return u64(read_number_swapped(u, u64) or_return), nil
 		}
 	case Int:
 		switch variant.width {
 		case 1:
-			return i64(read_number(u, i8) or_return), nil
+			return i64(read_number_swapped(u, i8) or_return), nil
 		case 2:
-			return i64(read_number(u, i16) or_return), nil
+			return i64(read_number_swapped(u, i16) or_return), nil
 		case 4:
-			return i64(read_number(u, i32) or_return), nil
+			return i64(read_number_swapped(u, i32) or_return), nil
 		case 8:
-			return i64(read_number(u, i64) or_return), nil
+			return i64(read_number_swapped(u, i64) or_return), nil
 		}
 
 	case Float:
 		if variant.is_double {
-			return ObjectKey(read_number(u, f64) or_return), nil
+			return ObjectKey(read_number_swapped(u, f64) or_return), nil
 		} else {
-			return ObjectKey(read_number(u, f32) or_return), nil
+			return ObjectKey(read_number_swapped(u, f32) or_return), nil
 		}
 
 	case Bool:
 		return ObjectKey(variant.value), nil
 
 	case:
-		return nil, Unexpected{"a valid key type", tag_name(tag) }
+		return nil, Unexpected{"a valid key type", tag_name(tag)}
 	}
 
 	unreachable()
@@ -376,7 +328,7 @@ read :: proc(u: ^Unpacker) -> (item: Object, err: Unpack_Error) {
 	case Array:
 		return read_array(u, int(variant.length))
 	case Str:
-		return read_string(u, variant.length) // TODO
+		return read_string(u, variant.length)
 	case Nil:
 		return nil, nil
 	case Bool:
@@ -386,33 +338,11 @@ read :: proc(u: ^Unpacker) -> (item: Object, err: Unpack_Error) {
 	case Ext:
 		return read_ext(u, variant.type, variant.length)
 	case Float:
-		if variant.is_double {
-			return read_number(u, f64)
-		} else {
-			return read_number(u, f32)
-		}
+		return read_float(u, variant)
 	case Uint:
-		switch variant.width {
-		case 1:
-			return u64(read_number(u, u8) or_return), nil
-		case 2:
-			return u64(read_number(u, u16) or_return), nil
-		case 4:
-			return u64(read_number(u, u32) or_return), nil
-		case 8:
-			return u64(read_number(u, u64) or_return), nil
-		}
+		return read_uint(u, variant)
 	case Int:
-		switch variant.width {
-		case 1:
-			return i64(read_number(u, i8) or_return), nil
-		case 2:
-			return i64(read_number(u, i16) or_return), nil
-		case 4:
-			return i64(read_number(u, i32) or_return), nil
-		case 8:
-			return i64(read_number(u, i64) or_return), nil
-		}
+		return read_sint(u, variant)
 	case Negative_Fixint:
 		return i64(variant.value), nil
 	}
@@ -778,28 +708,15 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 	case Str:
 		str := read_string(u, variant.length) or_return
 		assign_str(v, v.id, str)
+
 	case Uint:
-		switch variant.width {
-		case 1:
-			assign_num(v, v.id, read_number(u, u8) or_return)
-		case 2:
-			assign_num(v, v.id, read_number(u, u16) or_return)
-		case 4:
-			assign_num(v, v.id, read_number(u, u32) or_return)
-		case 8:
-			assign_num(v, v.id, read_number(u, u64) or_return)
-		}
+		number := (read_uint(u, variant) or_return).(u64)
+		assign_num(v, v.id, number)
+
 	case Int:
-		switch variant.width {
-		case 1:
-			assign_num(v, v.id, read_number(u, i8) or_return)
-		case 2:
-			assign_num(v, v.id, read_number(u, i16) or_return)
-		case 4:
-			assign_num(v, v.id, read_number(u, i32) or_return)
-		case 8:
-			assign_num(v, v.id, read_number(u, i64) or_return)
-		}
+		number := (read_sint(u, variant) or_return).(i64)
+		assign_num(v, v.id, number)
+
 	case Bool:
 		if v.id == bool {
 			(^bool)(v.data)^ = variant.value
@@ -841,9 +758,9 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 		}
 	case Float:
 		if variant.is_double {
-			assign_num(v, v.id, read_number(u, f64) or_return)
+			assign_num(v, v.id, read_number_swapped(u, f64) or_return)
 		} else {
-			assign_num(v, v.id, read_number(u, f32) or_return)
+			assign_num(v, v.id, read_number_swapped(u, f32) or_return)
 		}
 	case Array:
 		// fixarray
@@ -900,7 +817,7 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 
 
 		case:
-			err = Invalid_Parameter { "unhandled type" }
+			err = Invalid_Parameter{"unhandled type"}
 		}
 	}
 

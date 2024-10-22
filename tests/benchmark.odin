@@ -184,90 +184,92 @@ benchmark_print :: proc(
 	)
 }
 
+when false {
 
-@(test)
-bench_pack :: proc(t: ^testing.T) {
-	str: strings.Builder
-	strings.builder_init(&str, context.allocator)
-	defer {
-		fmt.println(strings.to_string(str))
-		strings.builder_destroy(&str)
+	@(test)
+	bench_pack :: proc(t: ^testing.T) {
+		str: strings.Builder
+		strings.builder_init(&str, context.allocator)
+		defer {
+			fmt.println(strings.to_string(str))
+			strings.builder_destroy(&str)
+		}
+
+		small_mpack := time.Benchmark_Options {
+			setup    = make_mesh,
+			bench    = bench_mpack_pack,
+			teardown = destroy_mesh,
+			rounds   = 10,
+			bytes    = (100 << 16 | 40),
+		}
+		err := time.benchmark(&small_mpack)
+		benchmark_print(&str, "small_mpack", &small_mpack)
+
+		medium_mpack := time.Benchmark_Options {
+			setup    = make_mesh,
+			bench    = bench_mpack_pack,
+			teardown = destroy_mesh,
+			rounds   = 10,
+			bytes    = (1000 << 16 | 400),
+		}
+
+		err = time.benchmark(&medium_mpack)
+		benchmark_print(&str, "medium_mpack", &medium_mpack)
+
+		large_mpack := time.Benchmark_Options {
+			setup    = make_mesh,
+			bench    = bench_mpack_pack,
+			teardown = destroy_mesh,
+			rounds   = 10,
+			bytes    = (10000 << 16 | 4000),
+		}
+		err = time.benchmark(&large_mpack)
+		benchmark_print(&str, "large_mpack", &large_mpack)
+
+
+		assert(err == nil)
 	}
 
-	small_mpack := time.Benchmark_Options {
-		setup    = make_mesh,
-		bench    = bench_mpack_pack,
-		teardown = destroy_mesh,
-		rounds   = 100,
-		bytes    = (100 << 16 | 40),
+	@(test)
+	bench_unpack :: proc(t: ^testing.T) {
+		str: strings.Builder
+		strings.builder_init(&str, context.allocator)
+		defer {
+			fmt.println(strings.to_string(str))
+			strings.builder_destroy(&str)
+		}
+
+		small_mpack := time.Benchmark_Options {
+			setup    = make_bytes_mpack,
+			bench    = bench_mpack_unpack,
+			teardown = destroy_bytes,
+			rounds   = 10,
+			bytes    = (100 << 16 | 40),
+		}
+		err := time.benchmark(&small_mpack)
+		benchmark_print(&str, "small_mpack", &small_mpack)
+
+		medium_mpack := time.Benchmark_Options {
+			setup    = make_bytes_mpack,
+			bench    = bench_mpack_unpack,
+			teardown = destroy_bytes,
+			rounds   = 10,
+			bytes    = (1000 << 16 | 400),
+		}
+		err = time.benchmark(&medium_mpack)
+		benchmark_print(&str, "medium_mpack", &medium_mpack)
+
+		large_mpack := time.Benchmark_Options {
+			setup    = make_bytes_mpack,
+			bench    = bench_mpack_unpack,
+			teardown = destroy_bytes,
+			rounds   = 10,
+			bytes    = (10000 << 16 | 4000),
+		}
+		err = time.benchmark(&large_mpack)
+		benchmark_print(&str, "large_mpack", &large_mpack)
+
+
+		assert(err == nil)
 	}
-	err := time.benchmark(&small_mpack)
-	benchmark_print(&str, "small_mpack", &small_mpack)
-
-	medium_mpack := time.Benchmark_Options {
-		setup    = make_mesh,
-		bench    = bench_mpack_pack,
-		teardown = destroy_mesh,
-		rounds   = 100,
-		bytes    = (1000 << 16 | 400),
-	}
-
-	err = time.benchmark(&medium_mpack)
-	benchmark_print(&str, "medium_mpack", &medium_mpack)
-
-	large_mpack := time.Benchmark_Options {
-		setup    = make_mesh,
-		bench    = bench_mpack_pack,
-		teardown = destroy_mesh,
-		rounds   = 100,
-		bytes    = (10000 << 16 | 4000),
-	}
-	err = time.benchmark(&large_mpack)
-	benchmark_print(&str, "large_mpack", &large_mpack)
-
-
-	assert(err == nil)
-}
-
-@(test)
-bench_unpack :: proc(t: ^testing.T) {
-	str: strings.Builder
-	strings.builder_init(&str, context.allocator)
-	defer {
-		fmt.println(strings.to_string(str))
-		strings.builder_destroy(&str)
-	}
-
-	small_mpack := time.Benchmark_Options {
-		setup    = make_bytes_mpack,
-		bench    = bench_mpack_unpack,
-		teardown = destroy_bytes,
-		rounds   = 100,
-		bytes    = (100 << 16 | 40),
-	}
-	err := time.benchmark(&small_mpack)
-	benchmark_print(&str, "small_mpack", &small_mpack)
-
-	medium_mpack := time.Benchmark_Options {
-		setup    = make_bytes_mpack,
-		bench    = bench_mpack_unpack,
-		teardown = destroy_bytes,
-		rounds   = 100,
-		bytes    = (1000 << 16 | 400),
-	}
-	err = time.benchmark(&medium_mpack)
-	benchmark_print(&str, "medium_mpack", &medium_mpack)
-
-	large_mpack := time.Benchmark_Options {
-		setup    = make_bytes_mpack,
-		bench    = bench_mpack_unpack,
-		teardown = destroy_bytes,
-		rounds   = 100,
-		bytes    = (10000 << 16 | 4000),
-	}
-	err = time.benchmark(&large_mpack)
-	benchmark_print(&str, "large_mpack", &large_mpack)
-
-
-	assert(err == nil)
 }

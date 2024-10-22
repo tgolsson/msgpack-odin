@@ -30,8 +30,7 @@ Packer :: struct {
 	string_builder: ^strings.Builder,
 }
 
-NEEDS_SWAP :: endian.PLATFORM_BYTE_ORDER == .Little
-
+// Creates a packer
 packer_for_bytes :: proc(
 	flags: PackerFlags_Set,
 	allocator := context.allocator,
@@ -82,15 +81,26 @@ pack_into_bytes :: proc(
 	err: Pack_Error,
 ) {
 	packer := packer_for_bytes(flags, allocator, temp_allocator) or_return
-	defer free(packer.string_builder)
-	defer if err != nil do strings.builder_destroy(packer.string_builder)
 	{
-		defer bufio.writer_destroy(&packer.bw)
-		defer bufio.writer_flush(&packer.bw)
-
+		defer destroy_packer(&packer, err != nil)
 		pack_any(&packer, v) or_return
 	}
+
 	return packer.string_builder.buf[:], nil
+}
+
+flush_packer :: proc(p: ^Packer) {
+	bufio.writer_flush(&p.bw)
+}
+
+destroy_packer :: proc(p: ^Packer, clear_buffer := false) {
+	flush_packer(p)
+	bufio.writer_destroy(&p.bw)
+	if clear_buffer{
+		strings.builder_destroy(p.string_builder)
+	}
+	p.bw = {}
+	free(p.string_builder)
 }
 
 pack_into_builder :: proc(
@@ -309,7 +319,7 @@ write_number :: proc(p: ^Packer, num: $T) where intrinsics.type_is_integer(T) {
 }
 
 write_generic_float :: proc(p: ^Packer, num: $T) where intrinsics.type_is_float(T) {
-	if num < math.F32_MAX {
+	if abs(num) <= math.F32_MAX {
 		write_number_swapped(p, Float{false}, f32(num))
 	} else {
 		write_number_swapped(p, Float{true}, f64(num))
@@ -494,7 +504,6 @@ pack_array_specialized :: proc(
 
 	return nil
 }
-
 
 pack_struct :: proc(
 	p: ^Packer,

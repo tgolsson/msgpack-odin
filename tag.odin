@@ -286,15 +286,15 @@ decode_tag :: proc(u: ^Unpacker) -> (t: Tag, err: Unpack_Error) {
 	case BIN_8:
 		t = Bin{int(read_byte(u) or_return)}
 	case BIN_16:
-		t = Bin{int(read_number(u, u16) or_return)}
+		t = Bin{int(read_number_swapped(u, u16) or_return)}
 	case BIN_32:
-		t = Bin{int(read_number(u, u32) or_return)}
+		t = Bin{int(read_number_swapped(u, u32) or_return)}
 	case EXT_8:
-		t = Ext{int(read_byte(u) or_return), read_number(u, i8) or_return}
+		t = Ext{int(read_byte(u) or_return), read_number_swapped(u, i8) or_return}
 	case EXT_16:
-		t = Ext{int(read_number(u, u16) or_return), read_number(u, i8) or_return}
+		t = Ext{int(read_number_swapped(u, u16) or_return), read_number_swapped(u, i8) or_return}
 	case EXT_32:
-		t = Ext{int(read_number(u, u32) or_return), read_number(u, i8) or_return}
+		t = Ext{int(read_number_swapped(u, u32) or_return), read_number_swapped(u, i8) or_return}
 	case FLOAT_32, FLOAT_64:
 		t = Float{raw == FLOAT_64}
 	case UINT_8:
@@ -314,29 +314,29 @@ decode_tag :: proc(u: ^Unpacker) -> (t: Tag, err: Unpack_Error) {
 	case INT_64:
 		t = Int{8}
 	case FIXEXT_1:
-		t = Ext{1, read_number(u, i8) or_return}
+		t = Ext{1, read_number_swapped(u, i8) or_return}
 	case FIXEXT_2:
-		t = Ext{2, read_number(u, i8) or_return}
+		t = Ext{2, read_number_swapped(u, i8) or_return}
 	case FIXEXT_4:
-		t = Ext{4, read_number(u, i8) or_return}
+		t = Ext{4, read_number_swapped(u, i8) or_return}
 	case FIXEXT_8:
-		t = Ext{8, read_number(u, i8) or_return}
+		t = Ext{8, read_number_swapped(u, i8) or_return}
 	case FIXEXT_16:
-		t = Ext{16, read_number(u, i8) or_return}
+		t = Ext{16, read_number_swapped(u, i8) or_return}
 	case STR_8:
 		t = Str{int(read_byte(u) or_return)}
 	case STR_16:
-		t = Str{int(read_number(u, u16) or_return)}
+		t = Str{int(read_number_swapped(u, u16) or_return)}
 	case STR_32:
-		t = Str{int(read_number(u, u32) or_return)}
+		t = Str{int(read_number_swapped(u, u32) or_return)}
 	case ARRAY_16:
-		t = Array{int(read_number(u, u16) or_return)}
+		t = Array{int(read_number_swapped(u, u16) or_return)}
 	case ARRAY_32:
-		t = Array{int(read_number(u, u32) or_return)}
+		t = Array{int(read_number_swapped(u, u32) or_return)}
 	case MAP_16:
-		t = Map{int(read_number(u, u16) or_return)}
+		t = Map{int(read_number_swapped(u, u16) or_return)}
 	case MAP_32:
-		t = Map{int(read_number(u, u32) or_return)}
+		t = Map{int(read_number_swapped(u, u32) or_return)}
 	}
 
 	return

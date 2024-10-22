@@ -14,10 +14,11 @@ test_write_union :: proc(t: ^testing.T) {
 	}
 
 	p, buf := make_packer({.UnionNames})
-	defer strings.builder_destroy(buf)
-	defer free(buf)
+	defer m.destroy_packer(&p)
+	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(Hello{}))
+	m.flush_packer(&p)
 
 	example: Example
 	err := m.unpack_into_from_bytes(buf.buf[:], &example)
@@ -40,10 +41,11 @@ test_write_union_variant :: proc(t: ^testing.T) {
 	}
 
 	p, buf := make_packer({.UnionNames})
-	defer strings.builder_destroy(buf)
-	defer free(buf)
+	defer m.destroy_packer(&p)
+	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(Goodbye{120}))
+	m.flush_packer(&p)
 
 	example: Example
 	err := m.unpack_into_from_bytes(buf.buf[:], &example)
@@ -67,10 +69,11 @@ test_write_union_variant_numeric :: proc(t: ^testing.T) {
 	}
 
 	p, buf := make_packer()
-	defer strings.builder_destroy(buf)
-	defer free(buf)
+	defer m.destroy_packer(&p)
+	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(Goodbye{120}))
+	m.flush_packer(&p)
 
 	example: Example
 	err := m.unpack_into_from_bytes(buf.buf[:], &example)
@@ -90,10 +93,11 @@ test_write_union_one_variant_numeric :: proc(t: ^testing.T) {
 	}
 
 	p, buf := make_packer()
-	defer strings.builder_destroy(buf)
-	defer free(buf)
+	defer m.destroy_packer(&p)
+	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(Hello{}))
+	m.flush_packer(&p)
 
 	example: Example
 	err := m.unpack_into_from_bytes(buf.buf[:], &example)
@@ -113,10 +117,11 @@ test_write_union_one_variant_s :: proc(t: ^testing.T) {
 	}
 
 	p, buf := make_packer({.UnionNames})
-	defer strings.builder_destroy(buf)
-	defer free(buf)
+	defer m.destroy_packer(&p)
+	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(Hello{}))
+	m.flush_packer(&p)
 
 	example: Example
 	err := m.unpack_into_from_bytes(buf.buf[:], &example)
@@ -136,11 +141,12 @@ test_write_union_nil :: proc(t: ^testing.T) {
 	}
 
 	p, buf := make_packer({.UnionNames})
-	defer strings.builder_destroy(buf)
-	defer free(buf)
+	defer m.destroy_packer(&p)
+	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(nil))
 	m.write(&p, u8(10))
+	m.flush_packer(&p)
 
 	example: Example
 	u, r := make_unpacker_from_bytes(buf.buf[:])

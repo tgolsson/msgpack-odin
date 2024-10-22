@@ -15,6 +15,7 @@ import "core:time"
 //   Differentiate bytes?
 //   Accept allocators
 
+NEEDS_SWAP :: endian.PLATFORM_BYTE_ORDER == .Little
 
 bin :: distinct u8
 binary :: distinct []bin
