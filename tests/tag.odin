@@ -23,6 +23,7 @@ test_array_tag :: proc(t: ^testing.T) {
 	for length in 0 ..< 20 {
 		packer, _ := m.packer_for_bytes({})
 		defer m.destroy_packer(&packer)
+		defer free(packer.string_builder)
 		defer delete(packer.string_builder.buf)
 
 		expected_length: int
@@ -39,7 +40,7 @@ test_array_tag :: proc(t: ^testing.T) {
 		testing.expect_value(t, len(packer.string_builder.buf), expected_length)
 
 		u, r := make_unpacker_from_bytes(packer.string_builder.buf[:])
-		defer free(r)
+		defer m.unpacker_destroy(u)
 		decoded, err := m.decode_tag(&u)
 		testing.expect_value(t, err, nil)
 		testing.expect_value(t, decoded, m.Array{length})
@@ -52,6 +53,7 @@ test_map_tag :: proc(t: ^testing.T) {
 
 		packer, buf := make_packer()
 		defer m.destroy_packer(&packer)
+		defer free(packer.string_builder)
 		defer delete(packer.string_builder.buf)
 
 		expected_length: int
@@ -67,7 +69,8 @@ test_map_tag :: proc(t: ^testing.T) {
 		m.flush_packer(&packer)
 		testing.expect_value(t, len(buf.buf), expected_length)
 		u, r := make_unpacker_from_bytes(buf.buf[:])
-		defer free(r)
+		defer m.unpacker_destroy(u)
+
 		decoded, err := m.decode_tag(&u)
 		testing.expect_value(t, err, nil)
 		testing.expect_value(t, decoded, m.Map{length})

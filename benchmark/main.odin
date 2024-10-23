@@ -108,7 +108,7 @@ make_bytes_mpack :: proc(
 	tris := u16(options.bytes & 0xFFFF)
 	mesh := generate_mesh(vertices, tris)
 
-	mesh_bytes, perr := m.pack_into_bytes(&mesh, {})
+	mesh_bytes, perr := m.pack_into_bytes(&mesh, {.FieldNames})
 	if perr != nil {
 		panic(fmt.aprintfln("err: %v", perr))
 	}
@@ -171,7 +171,7 @@ bench_mpack_pack :: proc(
 
 	bytes := 0
 	for _ in 0 ..< options.rounds {
-		b, err := m.pack_into_bytes(&mesh, {})
+		b, err := m.pack_into_bytes(&mesh, {.FieldNames})
 		assert(err == nil)
 		bytes += len(b)
 		delete(b)
@@ -453,13 +453,13 @@ bench_unpack :: proc() {
 }
 import "core:os"
 main :: proc() {
-	// mesh := generate_mesh(1000, 400)
-	// defer delete(mesh.vertices)
-	// defer delete(mesh.indices)
-	// file, _ := os.open("mesh.mp", os.O_CREATE | os.O_WRONLY)
-	// defer os.close(file)
-	// stream := os.stream_from_handle(file)
-	// m.pack_into_writer(stream, &mesh, {.UnionNames})
+	mesh := generate_mesh(1000, 400)
+	defer delete(mesh.vertices)
+	defer delete(mesh.indices)
+	file, _ := os.open("mesh2.mp", os.O_CREATE | os.O_WRONLY)
+	defer os.close(file)
+	stream := os.stream_from_handle(file)
+	m.pack_into_writer(stream, &mesh, {.UnionNames, .FieldNames})
 
 	bench_unpack()
 	bench_pack()

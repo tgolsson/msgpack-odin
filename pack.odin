@@ -18,6 +18,7 @@ PackerFlags :: enum {
 	StableMaps = 0,
 	UnionNames = 1,
 	EnumNames  = 2,
+	FieldNames = 3,
 }
 
 PackerFlags_Set :: bit_set[PackerFlags]
@@ -87,11 +88,13 @@ pack_into_bytes :: proc(
 	err: Pack_Error,
 ) {
 	packer := packer_for_bytes(flags, allocator, temp_allocator) or_return
+	output: []u8
 	defer free(packer.string_builder)
 	{
 		defer destroy_packer(&packer, err != nil)
 		pack_any(&packer, v) or_return
 		bufio.writer_flush(&packer.bw)
+		output = packer.string_builder.buf[:]
 	}
 
 	return packer.string_builder.buf[:], nil
@@ -175,7 +178,7 @@ pack_number :: proc(p: ^Packer, num: $T) -> (err: Pack_Error) {
 	}
 
 	bytes: [size_of(T)]u8 = transmute([size_of(T)]u8)num
-	bufio.writer_write(&p.bw, bytes[:]) or_return
+	bufio.writer_short_write(&p.bw, bytes[:]) or_return
 	return nil
 }
 
@@ -185,7 +188,7 @@ write_byte :: #force_inline proc(p: ^Packer, b: u8) -> Pack_Error {
 }
 
 write_bytes :: #force_inline proc(p: ^Packer, bytes: []u8) -> Pack_Error {
-	_, err := bufio.writer_write(&p.bw, bytes)
+	_, err := bufio.writer_short_write(&p.bw, bytes)
 	return err
 }
 
@@ -226,7 +229,7 @@ write_number_swapped :: #force_inline proc(p: ^Packer, tag: Tag, number: $T) -> 
 
 	encode_tag(p, tag)
 	bytes := transmute([size_of(T)]u8)number
-	_, err = bufio.writer_write(&p.bw, bytes[:])
+	_, err = bufio.writer_short_write(&p.bw, bytes[:])
 
 	return
 }
@@ -245,18 +248,18 @@ begin_map :: proc(p: ^Packer, length: u32) {
 	}
 }
 
-begin_array :: proc(p: ^Packer, length: u32) {
-	switch length {
-	case 0 ..< (1 << 4):
-		write_byte(p, 0b10010000 | u8(length))
-	case (1 << 4) ..< (1 << 16):
-		write_byte(p, 0xdc)
-		write_nbytes_r(p, transmute([2]u8)u16(length))
-	case (1 << 16) ..= ((1 << 32) - 1):
-		write_byte(p, 0xdd)
-		write_nbytes_r(p, transmute([4]u8)length)
-
-	}
+begin_array :: #force_inline proc(p: ^Packer, length: u32) {
+	encode_tag(p, Array { int(length) })
+	// switch length {
+	// case 0 ..< (1 << 4):
+	// 	write_byte(p, 0b10010000 | u8(length))
+	// case (1 << 4) ..< (1 << 16):
+	// 	write_byte(p, 0xdc)
+	// 	write_nbytes_r(p, transmute([2]u8)u16(length))
+	// case (1 << 16) ..= ((1 << 32) - 1):
+	// 	write_byte(p, 0xdd)
+	// 	write_nbytes_r(p, transmute([4]u8)length)
+	// }
 }
 
 write_nil :: proc(p: ^Packer) {
@@ -490,13 +493,47 @@ pack_array_specialized :: proc(
 ) -> (
 	err: Pack_Error,
 ) {
-	for i in 0 ..< count {
-		data := uintptr(base_ptr) + uintptr(i * size_of(T))
-		when T == f32 || T == f64 {
-			write_generic_float(p, ((^T)(data))^)
-		} else {
-			write_number(p, ((^T)(data))^)
+	STEP :: size_of(T)
+	data := ([^]T)(base_ptr)
+	count := count
+
+	for count >= 4
+	{
+		#unroll for i in 0 ..< 4 {
+			when T == f32 || T == f64 {
+				write_generic_float(p, ((^T)(&data[i]))^)
+			} else {
+				write_number(p, ((^T)(&data[i]))^)
+			}
 		}
+		data = &data[4]
+		count -= 4
+	}
+
+	switch count {
+	case 3:
+		#unroll for i in 0 ..< 3 {
+			when T == f32 || T == f64 {
+				write_generic_float(p, ((^T)(&data[i]))^)
+			} else {
+				write_number(p, ((^T)(&data[i]))^)
+			}
+		}
+	case 2:
+		#unroll for i in 0 ..< 2 {
+			when T == f32 || T == f64 {
+				write_generic_float(p, ((^T)(&data[i]))^)
+			} else {
+				write_number(p, ((^T)(&data[i]))^)
+			}
+		}
+	case 1:
+		when T == f32 || T == f64 {
+			write_generic_float(p, ((^T)(&data[0]))^)
+		} else {
+			write_number(p, ((^T)(&data[0]))^)
+		}
+
 	}
 
 	return nil
@@ -512,7 +549,11 @@ pack_struct :: proc(
 	begin_map(p, u32(info.field_count))
 
 	for name, i in info.names[:info.field_count] {
-		write_str(p, name)
+		if .FieldNames in p.flags {
+			write_str(p, name)
+		} else {
+			write_number(p, i)
+		}
 		id := info.types[i].id
 		data := rawptr(uintptr(base_ptr) + info.offsets[i])
 		the_value := any{data, id}
@@ -609,7 +650,7 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 			encode_tag(p, tag)
 
 			s := slice.from_ptr(cast(^u8)data.data, da.len)
-			bufio.writer_write(&p.bw, s) or_return
+			bufio.writer_short_write(&p.bw, s) or_return
 		} else {
 			begin_array(p, u32(da.len))
 
