@@ -143,19 +143,20 @@ bench_cbor_marshal :: proc(
 ) -> (
 	err: time.Benchmark_Error,
 ) {
-	mesh: Mesh
-	mem.copy_non_overlapping(rawptr(&mesh), raw_data(options.input), size_of(Mesh))
 
-	bytes := 0
-	for _ in 0 ..< options.rounds {
-		b, err := cbor.marshal_into_bytes(mesh)
-		assert(err == nil, fmt.aprintfln("%v", err))
-		bytes += len(b)
-		delete(b)
-	}
+	// mesh: Mesh
+	// mem.copy_non_overlapping(rawptr(&mesh), raw_data(options.input), size_of(Mesh))
 
-	options.processed = bytes
-	options.count = options.rounds
+	// bytes := 0
+	// for _ in 0 ..< options.rounds {
+	// 	b, err := cbor.marshal_into_bytes(mesh)
+	// 	assert(err == nil, fmt.aprintfln("%v", err))
+	// 	bytes += len(b)
+	// 	delete(b)
+	// }
+
+	// options.processed = bytes
+	// options.count = options.rounds
 	return nil
 }
 
@@ -188,25 +189,25 @@ bench_cbor_unmarshal :: proc(
 	err: time.Benchmark_Error,
 ) {
 
-	total_bytes := 0
+	// total_bytes := 0
 
-	for _ in 0 ..< options.rounds {
-		m: Mesh
-		reader := new(bytes.Reader, allocator)
-		stream := bytes.reader_init(reader, options.input)
-		io_reader := io.to_reader(stream)
+	// for _ in 0 ..< options.rounds {
+	// 	m: Mesh
+	// 	reader := new(bytes.Reader, allocator)
+	// 	stream := bytes.reader_init(reader, options.input)
+	// 	io_reader := io.to_reader(stream)
 
-		err := cbor.unmarshal_from_reader(io_reader, &m)
-		assert(err == nil)
-		total_bytes += len(m.indices) + len(m.vertices)
+	// 	err := cbor.unmarshal_from_reader(io_reader, &m)
+	// 	assert(err == nil)
+	// 	total_bytes += len(m.indices) + len(m.vertices)
 
-		free(reader)
-		delete(m.indices)
-		delete(m.vertices)
-	}
+	// 	free(reader)
+	// 	delete(m.indices)
+	// 	delete(m.vertices)
+	// }
 
-	options.processed = total_bytes
-	options.count = options.rounds
+	// options.processed = total_bytes
+	// options.count = options.rounds
 	return nil
 }
 

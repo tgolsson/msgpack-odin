@@ -105,11 +105,11 @@ unpack_from_reader :: proc(
 }
 
 read_byte :: proc(u: ^Unpacker) -> (b: u8, err: Unpack_Error) {
-	byt, ioerr := bufio.reader_read_byte(u.reader)
+	ioerr: io.Error
+	b, ioerr = bufio.reader_read_byte(u.reader)
 	if ioerr != .None {
 		err = ioerr
 	}
-	b = byt
 
 	return b, err
 }
