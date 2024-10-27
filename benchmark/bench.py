@@ -34,16 +34,36 @@ def repro_json(mesh, size):
     )
 
 
-#   print(
-#       f"""\
-# JSON
-#   dump: {1.0 / elapsed_dump}/s (total: {elapsed_dump})
-#   load: {1.0 / elapsed_load}/s (total: {elapsed_load})
-#  """
-#   )
+def repro_stdjson(mesh, size):
+    import json
+
+    start = time.perf_counter()
+
+    b = 0
+    for _ in range(ROUNDS):
+        json_data = json.dumps(mesh)
+        b += len(json_data)
+
+    elapsed_dump = time.perf_counter() - start
+
+    start = time.perf_counter()
+
+    items = 0
+    for _ in range(ROUNDS):
+        mesh = json.loads(json_data)
+        items += len(mesh["vertices"]) + len(mesh["indices"])
+    elapsed_load = time.perf_counter() - start
+
+    print(
+        f"[{size}_stdjson_pack] {ROUNDS} rounds, {int(b // 1000)} K(B/items) processed in {int(elapsed_dump * 1000)} ms\n\t\t{ROUNDS / elapsed_dump:5.3f} rounds/s, {(b / 1e6) / elapsed_dump} MiB/s\n",
+    )
+
+    print(
+        f"[{size}_stdjson_unpack] {ROUNDS} rounds, {items // 1000} K(B/items) processed in {int(elapsed_load * 1000)} ms\n\t\t{ROUNDS / elapsed_load:5.3f} rounds/s, {(b / 1e6) / elapsed_load} MiB/s\n",
+    )
 
 
-def repro_msgpack(mesh):
+def repro_msgpack(mesh, size):
     start = time.perf_counter()
 
     b = 0
@@ -69,7 +89,7 @@ def repro_msgpack(mesh):
     )
 
 
-def repro_cbor(mesh):
+def repro_cbor(mesh, size):
     start = time.perf_counter()
 
     b = 0
@@ -105,8 +125,9 @@ def repro_testcase(size):
     global ROUNDS
 
     repro_json(mesh, size)
-    repro_cbor(mesh)
-    repro_msgpack(mesh)
+    repro_stdjson(mesh, size)
+    repro_cbor(mesh, size)
+    repro_msgpack(mesh, size)
 
     ROUNDS //= 2
 
