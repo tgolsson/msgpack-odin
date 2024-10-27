@@ -614,7 +614,7 @@ main :: proc() {
 		mesh := generate_mesh(100, 40)
 		defer delete(mesh.vertices)
 		defer delete(mesh.indices)
-		file, _ := os.open("small.mp", os.O_CREATE | os.O_WRONLY)
+		file, _ := os.open("small.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, 0o0644)
 		defer os.close(file)
 		stream := os.stream_from_handle(file)
 		m.pack_into_writer(stream, &mesh, {.UnionNames, .FieldNames})
@@ -623,7 +623,7 @@ main :: proc() {
 		mesh := generate_mesh(1000, 400)
 		defer delete(mesh.vertices)
 		defer delete(mesh.indices)
-		file, _ := os.open("medium.mp", os.O_CREATE | os.O_WRONLY)
+		file, _ := os.open("medium.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, 0o0644)
 		defer os.close(file)
 		stream := os.stream_from_handle(file)
 		m.pack_into_writer(stream, &mesh, {.UnionNames, .FieldNames})
@@ -633,7 +633,7 @@ main :: proc() {
 		defer delete(mesh.vertices)
 		defer delete(mesh.indices)
 
-		file, _ := os.open("large.mp", os.O_CREATE | os.O_WRONLY)
+		file, _ := os.open("large.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, 0o0644)
 		defer os.close(file)
 
 		stream := os.stream_from_handle(file)
@@ -644,7 +644,7 @@ main :: proc() {
 		defer delete(mesh.vertices)
 		defer delete(mesh.indices)
 
-		file, _ := os.open("massive.mp", os.O_CREATE | os.O_WRONLY)
+		file, _ := os.open("massive.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, 0o0644)
 		defer os.close(file)
 
 		stream := os.stream_from_handle(file)
