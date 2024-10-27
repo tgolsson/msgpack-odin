@@ -13,4 +13,7 @@ report: perf
     /usr/lib/linux-tools-5.15.0-79/perf report --children -G --no-inline
 
 hotspot: perf
-    hotspot perf.data    
+    hotspot perf.data
+
+pex:
+   pex msgpack cbor orjson pandas tabulate matplotlib -o msgpack.pex
