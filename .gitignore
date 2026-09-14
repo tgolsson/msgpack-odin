@@ -2,3 +2,5 @@ msgpack.pex
 tests.bin
 *.exe
 *.pdb
+.imp/
+dist/
