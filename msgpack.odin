@@ -18,7 +18,6 @@ import "core:time"
 NEEDS_SWAP :: endian.PLATFORM_BYTE_ORDER == .Little
 
 bin :: distinct u8
-binary :: distinct []bin
 
 // Nil :: struct {}
 
@@ -95,7 +94,7 @@ object_equals :: proc(left: ^Object, right: ^Object) -> bool {
 
 	case []Object:
 		rl, is_list := right.([]Object)
-		if !is_list || is_list && len(rl) != len(l) {
+		if !is_list || len(rl) != len(l) {
 			return false
 		}
 
@@ -150,7 +149,9 @@ object_equals :: proc(left: ^Object, right: ^Object) -> bool {
 		return r == l
 
 	case Ext:
-		panic("as")
+		r, is_ext := right.(Ext)
+		if !is_ext do return false
+		return l == r
 	}
 
 	return false

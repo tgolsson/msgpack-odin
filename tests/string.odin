@@ -24,7 +24,7 @@ test_str_less_than_32_de :: proc(t: ^testing.T) {
     testing.expect_value(t, err, nil)
     expected := "hello world"
     testing.expect_value(t, res.(string), expected)
-	m.object_delete(res)
+
 }
 
 
@@ -37,7 +37,8 @@ test_str_less_than_32_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (string)("hello world"))
-	delete(out)
+    delete(out)
+
 }
 
 @(test)
@@ -62,7 +63,6 @@ test_str_less_than_256_de :: proc(t: ^testing.T) {
     expected := "hello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello world"
     testing.expect_value(t, res.(string), expected)
 
-	m.object_delete(res)
 }
 
 
@@ -75,7 +75,8 @@ test_str_less_than_256_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (string)("hello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello world"))
-	delete(out)
+    delete(out)
+
 }
 
 @(test)
@@ -99,7 +100,7 @@ test_str_above_256_de :: proc(t: ^testing.T) {
     testing.expect_value(t, err, nil)
     expected := "hello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello world"
     testing.expect_value(t, res.(string), expected)
-	m.object_delete(res)
+
 }
 
 
@@ -112,6 +113,7 @@ test_str_above_256_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (string)("hello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello worldhello world"))
+    delete(out)
 
-	delete(out)
 }
+

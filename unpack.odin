@@ -5,6 +5,7 @@ import "base:runtime"
 import "core:bufio"
 import "core:bytes"
 import "core:encoding/endian"
+import "core:io"
 import "core:mem"
 import "core:reflect"
 import "core:slice"
@@ -46,11 +47,12 @@ unpacker_from_reader :: proc(reader: io.Reader, allocator := context.allocator) 
 	return Unpacker{reader, buffered_reader, allocator, nil}
 }
 
-unpacker_destroy :: proc(u: Unpacker)
-{
+unpacker_destroy :: proc(u: Unpacker) {
 	if u.bytes_reader != nil {
 		free(u.bytes_reader)
 	}
+	bufio.reader_destroy(u.reader)
+	free(u.reader)
 }
 
 unpack_into_from_bytes :: proc(
@@ -61,7 +63,6 @@ unpack_into_from_bytes :: proc(
 	err: Unpack_Error,
 ) {
 	u := unpacker_from_bytes(b, allocator)
-
 	defer unpacker_destroy(u)
 
 	return read_into(&u, ptr)
@@ -105,11 +106,11 @@ unpack_from_reader :: proc(
 }
 
 read_byte :: proc(u: ^Unpacker) -> (b: u8, err: Unpack_Error) {
-	byt, ioerr := bufio.reader_read_byte(u.reader)
-	if ioerr != .None {
+	ioerr: io.Error
+	b, ioerr = bufio.reader_read_byte(u.reader)
+	if intrinsics.expect(ioerr != .None, false) {
 		err = ioerr
 	}
-	b = byt
 
 	return b, err
 }
@@ -118,26 +119,28 @@ read_bytes :: proc(u: ^Unpacker, $bytes: u64) -> (out: [bytes]u8, err: Unpack_Er
 	n: u64 = 0
 	for n < bytes {
 		nn, ioerr := bufio.reader_read(u.reader, out[n:])
-		if ioerr != .None {
-			err = nil
-		}
 		n += u64(nn)
+		if ioerr != .None {
+			err = ioerr
+			break
+		}
 	}
 
-	return out, nil
+	return out, err
 }
 
 read_bytes_into_slice :: proc(u: ^Unpacker, out: []u8) -> (err: Unpack_Error) {
 	n: int = 0
 	for n < len(out) {
 		nn, ioerr := bufio.reader_read(u.reader, out[n:])
-		if ioerr != .None {
-			err = nil
-		}
 		n += nn
+		if ioerr != .None {
+			err = ioerr
+			break
+		}
 	}
 
-	return nil
+	return err
 }
 
 read_number_swapped :: proc(u: ^Unpacker, $T: typeid) -> (number: T, err: Unpack_Error) {
@@ -161,7 +164,7 @@ read_size :: proc(u: ^Unpacker, width: u64) -> (size: u64, err: Unpack_Error) {
 }
 
 read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {
-	out := make(map[ObjectKey]Object)
+	out := make(map[ObjectKey]Object, 0, u.allocator)
 	defer if err != nil {
 		delete(out)
 	}
@@ -185,7 +188,7 @@ read_string :: proc(u: ^Unpacker, size: int) -> (value: string, err: Unpack_Erro
 	defer if err != nil {
 		delete(buffer)
 	}
-	read_bytes_into_slice(u,buffer[:]) or_return
+	read_bytes_into_slice(u, buffer[:]) or_return
 
 	s := string(buffer[:])
 	return s, nil
@@ -193,13 +196,13 @@ read_string :: proc(u: ^Unpacker, size: int) -> (value: string, err: Unpack_Erro
 
 read_bin :: proc(u: ^Unpacker, size: int) -> (value: []bin, err: Unpack_Error) {
 	buffer := make([]u8, size, u.allocator)
-	read_bytes_into_slice(u,buffer[:]) or_return
+	read_bytes_into_slice(u, buffer[:]) or_return
 
 	return transmute([]bin)buffer, nil
 }
 
 read_array :: proc(u: ^Unpacker, size: int) -> (item: []Object, err: Unpack_Error) {
-	out := make([]Object, size)
+	out := make([]Object, size, u.allocator)
 	defer if err != nil {
 		delete(out)
 	}
@@ -215,10 +218,14 @@ read_array :: proc(u: ^Unpacker, size: int) -> (item: []Object, err: Unpack_Erro
 
 read_uint :: proc(u: ^Unpacker, tag: Uint) -> (item: Object, err: Unpack_Error) {
 	switch tag.width {
-	case 1:	return u64(read_number_swapped(u, u8) or_return), nil
-	case 2:	return u64(read_number_swapped(u, u16) or_return), nil
-	case 4:	return u64(read_number_swapped(u, u32) or_return), nil
-	case 8:	return u64(read_number_swapped(u, u64) or_return), nil
+	case 1:
+		return u64(read_number_swapped(u, u8) or_return), nil
+	case 2:
+		return u64(read_number_swapped(u, u16) or_return), nil
+	case 4:
+		return u64(read_number_swapped(u, u32) or_return), nil
+	case 8:
+		return u64(read_number_swapped(u, u64) or_return), nil
 	}
 
 	unreachable()
@@ -233,13 +240,15 @@ read_float :: proc(u: ^Unpacker, tag: Float) -> (item: Object, err: Unpack_Error
 }
 
 read_sint :: proc(u: ^Unpacker, tag: Int) -> (item: Object, err: Unpack_Error) {
-	size: Object
-
 	switch tag.width {
-	case 1:	 return i64(read_number_swapped(u, i8) or_return), nil
-	case 2: return i64(read_number_swapped(u, i16) or_return), nil
-	case 4: return i64(read_number_swapped(u, i32) or_return), nil
-	case 8: return i64(read_number_swapped(u, i64) or_return), nil
+	case 1:
+		return i64(read_number_swapped(u, i8) or_return), nil
+	case 2:
+		return i64(read_number_swapped(u, i16) or_return), nil
+	case 4:
+		return i64(read_number_swapped(u, i32) or_return), nil
+	case 8:
+		return i64(read_number_swapped(u, i64) or_return), nil
 	}
 
 	unreachable()
@@ -276,7 +285,7 @@ read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpac
 		delete(bytes)
 	}
 
-	read_bytes_into_slice(u,bytes) or_return
+	read_bytes_into_slice(u, bytes) or_return
 
 	if type == -1 {
 		return read_timestamp_ext1(bytes), nil
@@ -338,7 +347,7 @@ read_key :: proc(u: ^Unpacker) -> (item: ObjectKey, err: Unpack_Error) {
 
 	case:
 		panic("xxx")
-		// return nil, Unexpected{"a valid key type", tag_name(tag)}
+	// return nil, Unexpected{"a valid key type", tag_name(tag)}
 	}
 
 	unreachable()
@@ -509,12 +518,25 @@ read_struct_into :: proc(
 ) -> Unpack_Error {
 	for i in 0 ..< length {
 		key := read_key(u) or_return
-		field_name := key.(string)
-		defer delete(field_name)
-		field_info := reflect.struct_field_by_name(v.id, field_name)
-		field_offset := field_info.offset
-		field_type := field_info.type
-		field_data := rawptr(uintptr(v.data) + field_offset)
+
+		field_type: ^runtime.Type_Info
+		field_offset: uintptr
+
+		field_name, ok := key.(string)
+		if ok {
+			defer delete(field_name)
+			field_info := reflect.struct_field_by_name(v.id, field_name)
+
+			field_offset = field_info.offset
+			field_type = field_info.type
+		} else {
+			field_index := key.(u64)
+			field_offset = uintptr(info.offsets[field_index])
+			field_type = info.types[field_index]
+		}
+
+
+		field_data := rawptr(uintptr(v.data) + uintptr(field_offset))
 		field_any := any {
 			data = field_data,
 			id   = field_type.id,
@@ -571,10 +593,9 @@ read_union_into :: proc(
 				defer strings.builder_destroy(&builder)
 
 				reflect.write_type(&builder, variant)
-				variant_name := strings.to_string(builder)
-				defer delete(variant_name)
+				type_name := strings.to_string(builder)
 
-				if variant_name == variant_name {
+				if type_name == variant_name {
 					variant_info = variant
 					found_tag = tag
 				}
@@ -588,8 +609,6 @@ read_union_into :: proc(
 	}
 	return nil
 }
-
-import "core:io"
 
 read_bytes_into :: proc(
 	u: ^Unpacker,
@@ -608,36 +627,161 @@ read_bytes_into :: proc(
 		}
 
 		slice := ([^]byte)(v.data)[:length]
-		read_bytes_into_slice(u,slice) or_return
+		read_bytes_into_slice(u, slice) or_return
 
 	case runtime.Type_Info_Slice:
 		raw_slice := (^mem.Raw_Slice)(v.data)
 
 		slice := make([]byte, length, u.allocator)
 		defer if err != nil do delete(slice)
-		read_bytes_into_slice(u,slice) or_return
+		read_bytes_into_slice(u, slice) or_return
 		raw_slice^ = transmute(mem.Raw_Slice)slice
 
 	case runtime.Type_Info_Dynamic_Array:
 		raw_dynamic_array := (^mem.Raw_Dynamic_Array)(v.data)
-		target_length := raw_dynamic_array.len / info.elem_size
 
-		buf := strings.builder_make(0, length) or_return
-		defer if err != nil {strings.builder_destroy(&buf)}
+		slice := make([]byte, length, u.allocator) or_return
+		defer if err != nil { delete(slice, u.allocator) }
 
-		slice := ([^]byte)(v.data)[:length]
-		read_bytes_into_slice(u,slice) or_return
+		read_bytes_into_slice(u, slice) or_return
 
-		raw_dynamic_array.data = raw_data(buf.buf[:])
+		raw_dynamic_array.data = raw_data(slice)
 		raw_dynamic_array.len = length
 		raw_dynamic_array.cap = length
-		raw_dynamic_array.allocator = context.allocator
+		raw_dynamic_array.allocator = u.allocator
 
 	case:
 		return Unexpected{"a bin", "not a bin"}
 	}
 
 	return err
+}
+
+read_array_into_specialized :: proc(
+	u: ^Unpacker,
+	base_ptr: rawptr,
+	$T: typeid,
+	length: int,
+) -> (
+	err: Unpack_Error,
+) {
+	base := uintptr(base_ptr)
+	ti := typeid_of(T)
+	for i in 0 ..< length {
+		elem := any{rawptr(base), ti}
+
+		next_elem := decode_tag(u) or_return
+
+		#partial switch variant in next_elem {
+		case Positive_Fixint:
+			assign_num(elem, T, variant.value)
+		case Negative_Fixint:
+			assign_num(elem, T, variant.value)
+		case Uint:
+			assign_num(elem, T, (read_uint(u, variant) or_return).(u64))
+		case Int:
+			assign_num(elem, T, (read_sint(u, variant) or_return).(i64))
+		case Float:
+			f := read_float(u, variant) or_return
+			if variant.is_double {
+				assign_num(elem, T, f.(f64))
+			} else {
+				assign_num(elem, T, f.(f32))
+			}
+
+		case:
+			return Unhandled_Tag{next_elem}
+		}
+
+		base += size_of(T)
+	}
+
+	return nil
+}
+
+read_array_into_specialized_dispatch :: proc(
+	u: ^Unpacker,
+	v: any,
+	info: ^runtime.Type_Info,
+	length: int,
+) -> (
+	did: bool,
+	err: Unpack_Error,
+) {
+	base_ptr: rawptr
+	elem_info: ^runtime.Type_Info
+
+	#partial switch info in info.variant {
+	case runtime.Type_Info_Array:
+		target_length := info.count
+		if length != target_length {
+			return false, Slice_Length_Mismatch{target_length, length}
+		}
+
+		base_ptr = v.data
+		elem_info = info.elem
+
+	case runtime.Type_Info_Slice:
+		raw_slice := (^mem.Raw_Slice)(v.data)
+		target_length := raw_slice.len
+
+		if length > raw_slice.len / info.elem_size {
+			data := mem.alloc_bytes_non_zeroed(
+				info.elem.size * length,
+				info.elem.align,
+				allocator = u.allocator,
+			) or_return
+
+			defer if err != nil {mem.free_bytes(data, allocator = u.allocator)}
+			da := mem.Raw_Dynamic_Array{raw_data(data), length, length, u.allocator}
+
+			base_ptr = da.data
+			raw_slice.data = da.data
+			raw_slice.len = da.len
+		}
+
+		base_ptr = raw_slice.data
+		elem_info = info.elem
+
+	case runtime.Type_Info_Dynamic_Array:
+		d := cast(^mem.Raw_Dynamic_Array)v.data
+		if length > d.len {
+			runtime.__dynamic_array_resize(d, info.elem_size, info.elem.align, length)
+		}
+
+		base_ptr = d.data
+		elem_info = info.elem
+
+	case:
+		return false, Unexpected{"an array, slice, or dynamic array", "not an array-like type"}
+	}
+
+	switch elem_info.id {
+	case i8:
+		read_array_into_specialized(u, base_ptr, i8, length) or_return
+	case i16:
+		read_array_into_specialized(u, base_ptr, i16, length) or_return
+	case i32:
+		read_array_into_specialized(u, base_ptr, i32, length) or_return
+	case i64:
+		read_array_into_specialized(u, base_ptr, i64, length) or_return
+	case u8:
+		read_array_into_specialized(u, base_ptr, u8, length) or_return
+	case u16:
+		read_array_into_specialized(u, base_ptr, u16, length) or_return
+	case u32:
+		read_array_into_specialized(u, base_ptr, u32, length) or_return
+	case u64:
+		read_array_into_specialized(u, base_ptr, u64, length) or_return
+	case f32:
+		read_array_into_specialized(u, base_ptr, f32, length) or_return
+	case f64:
+		read_array_into_specialized(u, base_ptr, f64, length) or_return
+	case:
+		return false, nil
+	}
+
+	return true, nil
 }
 
 read_array_into :: proc(
@@ -648,57 +792,58 @@ read_array_into :: proc(
 ) -> (
 	err: Unpack_Error,
 ) {
+	did := read_array_into_specialized_dispatch(u, v, info, length) or_return
+
+	if did {
+		return nil
+	}
+
 	#partial switch info in info.variant {
 	case runtime.Type_Info_Array:
-		target_length := info.count
-		if length != target_length {
-			return Slice_Length_Mismatch{target_length, length}
+		if length != info.count {
+			return Slice_Length_Mismatch{info.count, length}
 		}
 
 		for i in 0 ..< length {
-			elem := any{rawptr(uintptr(v.data) + uintptr(i * info.elem_size)), info.elem.id}
-			err = read_into_value(u, elem)
-			if err != nil {
-				return err
-			}
+			dest := uintptr(v.data) + uintptr(int(i) * info.elem_size)
+			read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
 		}
 
 	case runtime.Type_Info_Slice:
-		raw_slice := (^mem.Raw_Slice)(v.data)
-		target_length := raw_slice.len
-
-		if length > target_length {
-			return Slice_Length_Mismatch{target_length, length}
-		}
-
-		for i in 0 ..< length {
-			elem := any {
-				rawptr(uintptr(raw_slice.data) + uintptr(i * info.elem_size)),
-				info.elem.id,
+		d := cast(^mem.Raw_Slice)v.data
+		if length < d.len / info.elem_size {
+			for i in 0 ..< length {
+				dest := uintptr(d.data) + uintptr(int(i) * info.elem_size)
+				read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
 			}
-			read_into_value(u, elem) or_return
+		} else {
+			data := mem.alloc_bytes_non_zeroed(
+				info.elem.size * length,
+				info.elem.align,
+				allocator = u.allocator,
+			) or_return
+			defer if err != nil {mem.free_bytes(data, allocator = u.allocator)}
+			da := mem.Raw_Dynamic_Array{raw_data(data), length, length, u.allocator}
 
+			for i in 0 ..< length {
+				dest := uintptr(da.data) + uintptr(int(i) * info.elem_size)
+				read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
+			}
+
+			raw := (^mem.Raw_Slice)(v.data)
+			raw.data = da.data
+			raw.len = da.len
 		}
 
 	case runtime.Type_Info_Dynamic_Array:
-		raw_dynamic_array := (^mem.Raw_Dynamic_Array)(v.data)
-		target_length := raw_dynamic_array.len
-
-		if length > target_length {
-			new_data := make([]byte, length * info.elem_size)
-			mem.copy(raw_data(new_data), raw_dynamic_array.data, target_length * info.elem_size)
-			raw_dynamic_array.data = raw_data(new_data)
-			raw_dynamic_array.len = length
-			raw_dynamic_array.cap = length
+		d := cast(^mem.Raw_Dynamic_Array)v.data
+		if length > d.len {
+			runtime.__dynamic_array_resize(d, info.elem_size, info.elem.align, length)
 		}
 
 		for i in 0 ..< length {
-			elem := any {
-				rawptr(uintptr(raw_dynamic_array.data) + uintptr(i * info.elem_size)),
-				info.elem.id,
-			}
-			read_into_value(u, elem) or_return
-
+			dest := uintptr(d.data) + uintptr(int(i) * info.elem_size)
+			read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
 		}
 
 	case:
@@ -740,7 +885,7 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 		}
 
 	case Nil:
-	// TODO
+	// TODO: not sure how to handle consistently.
 	case Map:
 		length := u64(variant.length)
 
@@ -762,7 +907,7 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 	case Ext:
 		if variant.type == -1 {
 			bytes := make([]u8, variant.length, u.allocator)
-			read_bytes_into_slice(u,bytes) or_return
+			read_bytes_into_slice(u, bytes) or_return
 
 			if v.id == time.Time {
 				(^time.Time)(v.data)^ = read_timestamp_ext1(bytes)
@@ -778,62 +923,7 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 			assign_num(v, v.id, read_number_swapped(u, f32) or_return)
 		}
 	case Array:
-		// fixarray
-		length := variant.length
-		maybe := ti
-
-		#partial switch info in maybe.variant {
-		case runtime.Type_Info_Array:
-			if length != info.count {
-				return Slice_Length_Mismatch{info.count, length}
-			}
-
-			for i in 0 ..< length {
-				dest := uintptr(v.data) + uintptr(int(i) * info.elem_size)
-				read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
-			}
-
-		case runtime.Type_Info_Slice:
-			d := cast(^mem.Raw_Slice)v.data
-			if length < d.len / info.elem_size {
-				for i in 0 ..< length {
-					dest := uintptr(d.data) + uintptr(int(i) * info.elem_size)
-					read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
-				}
-			} else {
-				data := mem.alloc_bytes_non_zeroed(
-					info.elem.size * length,
-					info.elem.align,
-					allocator = context.temp_allocator,
-				) or_return
-				defer if err != nil {mem.free_bytes(data, allocator = context.temp_allocator)}
-				da := mem.Raw_Dynamic_Array{raw_data(data), length, length, context.temp_allocator}
-
-				for i in 0 ..< length {
-					dest := uintptr(da.data) + uintptr(int(i) * info.elem_size)
-					read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
-				}
-
-				raw := (^mem.Raw_Slice)(v.data)
-				raw.data = da.data
-				raw.len = da.len
-			}
-
-		case runtime.Type_Info_Dynamic_Array:
-			d := cast(^mem.Raw_Dynamic_Array)v.data
-			if length > d.len {
-				runtime.__dynamic_array_resize(d, info.elem_size, info.elem.align, length)
-			}
-
-			for i in 0 ..< length {
-				dest := uintptr(d.data) + uintptr(int(i) * info.elem_size)
-				read_into_value(u, any{rawptr(dest), info.elem.id}) or_return
-			}
-
-
-		case:
-			err = Invalid_Parameter{"unhandled type"}
-		}
+		read_array_into(u, v, ti, variant.length) or_return
 	}
 
 	return err

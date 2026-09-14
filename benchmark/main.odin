@@ -2,6 +2,7 @@ package benchmark
 
 import m "../"
 import "core:encoding/cbor"
+import "core:encoding/json"
 import "core:fmt"
 import "core:math/rand"
 import "core:mem"
@@ -10,6 +11,7 @@ import "core:time"
 import "core:bytes"
 import "core:io"
 
+ROUNDS :: 10000
 Vec2 :: [2]f32
 Vec3 :: [3]f32
 Vec4 :: [4]f32
@@ -108,11 +110,35 @@ make_bytes_mpack :: proc(
 	tris := u16(options.bytes & 0xFFFF)
 	mesh := generate_mesh(vertices, tris)
 
-	mesh_bytes, perr := m.pack_into_bytes(&mesh, {})
+	mesh_bytes, perr := m.pack_into_bytes(&mesh, {.FieldNames})
 	if perr != nil {
 		panic(fmt.aprintfln("err: %v", perr))
 	}
 	options.input = mesh_bytes[:]
+
+	delete(mesh.vertices)
+	delete(mesh.indices)
+
+	return nil
+}
+
+make_bytes_json :: proc(
+	options: ^time.Benchmark_Options,
+	allocator := context.allocator,
+) -> (
+	err: time.Benchmark_Error,
+) {
+	vertices := u16((options.bytes >> 16) & 0xFFFF)
+	tris := u16(options.bytes & 0xFFFF)
+	mesh := generate_mesh(vertices, tris)
+
+	builder: strings.Builder
+	strings.builder_init(&builder)
+	merr := json.marshal_to_builder(&builder, mesh, &{})
+	if merr != nil {
+		panic(fmt.aprintfln("err: %v", merr))
+	}
+	options.input = builder.buf[:]
 
 	delete(mesh.vertices)
 	delete(mesh.indices)
@@ -143,6 +169,7 @@ bench_cbor_marshal :: proc(
 ) -> (
 	err: time.Benchmark_Error,
 ) {
+
 	mesh: Mesh
 	mem.copy_non_overlapping(rawptr(&mesh), raw_data(options.input), size_of(Mesh))
 
@@ -170,10 +197,36 @@ bench_mpack_pack :: proc(
 
 	bytes := 0
 	for _ in 0 ..< options.rounds {
-		b, err := m.pack_into_bytes(&mesh, {})
+		b, err := m.pack_into_bytes(&mesh, {.FieldNames})
 		assert(err == nil)
 		bytes += len(b)
 		delete(b)
+	}
+
+	options.processed = bytes
+	options.count = options.rounds
+	return nil
+}
+
+bench_json_marshal :: proc(
+	options: ^time.Benchmark_Options,
+	allocator := context.allocator,
+) -> (
+	err: time.Benchmark_Error,
+) {
+
+	mesh: Mesh
+	mem.copy_non_overlapping(rawptr(&mesh), raw_data(options.input), size_of(Mesh))
+
+	bytes := 0
+	builder: strings.Builder
+	strings.builder_init(&builder)
+	for _ in 0 ..< options.rounds {
+
+		err := json.marshal_to_builder(&builder, mesh, &{})
+		assert(err == nil, fmt.aprintfln("%v", err))
+		bytes += len(builder.buf)
+		strings.builder_reset(&builder)
 	}
 
 	options.processed = bytes
@@ -201,6 +254,31 @@ bench_cbor_unmarshal :: proc(
 		total_bytes += len(m.indices) + len(m.vertices)
 
 		free(reader)
+		delete(m.indices)
+		delete(m.vertices)
+	}
+
+	options.processed = total_bytes
+	options.count = options.rounds
+	return nil
+}
+
+
+bench_json_unmarshal :: proc(
+	options: ^time.Benchmark_Options,
+	allocator := context.allocator,
+) -> (
+	err: time.Benchmark_Error,
+) {
+
+	total_bytes := 0
+
+	for _ in 0 ..< options.rounds {
+		m: Mesh
+		err := json.unmarshal(options.input, &m)
+		assert(err == nil)
+		total_bytes += len(m.indices) + len(m.vertices)
+
 		delete(m.indices)
 		delete(m.vertices)
 	}
@@ -272,80 +350,121 @@ bench_pack :: proc() {
 		setup    = make_mesh,
 		bench    = bench_cbor_marshal,
 		teardown = destroy_mesh,
-		rounds   = 100,
+		rounds   = ROUNDS,
 		bytes    = (100 << 16 | 40),
 	}
 	err := time.benchmark(&small_cbor)
 	benchmark_print(&str, "small_cbor_pack", &small_cbor)
-
-	small_mpack := time.Benchmark_Options {
-		setup    = make_mesh,
-		bench    = bench_mpack_pack,
-		teardown = destroy_mesh,
-		rounds   = 100,
-		bytes    = (100 << 16 | 40),
-	}
-	err = time.benchmark(&small_mpack)
-	benchmark_print(&str, "small_mpack_pack", &small_mpack)
 
 
 	medium_cbor := time.Benchmark_Options {
 		setup    = make_mesh,
 		bench    = bench_cbor_marshal,
 		teardown = destroy_mesh,
-		rounds   = 100,
+		rounds   = ROUNDS,
 		bytes    = (1000 << 16 | 400),
 	}
 	err = time.benchmark(&medium_cbor)
 	benchmark_print(&str, "medium_cbor_pack", &medium_cbor)
 
+	large_cbor := time.Benchmark_Options {
+		setup    = make_mesh,
+		bench    = bench_cbor_marshal,
+		teardown = destroy_mesh,
+		rounds   = ROUNDS,
+		bytes    = (10000 << 16 | 4000),
+	}
+	err = time.benchmark(&large_cbor)
+	benchmark_print(&str, "large_cbor_pack", &large_cbor)
+
+	massive_cbor := time.Benchmark_Options {
+		setup    = make_mesh,
+		bench    = bench_cbor_marshal,
+		teardown = destroy_mesh,
+		rounds   = ROUNDS,
+		bytes    = (50000 << 16 | 20000),
+	}
+	err = time.benchmark(&massive_cbor)
+	benchmark_print(&str, "massive_cbor_pack", &massive_cbor)
+
+
+	small_json := time.Benchmark_Options {
+		setup    = make_mesh,
+		bench    = bench_json_marshal,
+		teardown = destroy_mesh,
+		rounds   = ROUNDS,
+		bytes    = (100 << 16 | 40),
+	}
+	err = time.benchmark(&small_json)
+	benchmark_print(&str, "small_json_pack", &small_json)
+
+
+	medium_json := time.Benchmark_Options {
+		setup    = make_mesh,
+		bench    = bench_json_marshal,
+		teardown = destroy_mesh,
+		rounds   = ROUNDS,
+		bytes    = (1000 << 16 | 400),
+	}
+	err = time.benchmark(&medium_json)
+	benchmark_print(&str, "medium_json_pack", &medium_json)
+
+	large_json := time.Benchmark_Options {
+		setup    = make_mesh,
+		bench    = bench_json_marshal,
+		teardown = destroy_mesh,
+		rounds   = ROUNDS,
+		bytes    = (10000 << 16 | 4000),
+	}
+	err = time.benchmark(&large_json)
+	benchmark_print(&str, "large_json_pack", &large_json)
+
+	massive_json := time.Benchmark_Options {
+		setup    = make_mesh,
+		bench    = bench_json_marshal,
+		teardown = destroy_mesh,
+		rounds   = ROUNDS,
+		bytes    = (50000 << 16 | 20000),
+	}
+	err = time.benchmark(&massive_json)
+	benchmark_print(&str, "massive_json_pack", &massive_json)
+
+	small_mpack := time.Benchmark_Options {
+		setup    = make_mesh,
+		bench    = bench_mpack_pack,
+		teardown = destroy_mesh,
+		rounds   = ROUNDS,
+		bytes    = (100 << 16 | 40),
+	}
+	err = time.benchmark(&small_mpack)
+	benchmark_print(&str, "small_mpack_pack", &small_mpack)
+
 	medium_mpack := time.Benchmark_Options {
 		setup    = make_mesh,
 		bench    = bench_mpack_pack,
 		teardown = destroy_mesh,
-		rounds   = 100,
+		rounds   = ROUNDS,
 		bytes    = (1000 << 16 | 400),
 	}
 
 	err = time.benchmark(&medium_mpack)
 	benchmark_print(&str, "medium_mpack_pack", &medium_mpack)
 
-	large_cbor := time.Benchmark_Options {
-		setup    = make_mesh,
-		bench    = bench_cbor_marshal,
-		teardown = destroy_mesh,
-		rounds   = 100,
-		bytes    = (10000 << 16 | 4000),
-	}
-	err = time.benchmark(&large_cbor)
-	benchmark_print(&str, "large_cbor_pack", &large_cbor)
-
 	large_mpack := time.Benchmark_Options {
 		setup    = make_mesh,
 		bench    = bench_mpack_pack,
 		teardown = destroy_mesh,
-		rounds   = 100,
+		rounds   = ROUNDS,
 		bytes    = (10000 << 16 | 4000),
 	}
 	err = time.benchmark(&large_mpack)
 	benchmark_print(&str, "large_mpack_pack", &large_mpack)
 
-
-	massive_cbor := time.Benchmark_Options {
-		setup    = make_mesh,
-		bench    = bench_cbor_marshal,
-		teardown = destroy_mesh,
-		rounds   = 100,
-		bytes    = (50000 << 16 | 20000),
-	}
-	err = time.benchmark(&massive_cbor)
-	benchmark_print(&str, "massive_cbor_pack", &massive_cbor)
-
 	massive_mpack := time.Benchmark_Options {
 		setup    = make_mesh,
 		bench    = bench_mpack_pack,
 		teardown = destroy_mesh,
-		rounds   = 100,
+		rounds   = ROUNDS,
 		bytes    = (50000 << 16 | 20000),
 	}
 
@@ -363,103 +482,176 @@ bench_unpack :: proc() {
 		strings.builder_destroy(&str)
 	}
 
-	small_cbor := time.Benchmark_Options {
-		setup    = make_bytes_cbor,
-		bench    = bench_cbor_unmarshal,
-		teardown = destroy_bytes,
-		rounds   = 100,
-		bytes    = (100 << 16 | 40),
-	}
-	err := time.benchmark(&small_cbor)
-	benchmark_print(&str, "small_cbor_unpack", &small_cbor)
-
 	small_mpack := time.Benchmark_Options {
 		setup    = make_bytes_mpack,
 		bench    = bench_mpack_unpack,
 		teardown = destroy_bytes,
-		rounds   = 100,
+		rounds   = ROUNDS,
 		bytes    = (100 << 16 | 40),
 	}
-	err = time.benchmark(&small_mpack)
+	err := time.benchmark(&small_mpack)
 	benchmark_print(&str, "small_mpack_unpack", &small_mpack)
-
-	medium_cbor := time.Benchmark_Options {
-		setup    = make_bytes_cbor,
-		bench    = bench_cbor_unmarshal,
-		teardown = destroy_bytes,
-		rounds   = 100,
-		bytes    = (1000 << 16 | 400),
-	}
-	err = time.benchmark(&medium_cbor)
-	benchmark_print(&str, "medium_cbor_unpack", &medium_cbor)
 
 	medium_mpack := time.Benchmark_Options {
 		setup    = make_bytes_mpack,
 		bench    = bench_mpack_unpack,
 		teardown = destroy_bytes,
-		rounds   = 100,
+		rounds   = ROUNDS,
 		bytes    = (1000 << 16 | 400),
 	}
 	err = time.benchmark(&medium_mpack)
 	benchmark_print(&str, "medium_mpack_unpack", &medium_mpack)
 
+	// large_mpack := time.Benchmark_Options {
+	// 	setup    = make_bytes_mpack,
+	// 	bench    = bench_mpack_unpack,
+	// 	teardown = destroy_bytes,
+	// 	rounds   = ROUNDS,
+	// 	bytes    = (10000 << 16 | 4000),
+	// }
+	// err = time.benchmark(&large_mpack)
+	// benchmark_print(&str, "large_mpack_unpack", &large_mpack)
+	// assert(err == nil)
 
-	large_cbor := time.Benchmark_Options {
-		setup    = make_bytes_cbor,
-		bench    = bench_cbor_unmarshal,
-		teardown = destroy_bytes,
-		rounds   = 100,
-		bytes    = (10000 << 16 | 4000),
-	}
-	err = time.benchmark(&large_cbor)
-	benchmark_print(&str, "large_cbor_unpack", &large_cbor)
+	// massive_mpack := time.Benchmark_Options {
+	// 	setup    = make_bytes_mpack,
+	// 	bench    = bench_mpack_unpack,
+	// 	teardown = destroy_bytes,
+	// 	rounds   = ROUNDS,
+	// 	bytes    = (50000 << 16 | 20000),
+	// }
+	// err = time.benchmark(&massive_mpack)
+	// benchmark_print(&str, "massive_mpack_unpack", &massive_mpack)
+	// assert(err == nil)
 
-	large_mpack := time.Benchmark_Options {
-		setup    = make_bytes_mpack,
-		bench    = bench_mpack_unpack,
-		teardown = destroy_bytes,
-		rounds   = 100,
-		bytes    = (10000 << 16 | 4000),
-	}
-	err = time.benchmark(&large_mpack)
-	benchmark_print(&str, "large_mpack_unpack", &large_mpack)
+	// small_cbor := time.Benchmark_Options {
+	// 	setup    = make_bytes_cbor,
+	// 	bench    = bench_cbor_unmarshal,
+	// 	teardown = destroy_bytes,
+	// 	rounds   = ROUNDS,
+	// 	bytes    = (100 << 16 | 40),
+	// }
+	// err = time.benchmark(&small_cbor)
+	// benchmark_print(&str, "small_cbor_unpack", &small_cbor)
 
-	assert(err == nil)
+	// medium_cbor := time.Benchmark_Options {
+	// 	setup    = make_bytes_cbor,
+	// 	bench    = bench_cbor_unmarshal,
+	// 	teardown = destroy_bytes,
+	// 	rounds   = ROUNDS,
+	// 	bytes    = (1000 << 16 | 400),
+	// }
+	// err = time.benchmark(&medium_cbor)
+	// benchmark_print(&str, "medium_cbor_unpack", &medium_cbor)
 
-	massive_cbor := time.Benchmark_Options {
-		setup    = make_bytes_cbor,
-		bench    = bench_cbor_unmarshal,
-		teardown = destroy_bytes,
-		rounds   = 100,
-		bytes    = (50000 << 16 | 20000),
-	}
-	err = time.benchmark(&massive_cbor)
-	benchmark_print(&str, "massive_cbor_unpack", &massive_cbor)
 
-	massive_mpack := time.Benchmark_Options {
-		setup    = make_bytes_mpack,
-		bench    = bench_mpack_unpack,
-		teardown = destroy_bytes,
-		rounds   = 100,
-		bytes    = (50000 << 16 | 20000),
-	}
+	// large_cbor := time.Benchmark_Options {
+	// 	setup    = make_bytes_cbor,
+	// 	bench    = bench_cbor_unmarshal,
+	// 	teardown = destroy_bytes,
+	// 	rounds   = ROUNDS,
+	// 	bytes    = (10000 << 16 | 4000),
+	// }
+	// err = time.benchmark(&large_cbor)
+	// benchmark_print(&str, "large_cbor_unpack", &large_cbor)
 
-	err = time.benchmark(&massive_mpack)
-	assert(massive_mpack.processed ==  100 * (50000 + 20000 * 3))
-	benchmark_print(&str, "massive_mpack_unpack", &massive_mpack)
+	// massive_cbor := time.Benchmark_Options {
+	// 	setup    = make_bytes_cbor,
+	// 	bench    = bench_cbor_unmarshal,
+	// 	teardown = destroy_bytes,
+	// 	rounds   = ROUNDS,
+	// 	bytes    = (50000 << 16 | 20000),
+	// }
+	// err = time.benchmark(&massive_cbor)
+	// benchmark_print(&str, "massive_cbor_unpack", &massive_cbor)
 
-	assert(err == nil)
+
+	// small_json := time.Benchmark_Options {
+	// 	setup    = make_bytes_json,
+	// 	bench    = bench_json_unmarshal,
+	// 	teardown = destroy_bytes,
+	// 	rounds   = ROUNDS,
+	// 	bytes    = (100 << 16 | 40),
+	// }
+	// err = time.benchmark(&small_json)
+	// benchmark_print(&str, "small_json_unpack", &small_json)
+
+	// medium_json := time.Benchmark_Options {
+	// 	setup    = make_bytes_json,
+	// 	bench    = bench_json_unmarshal,
+	// 	teardown = destroy_bytes,
+	// 	rounds   = ROUNDS,
+	// 	bytes    = (1000 << 16 | 400),
+	// }
+	// err = time.benchmark(&medium_json)
+	// benchmark_print(&str, "medium_json_unpack", &medium_json)
+
+
+	// large_json := time.Benchmark_Options {
+	// 	setup    = make_bytes_json,
+	// 	bench    = bench_json_unmarshal,
+	// 	teardown = destroy_bytes,
+	// 	rounds   = ROUNDS,
+	// 	bytes    = (10000 << 16 | 4000),
+	// }
+	// err = time.benchmark(&large_json)
+	// benchmark_print(&str, "large_json_unpack", &large_json)
+
+	// massive_json := time.Benchmark_Options {
+	// 	setup    = make_bytes_json,
+	// 	bench    = bench_json_unmarshal,
+	// 	teardown = destroy_bytes,
+	// 	rounds   = ROUNDS,
+	// 	bytes    = (50000 << 16 | 20000),
+	// }
+	// err = time.benchmark(&massive_json)
+	// benchmark_print(&str, "massive_json_unpack", &massive_json)
+
 }
 import "core:os"
 main :: proc() {
-	// mesh := generate_mesh(1000, 400)
-	// defer delete(mesh.vertices)
-	// defer delete(mesh.indices)
-	// file, _ := os.open("mesh.mp", os.O_CREATE | os.O_WRONLY)
-	// defer os.close(file)
-	// stream := os.stream_from_handle(file)
-	// m.pack_into_writer(stream, &mesh, {.UnionNames})
+	{
+		mesh := generate_mesh(100, 40)
+		defer delete(mesh.vertices)
+		defer delete(mesh.indices)
+		file, _ := os.open("small.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, 0o0644)
+		defer os.close(file)
+		stream := os.stream_from_handle(file)
+		m.pack_into_writer(stream, &mesh, {.UnionNames, .FieldNames})
+	}
+	{
+		mesh := generate_mesh(1000, 400)
+		defer delete(mesh.vertices)
+		defer delete(mesh.indices)
+		file, _ := os.open("medium.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, 0o0644)
+		defer os.close(file)
+		stream := os.stream_from_handle(file)
+		m.pack_into_writer(stream, &mesh, {.UnionNames, .FieldNames})
+	}
+	{
+		mesh := generate_mesh(10000, 4000)
+		defer delete(mesh.vertices)
+		defer delete(mesh.indices)
 
-	bench_unpack()
-	bench_pack()
+		file, _ := os.open("large.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, 0o0644)
+		defer os.close(file)
+
+		stream := os.stream_from_handle(file)
+		m.pack_into_writer(stream, &mesh, {.UnionNames, .FieldNames})
+	}
+	{
+		mesh := generate_mesh(50000, 20000)
+		defer delete(mesh.vertices)
+		defer delete(mesh.indices)
+
+		file, _ := os.open("massive.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, 0o0644)
+		defer os.close(file)
+
+		stream := os.stream_from_handle(file)
+		m.pack_into_writer(stream, &mesh, {.UnionNames, .FieldNames})
+	}
+
+
+		bench_unpack()
+	// bench_pack()
 }

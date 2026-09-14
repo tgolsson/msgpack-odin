@@ -58,6 +58,7 @@ test_true_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (bool)(true))
+
 }
 
 @(test)
@@ -94,6 +95,7 @@ test_false_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (bool)(false))
+
 }
 
 @(test)
@@ -130,6 +132,7 @@ test_fixint_126_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(126))
+
 }
 
 @(test)
@@ -166,6 +169,7 @@ test_fixint_127_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(127))
+
 }
 
 @(test)
@@ -202,6 +206,7 @@ test_fixint_128_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(128))
+
 }
 
 @(test)
@@ -238,6 +243,7 @@ test_nfixint_30_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-30))
+
 }
 
 @(test)
@@ -274,6 +280,7 @@ test_nfixint_31_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-31))
+
 }
 
 @(test)
@@ -310,6 +317,7 @@ test_nfixint_32_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-32))
+
 }
 
 @(test)
@@ -346,6 +354,7 @@ test_nfixint_33_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-33))
+
 }
 
 @(test)
@@ -382,6 +391,7 @@ test_int_254_8_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(254)))
+
 }
 
 @(test)
@@ -418,6 +428,7 @@ test_int_255_8_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(255)))
+
 }
 
 @(test)
@@ -454,6 +465,7 @@ test_int_256_8_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(256)))
+
 }
 
 @(test)
@@ -490,6 +502,7 @@ test_int_257_8_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(257)))
+
 }
 
 @(test)
@@ -526,6 +539,7 @@ test_int_258_8_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(258)))
+
 }
 
 @(test)
@@ -562,6 +576,7 @@ test_int_65534_16_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(65534)))
+
 }
 
 @(test)
@@ -598,6 +613,7 @@ test_int_65535_16_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(65535)))
+
 }
 
 @(test)
@@ -634,6 +650,7 @@ test_int_65536_16_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(65536)))
+
 }
 
 @(test)
@@ -670,6 +687,7 @@ test_int_65537_16_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(65537)))
+
 }
 
 @(test)
@@ -706,6 +724,7 @@ test_int_65538_16_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(65538)))
+
 }
 
 @(test)
@@ -742,6 +761,7 @@ test_int_4294967294_32_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(4294967294)))
+
 }
 
 @(test)
@@ -778,6 +798,7 @@ test_int_4294967295_32_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(4294967295)))
+
 }
 
 @(test)
@@ -814,6 +835,7 @@ test_int_4294967296_32_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(4294967296)))
+
 }
 
 @(test)
@@ -850,6 +872,7 @@ test_int_4294967297_32_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(4294967297)))
+
 }
 
 @(test)
@@ -886,6 +909,7 @@ test_int_4294967298_32_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(4294967298)))
+
 }
 
 @(test)
@@ -922,6 +946,7 @@ test_int_18446744073709551614_64_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(18446744073709551614)))
+
 }
 
 @(test)
@@ -958,6 +983,7 @@ test_int_18446744073709551615_64_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(u64(18446744073709551615)))
+
 }
 
 @(test)
@@ -994,6 +1020,7 @@ test_sint_62_7_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-62)))
+
 }
 
 @(test)
@@ -1030,6 +1057,7 @@ test_sint_63_7_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-63)))
+
 }
 
 @(test)
@@ -1066,6 +1094,7 @@ test_sint_64_7_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-64)))
+
 }
 
 @(test)
@@ -1102,6 +1131,7 @@ test_sint_65_7_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-65)))
+
 }
 
 @(test)
@@ -1138,6 +1168,7 @@ test_sint_66_7_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-66)))
+
 }
 
 @(test)
@@ -1174,6 +1205,7 @@ test_sint_16382_15_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-16382)))
+
 }
 
 @(test)
@@ -1210,6 +1242,7 @@ test_sint_16383_15_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-16383)))
+
 }
 
 @(test)
@@ -1246,6 +1279,7 @@ test_sint_16384_15_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-16384)))
+
 }
 
 @(test)
@@ -1282,6 +1316,7 @@ test_sint_16385_15_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-16385)))
+
 }
 
 @(test)
@@ -1318,6 +1353,7 @@ test_sint_16386_15_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-16386)))
+
 }
 
 @(test)
@@ -1354,6 +1390,7 @@ test_sint_1073741822_31_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-1073741822)))
+
 }
 
 @(test)
@@ -1390,6 +1427,7 @@ test_sint_1073741823_31_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-1073741823)))
+
 }
 
 @(test)
@@ -1426,6 +1464,7 @@ test_sint_1073741824_31_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-1073741824)))
+
 }
 
 @(test)
@@ -1462,6 +1501,7 @@ test_sint_1073741825_31_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-1073741825)))
+
 }
 
 @(test)
@@ -1498,6 +1538,7 @@ test_sint_1073741826_31_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-1073741826)))
+
 }
 
 @(test)
@@ -1534,6 +1575,7 @@ test_sint_4611686018427387902_63_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-4611686018427387902)))
+
 }
 
 @(test)
@@ -1570,6 +1612,7 @@ test_sint_4611686018427387903_63_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-4611686018427387903)))
+
 }
 
 @(test)
@@ -1606,6 +1649,7 @@ test_sint_4611686018427387904_63_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-4611686018427387904)))
+
 }
 
 @(test)
@@ -1642,6 +1686,7 @@ test_sint_4611686018427387905_63_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-4611686018427387905)))
+
 }
 
 @(test)
@@ -1678,6 +1723,7 @@ test_sint_4611686018427387906_63_2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(i64(-4611686018427387906)))
+
 }
 
 @(test)
@@ -1714,6 +1760,7 @@ test_int_pow2_1_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(0))
+
 }
 
 @(test)
@@ -1750,6 +1797,7 @@ test_int_pow2_1_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1))
+
 }
 
 @(test)
@@ -1786,6 +1834,7 @@ test_sint_pow2_1_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1))
+
 }
 
 @(test)
@@ -1822,6 +1871,7 @@ test_int_pow2_1_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2))
+
 }
 
 @(test)
@@ -1858,6 +1908,7 @@ test_sint_pow2_1_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2))
+
 }
 
 @(test)
@@ -1894,6 +1945,7 @@ test_int_pow2_2_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(0))
+
 }
 
 @(test)
@@ -1930,6 +1982,7 @@ test_int_pow2_2_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1))
+
 }
 
 @(test)
@@ -1966,6 +2019,7 @@ test_sint_pow2_2_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1))
+
 }
 
 @(test)
@@ -2002,6 +2056,7 @@ test_int_pow2_2_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2))
+
 }
 
 @(test)
@@ -2038,6 +2093,7 @@ test_sint_pow2_2_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2))
+
 }
 
 @(test)
@@ -2074,6 +2130,7 @@ test_int_pow2_2_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(3))
+
 }
 
 @(test)
@@ -2110,6 +2167,7 @@ test_sint_pow2_2_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-3))
+
 }
 
 @(test)
@@ -2146,6 +2204,7 @@ test_int_pow2_4_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2))
+
 }
 
 @(test)
@@ -2182,6 +2241,7 @@ test_sint_pow2_4_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2))
+
 }
 
 @(test)
@@ -2218,6 +2278,7 @@ test_int_pow2_4_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(3))
+
 }
 
 @(test)
@@ -2254,6 +2315,7 @@ test_sint_pow2_4_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-3))
+
 }
 
 @(test)
@@ -2290,6 +2352,7 @@ test_int_pow2_4_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4))
+
 }
 
 @(test)
@@ -2326,6 +2389,7 @@ test_sint_pow2_4_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4))
+
 }
 
 @(test)
@@ -2362,6 +2426,7 @@ test_int_pow2_4_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(5))
+
 }
 
 @(test)
@@ -2398,6 +2463,7 @@ test_sint_pow2_4_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-5))
+
 }
 
 @(test)
@@ -2434,6 +2500,7 @@ test_int_pow2_8_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(6))
+
 }
 
 @(test)
@@ -2470,6 +2537,7 @@ test_sint_pow2_8_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-6))
+
 }
 
 @(test)
@@ -2506,6 +2574,7 @@ test_int_pow2_8_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(7))
+
 }
 
 @(test)
@@ -2542,6 +2611,7 @@ test_sint_pow2_8_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-7))
+
 }
 
 @(test)
@@ -2578,6 +2648,7 @@ test_int_pow2_8_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8))
+
 }
 
 @(test)
@@ -2614,6 +2685,7 @@ test_sint_pow2_8_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8))
+
 }
 
 @(test)
@@ -2650,6 +2722,7 @@ test_int_pow2_8_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(9))
+
 }
 
 @(test)
@@ -2686,6 +2759,7 @@ test_sint_pow2_8_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-9))
+
 }
 
 @(test)
@@ -2722,6 +2796,7 @@ test_int_pow2_16_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(14))
+
 }
 
 @(test)
@@ -2758,6 +2833,7 @@ test_sint_pow2_16_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-14))
+
 }
 
 @(test)
@@ -2794,6 +2870,7 @@ test_int_pow2_16_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(15))
+
 }
 
 @(test)
@@ -2830,6 +2907,7 @@ test_sint_pow2_16_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-15))
+
 }
 
 @(test)
@@ -2866,6 +2944,7 @@ test_int_pow2_16_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(16))
+
 }
 
 @(test)
@@ -2902,6 +2981,7 @@ test_sint_pow2_16_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-16))
+
 }
 
 @(test)
@@ -2938,6 +3018,7 @@ test_int_pow2_16_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(17))
+
 }
 
 @(test)
@@ -2974,6 +3055,7 @@ test_sint_pow2_16_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-17))
+
 }
 
 @(test)
@@ -3010,6 +3092,7 @@ test_int_pow2_32_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(30))
+
 }
 
 @(test)
@@ -3046,6 +3129,7 @@ test_sint_pow2_32_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-30))
+
 }
 
 @(test)
@@ -3082,6 +3166,7 @@ test_int_pow2_32_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(31))
+
 }
 
 @(test)
@@ -3118,6 +3203,7 @@ test_sint_pow2_32_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-31))
+
 }
 
 @(test)
@@ -3154,6 +3240,7 @@ test_int_pow2_32_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(32))
+
 }
 
 @(test)
@@ -3190,6 +3277,7 @@ test_sint_pow2_32_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-32))
+
 }
 
 @(test)
@@ -3226,6 +3314,7 @@ test_int_pow2_32_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(33))
+
 }
 
 @(test)
@@ -3262,6 +3351,7 @@ test_sint_pow2_32_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-33))
+
 }
 
 @(test)
@@ -3298,6 +3388,7 @@ test_int_pow2_64_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(62))
+
 }
 
 @(test)
@@ -3334,6 +3425,7 @@ test_sint_pow2_64_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-62))
+
 }
 
 @(test)
@@ -3370,6 +3462,7 @@ test_int_pow2_64_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(63))
+
 }
 
 @(test)
@@ -3406,6 +3499,7 @@ test_sint_pow2_64_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-63))
+
 }
 
 @(test)
@@ -3442,6 +3536,7 @@ test_int_pow2_64_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(64))
+
 }
 
 @(test)
@@ -3478,6 +3573,7 @@ test_sint_pow2_64_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-64))
+
 }
 
 @(test)
@@ -3514,6 +3610,7 @@ test_int_pow2_64_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(65))
+
 }
 
 @(test)
@@ -3550,6 +3647,7 @@ test_sint_pow2_64_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-65))
+
 }
 
 @(test)
@@ -3586,6 +3684,7 @@ test_int_pow2_128_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(126))
+
 }
 
 @(test)
@@ -3622,6 +3721,7 @@ test_sint_pow2_128_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-126))
+
 }
 
 @(test)
@@ -3658,6 +3758,7 @@ test_int_pow2_128_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(127))
+
 }
 
 @(test)
@@ -3694,6 +3795,7 @@ test_sint_pow2_128_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-127))
+
 }
 
 @(test)
@@ -3730,6 +3832,7 @@ test_int_pow2_128_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(128))
+
 }
 
 @(test)
@@ -3766,6 +3869,7 @@ test_sint_pow2_128_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-128))
+
 }
 
 @(test)
@@ -3802,6 +3906,7 @@ test_int_pow2_128_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(129))
+
 }
 
 @(test)
@@ -3838,6 +3943,7 @@ test_sint_pow2_128_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-129))
+
 }
 
 @(test)
@@ -3874,6 +3980,7 @@ test_int_pow2_256_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(254))
+
 }
 
 @(test)
@@ -3910,6 +4017,7 @@ test_sint_pow2_256_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-254))
+
 }
 
 @(test)
@@ -3946,6 +4054,7 @@ test_int_pow2_256_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(255))
+
 }
 
 @(test)
@@ -3982,6 +4091,7 @@ test_sint_pow2_256_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-255))
+
 }
 
 @(test)
@@ -4018,6 +4128,7 @@ test_int_pow2_256_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(256))
+
 }
 
 @(test)
@@ -4054,6 +4165,7 @@ test_sint_pow2_256_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-256))
+
 }
 
 @(test)
@@ -4090,6 +4202,7 @@ test_int_pow2_256_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(257))
+
 }
 
 @(test)
@@ -4126,6 +4239,7 @@ test_sint_pow2_256_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-257))
+
 }
 
 @(test)
@@ -4162,6 +4276,7 @@ test_int_pow2_512_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(510))
+
 }
 
 @(test)
@@ -4198,6 +4313,7 @@ test_sint_pow2_512_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-510))
+
 }
 
 @(test)
@@ -4234,6 +4350,7 @@ test_int_pow2_512_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(511))
+
 }
 
 @(test)
@@ -4270,6 +4387,7 @@ test_sint_pow2_512_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-511))
+
 }
 
 @(test)
@@ -4306,6 +4424,7 @@ test_int_pow2_512_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(512))
+
 }
 
 @(test)
@@ -4342,6 +4461,7 @@ test_sint_pow2_512_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-512))
+
 }
 
 @(test)
@@ -4378,6 +4498,7 @@ test_int_pow2_512_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(513))
+
 }
 
 @(test)
@@ -4414,6 +4535,7 @@ test_sint_pow2_512_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-513))
+
 }
 
 @(test)
@@ -4450,6 +4572,7 @@ test_int_pow2_1024_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1022))
+
 }
 
 @(test)
@@ -4486,6 +4609,7 @@ test_sint_pow2_1024_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1022))
+
 }
 
 @(test)
@@ -4522,6 +4646,7 @@ test_int_pow2_1024_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1023))
+
 }
 
 @(test)
@@ -4558,6 +4683,7 @@ test_sint_pow2_1024_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1023))
+
 }
 
 @(test)
@@ -4594,6 +4720,7 @@ test_int_pow2_1024_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1024))
+
 }
 
 @(test)
@@ -4630,6 +4757,7 @@ test_sint_pow2_1024_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1024))
+
 }
 
 @(test)
@@ -4666,6 +4794,7 @@ test_int_pow2_1024_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1025))
+
 }
 
 @(test)
@@ -4702,6 +4831,7 @@ test_sint_pow2_1024_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1025))
+
 }
 
 @(test)
@@ -4738,6 +4868,7 @@ test_int_pow2_2048_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2046))
+
 }
 
 @(test)
@@ -4774,6 +4905,7 @@ test_sint_pow2_2048_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2046))
+
 }
 
 @(test)
@@ -4810,6 +4942,7 @@ test_int_pow2_2048_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2047))
+
 }
 
 @(test)
@@ -4846,6 +4979,7 @@ test_sint_pow2_2048_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2047))
+
 }
 
 @(test)
@@ -4882,6 +5016,7 @@ test_int_pow2_2048_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2048))
+
 }
 
 @(test)
@@ -4918,6 +5053,7 @@ test_sint_pow2_2048_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2048))
+
 }
 
 @(test)
@@ -4954,6 +5090,7 @@ test_int_pow2_2048_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2049))
+
 }
 
 @(test)
@@ -4990,6 +5127,7 @@ test_sint_pow2_2048_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2049))
+
 }
 
 @(test)
@@ -5026,6 +5164,7 @@ test_int_pow2_4096_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4094))
+
 }
 
 @(test)
@@ -5062,6 +5201,7 @@ test_sint_pow2_4096_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4094))
+
 }
 
 @(test)
@@ -5098,6 +5238,7 @@ test_int_pow2_4096_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4095))
+
 }
 
 @(test)
@@ -5134,6 +5275,7 @@ test_sint_pow2_4096_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4095))
+
 }
 
 @(test)
@@ -5170,6 +5312,7 @@ test_int_pow2_4096_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4096))
+
 }
 
 @(test)
@@ -5206,6 +5349,7 @@ test_sint_pow2_4096_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4096))
+
 }
 
 @(test)
@@ -5242,6 +5386,7 @@ test_int_pow2_4096_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4097))
+
 }
 
 @(test)
@@ -5278,6 +5423,7 @@ test_sint_pow2_4096_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4097))
+
 }
 
 @(test)
@@ -5314,6 +5460,7 @@ test_int_pow2_8192_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8190))
+
 }
 
 @(test)
@@ -5350,6 +5497,7 @@ test_sint_pow2_8192_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8190))
+
 }
 
 @(test)
@@ -5386,6 +5534,7 @@ test_int_pow2_8192_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8191))
+
 }
 
 @(test)
@@ -5422,6 +5571,7 @@ test_sint_pow2_8192_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8191))
+
 }
 
 @(test)
@@ -5458,6 +5608,7 @@ test_int_pow2_8192_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8192))
+
 }
 
 @(test)
@@ -5494,6 +5645,7 @@ test_sint_pow2_8192_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8192))
+
 }
 
 @(test)
@@ -5530,6 +5682,7 @@ test_int_pow2_8192_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8193))
+
 }
 
 @(test)
@@ -5566,6 +5719,7 @@ test_sint_pow2_8192_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8193))
+
 }
 
 @(test)
@@ -5602,6 +5756,7 @@ test_int_pow2_16384_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(16382))
+
 }
 
 @(test)
@@ -5638,6 +5793,7 @@ test_sint_pow2_16384_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-16382))
+
 }
 
 @(test)
@@ -5674,6 +5830,7 @@ test_int_pow2_16384_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(16383))
+
 }
 
 @(test)
@@ -5710,6 +5867,7 @@ test_sint_pow2_16384_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-16383))
+
 }
 
 @(test)
@@ -5746,6 +5904,7 @@ test_int_pow2_16384_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(16384))
+
 }
 
 @(test)
@@ -5782,6 +5941,7 @@ test_sint_pow2_16384_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-16384))
+
 }
 
 @(test)
@@ -5818,6 +5978,7 @@ test_int_pow2_16384_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(16385))
+
 }
 
 @(test)
@@ -5854,6 +6015,7 @@ test_sint_pow2_16384_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-16385))
+
 }
 
 @(test)
@@ -5890,6 +6052,7 @@ test_int_pow2_32768_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(32766))
+
 }
 
 @(test)
@@ -5926,6 +6089,7 @@ test_sint_pow2_32768_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-32766))
+
 }
 
 @(test)
@@ -5962,6 +6126,7 @@ test_int_pow2_32768_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(32767))
+
 }
 
 @(test)
@@ -5998,6 +6163,7 @@ test_sint_pow2_32768_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-32767))
+
 }
 
 @(test)
@@ -6034,6 +6200,7 @@ test_int_pow2_32768_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(32768))
+
 }
 
 @(test)
@@ -6070,6 +6237,7 @@ test_sint_pow2_32768_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-32768))
+
 }
 
 @(test)
@@ -6106,6 +6274,7 @@ test_int_pow2_32768_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(32769))
+
 }
 
 @(test)
@@ -6142,6 +6311,7 @@ test_sint_pow2_32768_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-32769))
+
 }
 
 @(test)
@@ -6178,6 +6348,7 @@ test_int_pow2_65536_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(65534))
+
 }
 
 @(test)
@@ -6214,6 +6385,7 @@ test_sint_pow2_65536_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-65534))
+
 }
 
 @(test)
@@ -6250,6 +6422,7 @@ test_int_pow2_65536_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(65535))
+
 }
 
 @(test)
@@ -6286,6 +6459,7 @@ test_sint_pow2_65536_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-65535))
+
 }
 
 @(test)
@@ -6322,6 +6496,7 @@ test_int_pow2_65536_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(65536))
+
 }
 
 @(test)
@@ -6358,6 +6533,7 @@ test_sint_pow2_65536_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-65536))
+
 }
 
 @(test)
@@ -6394,6 +6570,7 @@ test_int_pow2_65536_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(65537))
+
 }
 
 @(test)
@@ -6430,6 +6607,7 @@ test_sint_pow2_65536_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-65537))
+
 }
 
 @(test)
@@ -6466,6 +6644,7 @@ test_int_pow2_131072_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(131070))
+
 }
 
 @(test)
@@ -6502,6 +6681,7 @@ test_sint_pow2_131072_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-131070))
+
 }
 
 @(test)
@@ -6538,6 +6718,7 @@ test_int_pow2_131072_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(131071))
+
 }
 
 @(test)
@@ -6574,6 +6755,7 @@ test_sint_pow2_131072_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-131071))
+
 }
 
 @(test)
@@ -6610,6 +6792,7 @@ test_int_pow2_131072_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(131072))
+
 }
 
 @(test)
@@ -6646,6 +6829,7 @@ test_sint_pow2_131072_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-131072))
+
 }
 
 @(test)
@@ -6682,6 +6866,7 @@ test_int_pow2_131072_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(131073))
+
 }
 
 @(test)
@@ -6718,6 +6903,7 @@ test_sint_pow2_131072_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-131073))
+
 }
 
 @(test)
@@ -6754,6 +6940,7 @@ test_int_pow2_262144_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(262142))
+
 }
 
 @(test)
@@ -6790,6 +6977,7 @@ test_sint_pow2_262144_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-262142))
+
 }
 
 @(test)
@@ -6826,6 +7014,7 @@ test_int_pow2_262144_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(262143))
+
 }
 
 @(test)
@@ -6862,6 +7051,7 @@ test_sint_pow2_262144_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-262143))
+
 }
 
 @(test)
@@ -6898,6 +7088,7 @@ test_int_pow2_262144_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(262144))
+
 }
 
 @(test)
@@ -6934,6 +7125,7 @@ test_sint_pow2_262144_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-262144))
+
 }
 
 @(test)
@@ -6970,6 +7162,7 @@ test_int_pow2_262144_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(262145))
+
 }
 
 @(test)
@@ -7006,6 +7199,7 @@ test_sint_pow2_262144_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-262145))
+
 }
 
 @(test)
@@ -7042,6 +7236,7 @@ test_int_pow2_524288_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(524286))
+
 }
 
 @(test)
@@ -7078,6 +7273,7 @@ test_sint_pow2_524288_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-524286))
+
 }
 
 @(test)
@@ -7114,6 +7310,7 @@ test_int_pow2_524288_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(524287))
+
 }
 
 @(test)
@@ -7150,6 +7347,7 @@ test_sint_pow2_524288_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-524287))
+
 }
 
 @(test)
@@ -7186,6 +7384,7 @@ test_int_pow2_524288_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(524288))
+
 }
 
 @(test)
@@ -7222,6 +7421,7 @@ test_sint_pow2_524288_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-524288))
+
 }
 
 @(test)
@@ -7258,6 +7458,7 @@ test_int_pow2_524288_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(524289))
+
 }
 
 @(test)
@@ -7294,6 +7495,7 @@ test_sint_pow2_524288_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-524289))
+
 }
 
 @(test)
@@ -7330,6 +7532,7 @@ test_int_pow2_1048576_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1048574))
+
 }
 
 @(test)
@@ -7366,6 +7569,7 @@ test_sint_pow2_1048576_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1048574))
+
 }
 
 @(test)
@@ -7402,6 +7606,7 @@ test_int_pow2_1048576_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1048575))
+
 }
 
 @(test)
@@ -7438,6 +7643,7 @@ test_sint_pow2_1048576_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1048575))
+
 }
 
 @(test)
@@ -7474,6 +7680,7 @@ test_int_pow2_1048576_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1048576))
+
 }
 
 @(test)
@@ -7510,6 +7717,7 @@ test_sint_pow2_1048576_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1048576))
+
 }
 
 @(test)
@@ -7546,6 +7754,7 @@ test_int_pow2_1048576_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1048577))
+
 }
 
 @(test)
@@ -7582,6 +7791,7 @@ test_sint_pow2_1048576_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1048577))
+
 }
 
 @(test)
@@ -7618,6 +7828,7 @@ test_int_pow2_2097152_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2097150))
+
 }
 
 @(test)
@@ -7654,6 +7865,7 @@ test_sint_pow2_2097152_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2097150))
+
 }
 
 @(test)
@@ -7690,6 +7902,7 @@ test_int_pow2_2097152_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2097151))
+
 }
 
 @(test)
@@ -7726,6 +7939,7 @@ test_sint_pow2_2097152_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2097151))
+
 }
 
 @(test)
@@ -7762,6 +7976,7 @@ test_int_pow2_2097152_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2097152))
+
 }
 
 @(test)
@@ -7798,6 +8013,7 @@ test_sint_pow2_2097152_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2097152))
+
 }
 
 @(test)
@@ -7834,6 +8050,7 @@ test_int_pow2_2097152_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2097153))
+
 }
 
 @(test)
@@ -7870,6 +8087,7 @@ test_sint_pow2_2097152_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2097153))
+
 }
 
 @(test)
@@ -7906,6 +8124,7 @@ test_int_pow2_4194304_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4194302))
+
 }
 
 @(test)
@@ -7942,6 +8161,7 @@ test_sint_pow2_4194304_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4194302))
+
 }
 
 @(test)
@@ -7978,6 +8198,7 @@ test_int_pow2_4194304_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4194303))
+
 }
 
 @(test)
@@ -8014,6 +8235,7 @@ test_sint_pow2_4194304_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4194303))
+
 }
 
 @(test)
@@ -8050,6 +8272,7 @@ test_int_pow2_4194304_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4194304))
+
 }
 
 @(test)
@@ -8086,6 +8309,7 @@ test_sint_pow2_4194304_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4194304))
+
 }
 
 @(test)
@@ -8122,6 +8346,7 @@ test_int_pow2_4194304_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4194305))
+
 }
 
 @(test)
@@ -8158,6 +8383,7 @@ test_sint_pow2_4194304_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4194305))
+
 }
 
 @(test)
@@ -8194,6 +8420,7 @@ test_int_pow2_8388608_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8388606))
+
 }
 
 @(test)
@@ -8230,6 +8457,7 @@ test_sint_pow2_8388608_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8388606))
+
 }
 
 @(test)
@@ -8266,6 +8494,7 @@ test_int_pow2_8388608_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8388607))
+
 }
 
 @(test)
@@ -8302,6 +8531,7 @@ test_sint_pow2_8388608_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8388607))
+
 }
 
 @(test)
@@ -8338,6 +8568,7 @@ test_int_pow2_8388608_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8388608))
+
 }
 
 @(test)
@@ -8374,6 +8605,7 @@ test_sint_pow2_8388608_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8388608))
+
 }
 
 @(test)
@@ -8410,6 +8642,7 @@ test_int_pow2_8388608_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8388609))
+
 }
 
 @(test)
@@ -8446,6 +8679,7 @@ test_sint_pow2_8388608_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8388609))
+
 }
 
 @(test)
@@ -8482,6 +8716,7 @@ test_int_pow2_16777216_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(16777214))
+
 }
 
 @(test)
@@ -8518,6 +8753,7 @@ test_sint_pow2_16777216_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-16777214))
+
 }
 
 @(test)
@@ -8554,6 +8790,7 @@ test_int_pow2_16777216_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(16777215))
+
 }
 
 @(test)
@@ -8590,6 +8827,7 @@ test_sint_pow2_16777216_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-16777215))
+
 }
 
 @(test)
@@ -8626,6 +8864,7 @@ test_int_pow2_16777216_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(16777216))
+
 }
 
 @(test)
@@ -8662,6 +8901,7 @@ test_sint_pow2_16777216_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-16777216))
+
 }
 
 @(test)
@@ -8698,6 +8938,7 @@ test_int_pow2_16777216_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(16777217))
+
 }
 
 @(test)
@@ -8734,6 +8975,7 @@ test_sint_pow2_16777216_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-16777217))
+
 }
 
 @(test)
@@ -8770,6 +9012,7 @@ test_int_pow2_33554432_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(33554430))
+
 }
 
 @(test)
@@ -8806,6 +9049,7 @@ test_sint_pow2_33554432_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-33554430))
+
 }
 
 @(test)
@@ -8842,6 +9086,7 @@ test_int_pow2_33554432_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(33554431))
+
 }
 
 @(test)
@@ -8878,6 +9123,7 @@ test_sint_pow2_33554432_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-33554431))
+
 }
 
 @(test)
@@ -8914,6 +9160,7 @@ test_int_pow2_33554432_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(33554432))
+
 }
 
 @(test)
@@ -8950,6 +9197,7 @@ test_sint_pow2_33554432_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-33554432))
+
 }
 
 @(test)
@@ -8986,6 +9234,7 @@ test_int_pow2_33554432_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(33554433))
+
 }
 
 @(test)
@@ -9022,6 +9271,7 @@ test_sint_pow2_33554432_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-33554433))
+
 }
 
 @(test)
@@ -9058,6 +9308,7 @@ test_int_pow2_67108864_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(67108862))
+
 }
 
 @(test)
@@ -9094,6 +9345,7 @@ test_sint_pow2_67108864_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-67108862))
+
 }
 
 @(test)
@@ -9130,6 +9382,7 @@ test_int_pow2_67108864_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(67108863))
+
 }
 
 @(test)
@@ -9166,6 +9419,7 @@ test_sint_pow2_67108864_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-67108863))
+
 }
 
 @(test)
@@ -9202,6 +9456,7 @@ test_int_pow2_67108864_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(67108864))
+
 }
 
 @(test)
@@ -9238,6 +9493,7 @@ test_sint_pow2_67108864_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-67108864))
+
 }
 
 @(test)
@@ -9274,6 +9530,7 @@ test_int_pow2_67108864_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(67108865))
+
 }
 
 @(test)
@@ -9310,6 +9567,7 @@ test_sint_pow2_67108864_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-67108865))
+
 }
 
 @(test)
@@ -9346,6 +9604,7 @@ test_int_pow2_134217728_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(134217726))
+
 }
 
 @(test)
@@ -9382,6 +9641,7 @@ test_sint_pow2_134217728_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-134217726))
+
 }
 
 @(test)
@@ -9418,6 +9678,7 @@ test_int_pow2_134217728_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(134217727))
+
 }
 
 @(test)
@@ -9454,6 +9715,7 @@ test_sint_pow2_134217728_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-134217727))
+
 }
 
 @(test)
@@ -9490,6 +9752,7 @@ test_int_pow2_134217728_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(134217728))
+
 }
 
 @(test)
@@ -9526,6 +9789,7 @@ test_sint_pow2_134217728_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-134217728))
+
 }
 
 @(test)
@@ -9562,6 +9826,7 @@ test_int_pow2_134217728_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(134217729))
+
 }
 
 @(test)
@@ -9598,6 +9863,7 @@ test_sint_pow2_134217728_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-134217729))
+
 }
 
 @(test)
@@ -9634,6 +9900,7 @@ test_int_pow2_268435456_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(268435454))
+
 }
 
 @(test)
@@ -9670,6 +9937,7 @@ test_sint_pow2_268435456_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-268435454))
+
 }
 
 @(test)
@@ -9706,6 +9974,7 @@ test_int_pow2_268435456_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(268435455))
+
 }
 
 @(test)
@@ -9742,6 +10011,7 @@ test_sint_pow2_268435456_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-268435455))
+
 }
 
 @(test)
@@ -9778,6 +10048,7 @@ test_int_pow2_268435456_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(268435456))
+
 }
 
 @(test)
@@ -9814,6 +10085,7 @@ test_sint_pow2_268435456_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-268435456))
+
 }
 
 @(test)
@@ -9850,6 +10122,7 @@ test_int_pow2_268435456_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(268435457))
+
 }
 
 @(test)
@@ -9886,6 +10159,7 @@ test_sint_pow2_268435456_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-268435457))
+
 }
 
 @(test)
@@ -9922,6 +10196,7 @@ test_int_pow2_536870912_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(536870910))
+
 }
 
 @(test)
@@ -9958,6 +10233,7 @@ test_sint_pow2_536870912_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-536870910))
+
 }
 
 @(test)
@@ -9994,6 +10270,7 @@ test_int_pow2_536870912_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(536870911))
+
 }
 
 @(test)
@@ -10030,6 +10307,7 @@ test_sint_pow2_536870912_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-536870911))
+
 }
 
 @(test)
@@ -10066,6 +10344,7 @@ test_int_pow2_536870912_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(536870912))
+
 }
 
 @(test)
@@ -10102,6 +10381,7 @@ test_sint_pow2_536870912_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-536870912))
+
 }
 
 @(test)
@@ -10138,6 +10418,7 @@ test_int_pow2_536870912_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(536870913))
+
 }
 
 @(test)
@@ -10174,6 +10455,7 @@ test_sint_pow2_536870912_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-536870913))
+
 }
 
 @(test)
@@ -10210,6 +10492,7 @@ test_int_pow2_1073741824_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1073741822))
+
 }
 
 @(test)
@@ -10246,6 +10529,7 @@ test_sint_pow2_1073741824_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1073741822))
+
 }
 
 @(test)
@@ -10282,6 +10566,7 @@ test_int_pow2_1073741824_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1073741823))
+
 }
 
 @(test)
@@ -10318,6 +10603,7 @@ test_sint_pow2_1073741824_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1073741823))
+
 }
 
 @(test)
@@ -10354,6 +10640,7 @@ test_int_pow2_1073741824_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1073741824))
+
 }
 
 @(test)
@@ -10390,6 +10677,7 @@ test_sint_pow2_1073741824_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1073741824))
+
 }
 
 @(test)
@@ -10426,6 +10714,7 @@ test_int_pow2_1073741824_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1073741825))
+
 }
 
 @(test)
@@ -10462,6 +10751,7 @@ test_sint_pow2_1073741824_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1073741825))
+
 }
 
 @(test)
@@ -10498,6 +10788,7 @@ test_int_pow2_2147483648_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2147483646))
+
 }
 
 @(test)
@@ -10534,6 +10825,7 @@ test_sint_pow2_2147483648_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2147483646))
+
 }
 
 @(test)
@@ -10570,6 +10862,7 @@ test_int_pow2_2147483648_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2147483647))
+
 }
 
 @(test)
@@ -10606,6 +10899,7 @@ test_sint_pow2_2147483648_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2147483647))
+
 }
 
 @(test)
@@ -10642,6 +10936,7 @@ test_int_pow2_2147483648_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2147483648))
+
 }
 
 @(test)
@@ -10678,6 +10973,7 @@ test_sint_pow2_2147483648_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2147483648))
+
 }
 
 @(test)
@@ -10714,6 +11010,7 @@ test_int_pow2_2147483648_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2147483649))
+
 }
 
 @(test)
@@ -10750,6 +11047,7 @@ test_sint_pow2_2147483648_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2147483649))
+
 }
 
 @(test)
@@ -10786,6 +11084,7 @@ test_int_pow2_4294967296_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4294967294))
+
 }
 
 @(test)
@@ -10822,6 +11121,7 @@ test_sint_pow2_4294967296_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4294967294))
+
 }
 
 @(test)
@@ -10858,6 +11158,7 @@ test_int_pow2_4294967296_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4294967295))
+
 }
 
 @(test)
@@ -10894,6 +11195,7 @@ test_sint_pow2_4294967296_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4294967295))
+
 }
 
 @(test)
@@ -10930,6 +11232,7 @@ test_int_pow2_4294967296_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4294967296))
+
 }
 
 @(test)
@@ -10966,6 +11269,7 @@ test_sint_pow2_4294967296_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4294967296))
+
 }
 
 @(test)
@@ -11002,6 +11306,7 @@ test_int_pow2_4294967296_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4294967297))
+
 }
 
 @(test)
@@ -11038,6 +11343,7 @@ test_sint_pow2_4294967296_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4294967297))
+
 }
 
 @(test)
@@ -11074,6 +11380,7 @@ test_int_pow2_8589934592_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8589934590))
+
 }
 
 @(test)
@@ -11110,6 +11417,7 @@ test_sint_pow2_8589934592_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8589934590))
+
 }
 
 @(test)
@@ -11146,6 +11454,7 @@ test_int_pow2_8589934592_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8589934591))
+
 }
 
 @(test)
@@ -11182,6 +11491,7 @@ test_sint_pow2_8589934592_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8589934591))
+
 }
 
 @(test)
@@ -11218,6 +11528,7 @@ test_int_pow2_8589934592_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8589934592))
+
 }
 
 @(test)
@@ -11254,6 +11565,7 @@ test_sint_pow2_8589934592_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8589934592))
+
 }
 
 @(test)
@@ -11290,6 +11602,7 @@ test_int_pow2_8589934592_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8589934593))
+
 }
 
 @(test)
@@ -11326,6 +11639,7 @@ test_sint_pow2_8589934592_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8589934593))
+
 }
 
 @(test)
@@ -11362,6 +11676,7 @@ test_int_pow2_17179869184_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(17179869182))
+
 }
 
 @(test)
@@ -11398,6 +11713,7 @@ test_sint_pow2_17179869184_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-17179869182))
+
 }
 
 @(test)
@@ -11434,6 +11750,7 @@ test_int_pow2_17179869184_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(17179869183))
+
 }
 
 @(test)
@@ -11470,6 +11787,7 @@ test_sint_pow2_17179869184_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-17179869183))
+
 }
 
 @(test)
@@ -11506,6 +11824,7 @@ test_int_pow2_17179869184_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(17179869184))
+
 }
 
 @(test)
@@ -11542,6 +11861,7 @@ test_sint_pow2_17179869184_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-17179869184))
+
 }
 
 @(test)
@@ -11578,6 +11898,7 @@ test_int_pow2_17179869184_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(17179869185))
+
 }
 
 @(test)
@@ -11614,6 +11935,7 @@ test_sint_pow2_17179869184_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-17179869185))
+
 }
 
 @(test)
@@ -11650,6 +11972,7 @@ test_int_pow2_34359738368_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(34359738366))
+
 }
 
 @(test)
@@ -11686,6 +12009,7 @@ test_sint_pow2_34359738368_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-34359738366))
+
 }
 
 @(test)
@@ -11722,6 +12046,7 @@ test_int_pow2_34359738368_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(34359738367))
+
 }
 
 @(test)
@@ -11758,6 +12083,7 @@ test_sint_pow2_34359738368_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-34359738367))
+
 }
 
 @(test)
@@ -11794,6 +12120,7 @@ test_int_pow2_34359738368_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(34359738368))
+
 }
 
 @(test)
@@ -11830,6 +12157,7 @@ test_sint_pow2_34359738368_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-34359738368))
+
 }
 
 @(test)
@@ -11866,6 +12194,7 @@ test_int_pow2_34359738368_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(34359738369))
+
 }
 
 @(test)
@@ -11902,6 +12231,7 @@ test_sint_pow2_34359738368_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-34359738369))
+
 }
 
 @(test)
@@ -11938,6 +12268,7 @@ test_int_pow2_68719476736_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(68719476734))
+
 }
 
 @(test)
@@ -11974,6 +12305,7 @@ test_sint_pow2_68719476736_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-68719476734))
+
 }
 
 @(test)
@@ -12010,6 +12342,7 @@ test_int_pow2_68719476736_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(68719476735))
+
 }
 
 @(test)
@@ -12046,6 +12379,7 @@ test_sint_pow2_68719476736_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-68719476735))
+
 }
 
 @(test)
@@ -12082,6 +12416,7 @@ test_int_pow2_68719476736_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(68719476736))
+
 }
 
 @(test)
@@ -12118,6 +12453,7 @@ test_sint_pow2_68719476736_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-68719476736))
+
 }
 
 @(test)
@@ -12154,6 +12490,7 @@ test_int_pow2_68719476736_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(68719476737))
+
 }
 
 @(test)
@@ -12190,6 +12527,7 @@ test_sint_pow2_68719476736_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-68719476737))
+
 }
 
 @(test)
@@ -12226,6 +12564,7 @@ test_int_pow2_137438953472_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(137438953470))
+
 }
 
 @(test)
@@ -12262,6 +12601,7 @@ test_sint_pow2_137438953472_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-137438953470))
+
 }
 
 @(test)
@@ -12298,6 +12638,7 @@ test_int_pow2_137438953472_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(137438953471))
+
 }
 
 @(test)
@@ -12334,6 +12675,7 @@ test_sint_pow2_137438953472_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-137438953471))
+
 }
 
 @(test)
@@ -12370,6 +12712,7 @@ test_int_pow2_137438953472_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(137438953472))
+
 }
 
 @(test)
@@ -12406,6 +12749,7 @@ test_sint_pow2_137438953472_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-137438953472))
+
 }
 
 @(test)
@@ -12442,6 +12786,7 @@ test_int_pow2_137438953472_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(137438953473))
+
 }
 
 @(test)
@@ -12478,6 +12823,7 @@ test_sint_pow2_137438953472_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-137438953473))
+
 }
 
 @(test)
@@ -12514,6 +12860,7 @@ test_int_pow2_274877906944_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(274877906942))
+
 }
 
 @(test)
@@ -12550,6 +12897,7 @@ test_sint_pow2_274877906944_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-274877906942))
+
 }
 
 @(test)
@@ -12586,6 +12934,7 @@ test_int_pow2_274877906944_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(274877906943))
+
 }
 
 @(test)
@@ -12622,6 +12971,7 @@ test_sint_pow2_274877906944_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-274877906943))
+
 }
 
 @(test)
@@ -12658,6 +13008,7 @@ test_int_pow2_274877906944_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(274877906944))
+
 }
 
 @(test)
@@ -12694,6 +13045,7 @@ test_sint_pow2_274877906944_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-274877906944))
+
 }
 
 @(test)
@@ -12730,6 +13082,7 @@ test_int_pow2_274877906944_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(274877906945))
+
 }
 
 @(test)
@@ -12766,6 +13119,7 @@ test_sint_pow2_274877906944_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-274877906945))
+
 }
 
 @(test)
@@ -12802,6 +13156,7 @@ test_int_pow2_549755813888_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(549755813886))
+
 }
 
 @(test)
@@ -12838,6 +13193,7 @@ test_sint_pow2_549755813888_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-549755813886))
+
 }
 
 @(test)
@@ -12874,6 +13230,7 @@ test_int_pow2_549755813888_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(549755813887))
+
 }
 
 @(test)
@@ -12910,6 +13267,7 @@ test_sint_pow2_549755813888_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-549755813887))
+
 }
 
 @(test)
@@ -12946,6 +13304,7 @@ test_int_pow2_549755813888_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(549755813888))
+
 }
 
 @(test)
@@ -12982,6 +13341,7 @@ test_sint_pow2_549755813888_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-549755813888))
+
 }
 
 @(test)
@@ -13018,6 +13378,7 @@ test_int_pow2_549755813888_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(549755813889))
+
 }
 
 @(test)
@@ -13054,6 +13415,7 @@ test_sint_pow2_549755813888_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-549755813889))
+
 }
 
 @(test)
@@ -13090,6 +13452,7 @@ test_int_pow2_1099511627776_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1099511627774))
+
 }
 
 @(test)
@@ -13126,6 +13489,7 @@ test_sint_pow2_1099511627776_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1099511627774))
+
 }
 
 @(test)
@@ -13162,6 +13526,7 @@ test_int_pow2_1099511627776_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1099511627775))
+
 }
 
 @(test)
@@ -13198,6 +13563,7 @@ test_sint_pow2_1099511627776_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1099511627775))
+
 }
 
 @(test)
@@ -13234,6 +13600,7 @@ test_int_pow2_1099511627776_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1099511627776))
+
 }
 
 @(test)
@@ -13270,6 +13637,7 @@ test_sint_pow2_1099511627776_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1099511627776))
+
 }
 
 @(test)
@@ -13306,6 +13674,7 @@ test_int_pow2_1099511627776_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1099511627777))
+
 }
 
 @(test)
@@ -13342,6 +13711,7 @@ test_sint_pow2_1099511627776_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1099511627777))
+
 }
 
 @(test)
@@ -13378,6 +13748,7 @@ test_int_pow2_2199023255552_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2199023255550))
+
 }
 
 @(test)
@@ -13414,6 +13785,7 @@ test_sint_pow2_2199023255552_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2199023255550))
+
 }
 
 @(test)
@@ -13450,6 +13822,7 @@ test_int_pow2_2199023255552_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2199023255551))
+
 }
 
 @(test)
@@ -13486,6 +13859,7 @@ test_sint_pow2_2199023255552_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2199023255551))
+
 }
 
 @(test)
@@ -13522,6 +13896,7 @@ test_int_pow2_2199023255552_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2199023255552))
+
 }
 
 @(test)
@@ -13558,6 +13933,7 @@ test_sint_pow2_2199023255552_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2199023255552))
+
 }
 
 @(test)
@@ -13594,6 +13970,7 @@ test_int_pow2_2199023255552_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2199023255553))
+
 }
 
 @(test)
@@ -13630,6 +14007,7 @@ test_sint_pow2_2199023255552_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2199023255553))
+
 }
 
 @(test)
@@ -13666,6 +14044,7 @@ test_int_pow2_4398046511104_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4398046511102))
+
 }
 
 @(test)
@@ -13702,6 +14081,7 @@ test_sint_pow2_4398046511104_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4398046511102))
+
 }
 
 @(test)
@@ -13738,6 +14118,7 @@ test_int_pow2_4398046511104_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4398046511103))
+
 }
 
 @(test)
@@ -13774,6 +14155,7 @@ test_sint_pow2_4398046511104_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4398046511103))
+
 }
 
 @(test)
@@ -13810,6 +14192,7 @@ test_int_pow2_4398046511104_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4398046511104))
+
 }
 
 @(test)
@@ -13846,6 +14229,7 @@ test_sint_pow2_4398046511104_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4398046511104))
+
 }
 
 @(test)
@@ -13882,6 +14266,7 @@ test_int_pow2_4398046511104_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4398046511105))
+
 }
 
 @(test)
@@ -13918,6 +14303,7 @@ test_sint_pow2_4398046511104_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4398046511105))
+
 }
 
 @(test)
@@ -13954,6 +14340,7 @@ test_int_pow2_8796093022208_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8796093022206))
+
 }
 
 @(test)
@@ -13990,6 +14377,7 @@ test_sint_pow2_8796093022208_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8796093022206))
+
 }
 
 @(test)
@@ -14026,6 +14414,7 @@ test_int_pow2_8796093022208_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8796093022207))
+
 }
 
 @(test)
@@ -14062,6 +14451,7 @@ test_sint_pow2_8796093022208_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8796093022207))
+
 }
 
 @(test)
@@ -14098,6 +14488,7 @@ test_int_pow2_8796093022208_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8796093022208))
+
 }
 
 @(test)
@@ -14134,6 +14525,7 @@ test_sint_pow2_8796093022208_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8796093022208))
+
 }
 
 @(test)
@@ -14170,6 +14562,7 @@ test_int_pow2_8796093022208_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(8796093022209))
+
 }
 
 @(test)
@@ -14206,6 +14599,7 @@ test_sint_pow2_8796093022208_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-8796093022209))
+
 }
 
 @(test)
@@ -14242,6 +14636,7 @@ test_int_pow2_17592186044416_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(17592186044414))
+
 }
 
 @(test)
@@ -14278,6 +14673,7 @@ test_sint_pow2_17592186044416_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-17592186044414))
+
 }
 
 @(test)
@@ -14314,6 +14710,7 @@ test_int_pow2_17592186044416_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(17592186044415))
+
 }
 
 @(test)
@@ -14350,6 +14747,7 @@ test_sint_pow2_17592186044416_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-17592186044415))
+
 }
 
 @(test)
@@ -14386,6 +14784,7 @@ test_int_pow2_17592186044416_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(17592186044416))
+
 }
 
 @(test)
@@ -14422,6 +14821,7 @@ test_sint_pow2_17592186044416_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-17592186044416))
+
 }
 
 @(test)
@@ -14458,6 +14858,7 @@ test_int_pow2_17592186044416_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(17592186044417))
+
 }
 
 @(test)
@@ -14494,6 +14895,7 @@ test_sint_pow2_17592186044416_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-17592186044417))
+
 }
 
 @(test)
@@ -14530,6 +14932,7 @@ test_int_pow2_35184372088832_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(35184372088830))
+
 }
 
 @(test)
@@ -14566,6 +14969,7 @@ test_sint_pow2_35184372088832_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-35184372088830))
+
 }
 
 @(test)
@@ -14602,6 +15006,7 @@ test_int_pow2_35184372088832_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(35184372088831))
+
 }
 
 @(test)
@@ -14638,6 +15043,7 @@ test_sint_pow2_35184372088832_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-35184372088831))
+
 }
 
 @(test)
@@ -14674,6 +15080,7 @@ test_int_pow2_35184372088832_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(35184372088832))
+
 }
 
 @(test)
@@ -14710,6 +15117,7 @@ test_sint_pow2_35184372088832_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-35184372088832))
+
 }
 
 @(test)
@@ -14746,6 +15154,7 @@ test_int_pow2_35184372088832_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(35184372088833))
+
 }
 
 @(test)
@@ -14782,6 +15191,7 @@ test_sint_pow2_35184372088832_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-35184372088833))
+
 }
 
 @(test)
@@ -14818,6 +15228,7 @@ test_int_pow2_70368744177664_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(70368744177662))
+
 }
 
 @(test)
@@ -14854,6 +15265,7 @@ test_sint_pow2_70368744177664_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-70368744177662))
+
 }
 
 @(test)
@@ -14890,6 +15302,7 @@ test_int_pow2_70368744177664_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(70368744177663))
+
 }
 
 @(test)
@@ -14926,6 +15339,7 @@ test_sint_pow2_70368744177664_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-70368744177663))
+
 }
 
 @(test)
@@ -14962,6 +15376,7 @@ test_int_pow2_70368744177664_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(70368744177664))
+
 }
 
 @(test)
@@ -14998,6 +15413,7 @@ test_sint_pow2_70368744177664_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-70368744177664))
+
 }
 
 @(test)
@@ -15034,6 +15450,7 @@ test_int_pow2_70368744177664_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(70368744177665))
+
 }
 
 @(test)
@@ -15070,6 +15487,7 @@ test_sint_pow2_70368744177664_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-70368744177665))
+
 }
 
 @(test)
@@ -15106,6 +15524,7 @@ test_int_pow2_140737488355328_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(140737488355326))
+
 }
 
 @(test)
@@ -15142,6 +15561,7 @@ test_sint_pow2_140737488355328_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-140737488355326))
+
 }
 
 @(test)
@@ -15178,6 +15598,7 @@ test_int_pow2_140737488355328_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(140737488355327))
+
 }
 
 @(test)
@@ -15214,6 +15635,7 @@ test_sint_pow2_140737488355328_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-140737488355327))
+
 }
 
 @(test)
@@ -15250,6 +15672,7 @@ test_int_pow2_140737488355328_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(140737488355328))
+
 }
 
 @(test)
@@ -15286,6 +15709,7 @@ test_sint_pow2_140737488355328_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-140737488355328))
+
 }
 
 @(test)
@@ -15322,6 +15746,7 @@ test_int_pow2_140737488355328_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(140737488355329))
+
 }
 
 @(test)
@@ -15358,6 +15783,7 @@ test_sint_pow2_140737488355328_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-140737488355329))
+
 }
 
 @(test)
@@ -15394,6 +15820,7 @@ test_int_pow2_281474976710656_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(281474976710654))
+
 }
 
 @(test)
@@ -15430,6 +15857,7 @@ test_sint_pow2_281474976710656_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-281474976710654))
+
 }
 
 @(test)
@@ -15466,6 +15894,7 @@ test_int_pow2_281474976710656_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(281474976710655))
+
 }
 
 @(test)
@@ -15502,6 +15931,7 @@ test_sint_pow2_281474976710656_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-281474976710655))
+
 }
 
 @(test)
@@ -15538,6 +15968,7 @@ test_int_pow2_281474976710656_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(281474976710656))
+
 }
 
 @(test)
@@ -15574,6 +16005,7 @@ test_sint_pow2_281474976710656_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-281474976710656))
+
 }
 
 @(test)
@@ -15610,6 +16042,7 @@ test_int_pow2_281474976710656_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(281474976710657))
+
 }
 
 @(test)
@@ -15646,6 +16079,7 @@ test_sint_pow2_281474976710656_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-281474976710657))
+
 }
 
 @(test)
@@ -15682,6 +16116,7 @@ test_int_pow2_562949953421312_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(562949953421310))
+
 }
 
 @(test)
@@ -15718,6 +16153,7 @@ test_sint_pow2_562949953421312_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-562949953421310))
+
 }
 
 @(test)
@@ -15754,6 +16190,7 @@ test_int_pow2_562949953421312_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(562949953421311))
+
 }
 
 @(test)
@@ -15790,6 +16227,7 @@ test_sint_pow2_562949953421312_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-562949953421311))
+
 }
 
 @(test)
@@ -15826,6 +16264,7 @@ test_int_pow2_562949953421312_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(562949953421312))
+
 }
 
 @(test)
@@ -15862,6 +16301,7 @@ test_sint_pow2_562949953421312_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-562949953421312))
+
 }
 
 @(test)
@@ -15898,6 +16338,7 @@ test_int_pow2_562949953421312_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(562949953421313))
+
 }
 
 @(test)
@@ -15934,6 +16375,7 @@ test_sint_pow2_562949953421312_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-562949953421313))
+
 }
 
 @(test)
@@ -15970,6 +16412,7 @@ test_int_pow2_1125899906842624_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1125899906842622))
+
 }
 
 @(test)
@@ -16006,6 +16449,7 @@ test_sint_pow2_1125899906842624_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1125899906842622))
+
 }
 
 @(test)
@@ -16042,6 +16486,7 @@ test_int_pow2_1125899906842624_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1125899906842623))
+
 }
 
 @(test)
@@ -16078,6 +16523,7 @@ test_sint_pow2_1125899906842624_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1125899906842623))
+
 }
 
 @(test)
@@ -16114,6 +16560,7 @@ test_int_pow2_1125899906842624_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1125899906842624))
+
 }
 
 @(test)
@@ -16150,6 +16597,7 @@ test_sint_pow2_1125899906842624_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1125899906842624))
+
 }
 
 @(test)
@@ -16186,6 +16634,7 @@ test_int_pow2_1125899906842624_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1125899906842625))
+
 }
 
 @(test)
@@ -16222,6 +16671,7 @@ test_sint_pow2_1125899906842624_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1125899906842625))
+
 }
 
 @(test)
@@ -16258,6 +16708,7 @@ test_int_pow2_2251799813685248_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2251799813685246))
+
 }
 
 @(test)
@@ -16294,6 +16745,7 @@ test_sint_pow2_2251799813685248_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2251799813685246))
+
 }
 
 @(test)
@@ -16330,6 +16782,7 @@ test_int_pow2_2251799813685248_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2251799813685247))
+
 }
 
 @(test)
@@ -16366,6 +16819,7 @@ test_sint_pow2_2251799813685248_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2251799813685247))
+
 }
 
 @(test)
@@ -16402,6 +16856,7 @@ test_int_pow2_2251799813685248_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2251799813685248))
+
 }
 
 @(test)
@@ -16438,6 +16893,7 @@ test_sint_pow2_2251799813685248_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2251799813685248))
+
 }
 
 @(test)
@@ -16474,6 +16930,7 @@ test_int_pow2_2251799813685248_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2251799813685249))
+
 }
 
 @(test)
@@ -16510,6 +16967,7 @@ test_sint_pow2_2251799813685248_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2251799813685249))
+
 }
 
 @(test)
@@ -16546,6 +17004,7 @@ test_int_pow2_4503599627370496_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4503599627370494))
+
 }
 
 @(test)
@@ -16582,6 +17041,7 @@ test_sint_pow2_4503599627370496_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4503599627370494))
+
 }
 
 @(test)
@@ -16618,6 +17078,7 @@ test_int_pow2_4503599627370496_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4503599627370495))
+
 }
 
 @(test)
@@ -16654,6 +17115,7 @@ test_sint_pow2_4503599627370496_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4503599627370495))
+
 }
 
 @(test)
@@ -16690,6 +17152,7 @@ test_int_pow2_4503599627370496_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4503599627370496))
+
 }
 
 @(test)
@@ -16726,6 +17189,7 @@ test_sint_pow2_4503599627370496_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4503599627370496))
+
 }
 
 @(test)
@@ -16762,6 +17226,7 @@ test_int_pow2_4503599627370496_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4503599627370497))
+
 }
 
 @(test)
@@ -16798,6 +17263,7 @@ test_sint_pow2_4503599627370496_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4503599627370497))
+
 }
 
 @(test)
@@ -16834,6 +17300,7 @@ test_int_pow2_9007199254740992_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(9007199254740990))
+
 }
 
 @(test)
@@ -16870,6 +17337,7 @@ test_sint_pow2_9007199254740992_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-9007199254740990))
+
 }
 
 @(test)
@@ -16906,6 +17374,7 @@ test_int_pow2_9007199254740992_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(9007199254740991))
+
 }
 
 @(test)
@@ -16942,6 +17411,7 @@ test_sint_pow2_9007199254740992_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-9007199254740991))
+
 }
 
 @(test)
@@ -16978,6 +17448,7 @@ test_int_pow2_9007199254740992_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(9007199254740992))
+
 }
 
 @(test)
@@ -17014,6 +17485,7 @@ test_sint_pow2_9007199254740992_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-9007199254740992))
+
 }
 
 @(test)
@@ -17050,6 +17522,7 @@ test_int_pow2_9007199254740992_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(9007199254740993))
+
 }
 
 @(test)
@@ -17086,6 +17559,7 @@ test_sint_pow2_9007199254740992_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-9007199254740993))
+
 }
 
 @(test)
@@ -17122,6 +17596,7 @@ test_int_pow2_18014398509481984_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(18014398509481982))
+
 }
 
 @(test)
@@ -17158,6 +17633,7 @@ test_sint_pow2_18014398509481984_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-18014398509481982))
+
 }
 
 @(test)
@@ -17194,6 +17670,7 @@ test_int_pow2_18014398509481984_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(18014398509481983))
+
 }
 
 @(test)
@@ -17230,6 +17707,7 @@ test_sint_pow2_18014398509481984_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-18014398509481983))
+
 }
 
 @(test)
@@ -17266,6 +17744,7 @@ test_int_pow2_18014398509481984_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(18014398509481984))
+
 }
 
 @(test)
@@ -17302,6 +17781,7 @@ test_sint_pow2_18014398509481984_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-18014398509481984))
+
 }
 
 @(test)
@@ -17338,6 +17818,7 @@ test_int_pow2_18014398509481984_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(18014398509481985))
+
 }
 
 @(test)
@@ -17374,6 +17855,7 @@ test_sint_pow2_18014398509481984_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-18014398509481985))
+
 }
 
 @(test)
@@ -17410,6 +17892,7 @@ test_int_pow2_36028797018963968_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(36028797018963966))
+
 }
 
 @(test)
@@ -17446,6 +17929,7 @@ test_sint_pow2_36028797018963968_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-36028797018963966))
+
 }
 
 @(test)
@@ -17482,6 +17966,7 @@ test_int_pow2_36028797018963968_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(36028797018963967))
+
 }
 
 @(test)
@@ -17518,6 +18003,7 @@ test_sint_pow2_36028797018963968_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-36028797018963967))
+
 }
 
 @(test)
@@ -17554,6 +18040,7 @@ test_int_pow2_36028797018963968_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(36028797018963968))
+
 }
 
 @(test)
@@ -17590,6 +18077,7 @@ test_sint_pow2_36028797018963968_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-36028797018963968))
+
 }
 
 @(test)
@@ -17626,6 +18114,7 @@ test_int_pow2_36028797018963968_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(36028797018963969))
+
 }
 
 @(test)
@@ -17662,6 +18151,7 @@ test_sint_pow2_36028797018963968_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-36028797018963969))
+
 }
 
 @(test)
@@ -17698,6 +18188,7 @@ test_int_pow2_72057594037927936_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(72057594037927934))
+
 }
 
 @(test)
@@ -17734,6 +18225,7 @@ test_sint_pow2_72057594037927936_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-72057594037927934))
+
 }
 
 @(test)
@@ -17770,6 +18262,7 @@ test_int_pow2_72057594037927936_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(72057594037927935))
+
 }
 
 @(test)
@@ -17806,6 +18299,7 @@ test_sint_pow2_72057594037927936_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-72057594037927935))
+
 }
 
 @(test)
@@ -17842,6 +18336,7 @@ test_int_pow2_72057594037927936_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(72057594037927936))
+
 }
 
 @(test)
@@ -17878,6 +18373,7 @@ test_sint_pow2_72057594037927936_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-72057594037927936))
+
 }
 
 @(test)
@@ -17914,6 +18410,7 @@ test_int_pow2_72057594037927936_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(72057594037927937))
+
 }
 
 @(test)
@@ -17950,6 +18447,7 @@ test_sint_pow2_72057594037927936_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-72057594037927937))
+
 }
 
 @(test)
@@ -17986,6 +18484,7 @@ test_int_pow2_144115188075855872_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(144115188075855870))
+
 }
 
 @(test)
@@ -18022,6 +18521,7 @@ test_sint_pow2_144115188075855872_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-144115188075855870))
+
 }
 
 @(test)
@@ -18058,6 +18558,7 @@ test_int_pow2_144115188075855872_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(144115188075855871))
+
 }
 
 @(test)
@@ -18094,6 +18595,7 @@ test_sint_pow2_144115188075855872_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-144115188075855871))
+
 }
 
 @(test)
@@ -18130,6 +18632,7 @@ test_int_pow2_144115188075855872_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(144115188075855872))
+
 }
 
 @(test)
@@ -18166,6 +18669,7 @@ test_sint_pow2_144115188075855872_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-144115188075855872))
+
 }
 
 @(test)
@@ -18202,6 +18706,7 @@ test_int_pow2_144115188075855872_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(144115188075855873))
+
 }
 
 @(test)
@@ -18238,6 +18743,7 @@ test_sint_pow2_144115188075855872_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-144115188075855873))
+
 }
 
 @(test)
@@ -18274,6 +18780,7 @@ test_int_pow2_288230376151711744_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(288230376151711742))
+
 }
 
 @(test)
@@ -18310,6 +18817,7 @@ test_sint_pow2_288230376151711744_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-288230376151711742))
+
 }
 
 @(test)
@@ -18346,6 +18854,7 @@ test_int_pow2_288230376151711744_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(288230376151711743))
+
 }
 
 @(test)
@@ -18382,6 +18891,7 @@ test_sint_pow2_288230376151711744_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-288230376151711743))
+
 }
 
 @(test)
@@ -18418,6 +18928,7 @@ test_int_pow2_288230376151711744_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(288230376151711744))
+
 }
 
 @(test)
@@ -18454,6 +18965,7 @@ test_sint_pow2_288230376151711744_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-288230376151711744))
+
 }
 
 @(test)
@@ -18490,6 +19002,7 @@ test_int_pow2_288230376151711744_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(288230376151711745))
+
 }
 
 @(test)
@@ -18526,6 +19039,7 @@ test_sint_pow2_288230376151711744_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-288230376151711745))
+
 }
 
 @(test)
@@ -18562,6 +19076,7 @@ test_int_pow2_576460752303423488_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(576460752303423486))
+
 }
 
 @(test)
@@ -18598,6 +19113,7 @@ test_sint_pow2_576460752303423488_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-576460752303423486))
+
 }
 
 @(test)
@@ -18634,6 +19150,7 @@ test_int_pow2_576460752303423488_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(576460752303423487))
+
 }
 
 @(test)
@@ -18670,6 +19187,7 @@ test_sint_pow2_576460752303423488_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-576460752303423487))
+
 }
 
 @(test)
@@ -18706,6 +19224,7 @@ test_int_pow2_576460752303423488_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(576460752303423488))
+
 }
 
 @(test)
@@ -18742,6 +19261,7 @@ test_sint_pow2_576460752303423488_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-576460752303423488))
+
 }
 
 @(test)
@@ -18778,6 +19298,7 @@ test_int_pow2_576460752303423488_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(576460752303423489))
+
 }
 
 @(test)
@@ -18814,6 +19335,7 @@ test_sint_pow2_576460752303423488_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-576460752303423489))
+
 }
 
 @(test)
@@ -18850,6 +19372,7 @@ test_int_pow2_1152921504606846976_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1152921504606846974))
+
 }
 
 @(test)
@@ -18886,6 +19409,7 @@ test_sint_pow2_1152921504606846976_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1152921504606846974))
+
 }
 
 @(test)
@@ -18922,6 +19446,7 @@ test_int_pow2_1152921504606846976_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1152921504606846975))
+
 }
 
 @(test)
@@ -18958,6 +19483,7 @@ test_sint_pow2_1152921504606846976_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1152921504606846975))
+
 }
 
 @(test)
@@ -18994,6 +19520,7 @@ test_int_pow2_1152921504606846976_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1152921504606846976))
+
 }
 
 @(test)
@@ -19030,6 +19557,7 @@ test_sint_pow2_1152921504606846976_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1152921504606846976))
+
 }
 
 @(test)
@@ -19066,6 +19594,7 @@ test_int_pow2_1152921504606846976_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(1152921504606846977))
+
 }
 
 @(test)
@@ -19102,6 +19631,7 @@ test_sint_pow2_1152921504606846976_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-1152921504606846977))
+
 }
 
 @(test)
@@ -19138,6 +19668,7 @@ test_int_pow2_2305843009213693952_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2305843009213693950))
+
 }
 
 @(test)
@@ -19174,6 +19705,7 @@ test_sint_pow2_2305843009213693952_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2305843009213693950))
+
 }
 
 @(test)
@@ -19210,6 +19742,7 @@ test_int_pow2_2305843009213693952_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2305843009213693951))
+
 }
 
 @(test)
@@ -19246,6 +19779,7 @@ test_sint_pow2_2305843009213693952_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2305843009213693951))
+
 }
 
 @(test)
@@ -19282,6 +19816,7 @@ test_int_pow2_2305843009213693952_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2305843009213693952))
+
 }
 
 @(test)
@@ -19318,6 +19853,7 @@ test_sint_pow2_2305843009213693952_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2305843009213693952))
+
 }
 
 @(test)
@@ -19354,6 +19890,7 @@ test_int_pow2_2305843009213693952_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(2305843009213693953))
+
 }
 
 @(test)
@@ -19390,6 +19927,7 @@ test_sint_pow2_2305843009213693952_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-2305843009213693953))
+
 }
 
 @(test)
@@ -19426,6 +19964,7 @@ test_int_pow2_4611686018427387904_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4611686018427387902))
+
 }
 
 @(test)
@@ -19462,6 +20001,7 @@ test_sint_pow2_4611686018427387904_m2_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4611686018427387902))
+
 }
 
 @(test)
@@ -19498,6 +20038,7 @@ test_int_pow2_4611686018427387904_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4611686018427387903))
+
 }
 
 @(test)
@@ -19534,6 +20075,7 @@ test_sint_pow2_4611686018427387904_m1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4611686018427387903))
+
 }
 
 @(test)
@@ -19570,6 +20112,7 @@ test_int_pow2_4611686018427387904_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4611686018427387904))
+
 }
 
 @(test)
@@ -19606,6 +20149,7 @@ test_sint_pow2_4611686018427387904_0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4611686018427387904))
+
 }
 
 @(test)
@@ -19642,6 +20186,7 @@ test_int_pow2_4611686018427387904_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (u64)(4611686018427387905))
+
 }
 
 @(test)
@@ -19678,6 +20223,7 @@ test_sint_pow2_4611686018427387904_1_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (i64)(-4611686018427387905))
+
 }
 
 @(test)
@@ -19714,6 +20260,7 @@ test_float_exp0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(1.0))
+
 }
 
 @(test)
@@ -19750,6 +20297,7 @@ test_float_nexp0_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(-1.0))
+
 }
 
 @(test)
@@ -19786,6 +20334,7 @@ test_float_exp10_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(22026.465794806703))
+
 }
 
 @(test)
@@ -19822,6 +20371,7 @@ test_float_nexp10_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(-22026.465794806703))
+
 }
 
 @(test)
@@ -19858,6 +20408,7 @@ test_float_exp20_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(485165195.40978974))
+
 }
 
 @(test)
@@ -19894,6 +20445,7 @@ test_float_nexp20_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(-485165195.40978974))
+
 }
 
 @(test)
@@ -19930,6 +20482,7 @@ test_float_exp30_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(10686474581524.445))
+
 }
 
 @(test)
@@ -19966,6 +20519,7 @@ test_float_nexp30_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(-10686474581524.445))
+
 }
 
 @(test)
@@ -20002,6 +20556,7 @@ test_float_exp40_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(2.353852668370195e+17))
+
 }
 
 @(test)
@@ -20038,6 +20593,7 @@ test_float_nexp40_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(-2.353852668370195e+17))
+
 }
 
 @(test)
@@ -20074,6 +20630,7 @@ test_float_exp50_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(5.184705528587058e+21))
+
 }
 
 @(test)
@@ -20110,6 +20667,7 @@ test_float_nexp50_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(-5.184705528587058e+21))
+
 }
 
 @(test)
@@ -20146,6 +20704,7 @@ test_float_exp60_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(1.1420073898156806e+26))
+
 }
 
 @(test)
@@ -20182,6 +20741,7 @@ test_float_nexp60_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(-1.1420073898156806e+26))
+
 }
 
 @(test)
@@ -20218,6 +20778,7 @@ test_float_exp70_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(2.5154386709191576e+30))
+
 }
 
 @(test)
@@ -20254,6 +20815,7 @@ test_float_nexp70_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(-2.5154386709191576e+30))
+
 }
 
 @(test)
@@ -20290,6 +20852,7 @@ test_float_exp80_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(5.540622384393487e+34))
+
 }
 
 @(test)
@@ -20326,6 +20889,7 @@ test_float_nexp80_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f32)(-5.540622384393487e+34))
+
 }
 
 @(test)
@@ -20362,6 +20926,7 @@ test_float_exp90_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(1.220403294317835e+39))
+
 }
 
 @(test)
@@ -20398,6 +20963,7 @@ test_float_nexp90_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-1.220403294317835e+39))
+
 }
 
 @(test)
@@ -20434,6 +21000,7 @@ test_float_exp100_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(2.6881171418161212e+43))
+
 }
 
 @(test)
@@ -20470,6 +21037,7 @@ test_float_nexp100_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-2.6881171418161212e+43))
+
 }
 
 @(test)
@@ -20506,6 +21074,7 @@ test_float_exp110_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(5.920972027664636e+47))
+
 }
 
 @(test)
@@ -20542,6 +21111,7 @@ test_float_nexp110_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-5.920972027664636e+47))
+
 }
 
 @(test)
@@ -20578,6 +21148,7 @@ test_float_exp120_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(1.304180878393624e+52))
+
 }
 
 @(test)
@@ -20614,6 +21185,7 @@ test_float_nexp120_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-1.304180878393624e+52))
+
 }
 
 @(test)
@@ -20650,6 +21222,7 @@ test_float_exp130_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(2.872649550817812e+56))
+
 }
 
 @(test)
@@ -20686,6 +21259,7 @@ test_float_nexp130_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-2.872649550817812e+56))
+
 }
 
 @(test)
@@ -20722,6 +21296,7 @@ test_float_exp140_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(6.327431707155538e+60))
+
 }
 
 @(test)
@@ -20758,6 +21333,7 @@ test_float_nexp140_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-6.327431707155538e+60))
+
 }
 
 @(test)
@@ -20794,6 +21370,7 @@ test_float_exp150_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(1.3937095806663685e+65))
+
 }
 
 @(test)
@@ -20830,6 +21407,7 @@ test_float_nexp150_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-1.3937095806663685e+65))
+
 }
 
 @(test)
@@ -20866,6 +21444,7 @@ test_float_exp160_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(3.0698496406442164e+69))
+
 }
 
 @(test)
@@ -20902,6 +21481,7 @@ test_float_nexp160_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-3.0698496406442164e+69))
+
 }
 
 @(test)
@@ -20938,6 +21518,7 @@ test_float_exp170_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(6.761793810484949e+73))
+
 }
 
 @(test)
@@ -20974,6 +21555,7 @@ test_float_nexp170_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-6.761793810484949e+73))
+
 }
 
 @(test)
@@ -21010,6 +21592,7 @@ test_float_exp180_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(1.4893842007818241e+78))
+
 }
 
 @(test)
@@ -21046,6 +21629,7 @@ test_float_nexp180_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-1.4893842007818241e+78))
+
 }
 
 @(test)
@@ -21082,6 +21666,7 @@ test_float_exp190_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(3.280587015384637e+82))
+
 }
 
 @(test)
@@ -21118,5 +21703,6 @@ test_float_nexp190_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (f64)(-3.280587015384637e+82))
+
 }
 

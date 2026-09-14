@@ -15,9 +15,11 @@ import "core:strings"
 import "core:time"
 
 PackerFlags :: enum {
-	StableMaps = 0,
-	UnionNames = 1,
-	EnumNames  = 2,
+	StableMaps     = 0,
+	UnionNames     = 1,
+	EnumNames      = 2,
+	FieldNames     = 3,
+	RawptrAsNumber = 4,
 }
 
 PackerFlags_Set :: bit_set[PackerFlags]
@@ -28,6 +30,12 @@ Packer :: struct {
 	flags:          PackerFlags_Set,
 	temp_allocator: runtime.Allocator,
 	string_builder: ^strings.Builder,
+}
+
+Pack_Error :: union {
+	io.Error,
+	Invalid_Parameter,
+	runtime.Allocator_Error,
 }
 
 // Creates a packer
@@ -86,7 +94,6 @@ pack_into_bytes :: proc(
 		defer destroy_packer(&packer, err != nil)
 		pack_any(&packer, v) or_return
 		bufio.writer_flush(&packer.bw)
-
 	}
 
 	return packer.string_builder.buf[:], nil
@@ -135,12 +142,6 @@ pack_into_writer :: proc(
 	return pack_any(&packer, v)
 }
 
-Pack_Error :: union {
-	io.Error,
-	Invalid_Parameter,
-	runtime.Allocator_Error,
-}
-
 pack_any :: proc(p: ^Packer, value: any) -> (err: Pack_Error) {
 	v := value
 
@@ -151,7 +152,7 @@ pack_any :: proc(p: ^Packer, value: any) -> (err: Pack_Error) {
 	v = reflect.any_base(v)
 	ti := type_info_of(v.id)
 	if ti.id == rawptr {
-		return Invalid_Parameter{"valuie is "}
+		return Invalid_Parameter{"value is a rawptr"}
 	}
 
 	if reflect.is_pointer(ti) {
@@ -172,11 +173,13 @@ pack_any_ptr :: proc(p: ^Packer, value: any) -> (err: Pack_Error) {
 pack_number :: proc(p: ^Packer, num: $T) -> (err: Pack_Error) {
 	num := num
 	when T != u8 && T != i8 {
-		num = intrinsics.byte_swap(num)
+		when NEEDS_SWAP {
+			num = intrinsics.byte_swap(num)
+		}
 	}
 
 	bytes: [size_of(T)]u8 = transmute([size_of(T)]u8)num
-	bufio.writer_write(&p.bw, bytes[:]) or_return
+	write_bytes(p, bytes[:]) or_return
 	return nil
 }
 
@@ -222,7 +225,9 @@ write_multibyte_head :: write_nbytes_head_r when NEEDS_SWAP else write_nbytes_he
 write_number_swapped :: #force_inline proc(p: ^Packer, tag: Tag, number: $T) -> (err: Pack_Error) {
 	number := number
 	when T != u8 && T != i8 {
-		number = intrinsics.byte_swap(number)
+		when NEEDS_SWAP {
+			number = intrinsics.byte_swap(number)
+		}
 	}
 
 	encode_tag(p, tag)
@@ -246,32 +251,24 @@ begin_map :: proc(p: ^Packer, length: u32) {
 	}
 }
 
-begin_array :: proc(p: ^Packer, length: u32) {
-	switch length {
-	case 0 ..< (1 << 4):
-		write_byte(p, 0b10010000 | u8(length))
-	case (1 << 4) ..< (1 << 16):
-		write_byte(p, 0xdc)
-		write_nbytes_r(p, transmute([2]u8)u16(length))
-	case (1 << 16) ..= ((1 << 32) - 1):
-		write_byte(p, 0xdd)
-		write_nbytes_r(p, transmute([4]u8)length)
-
-	}
+begin_array :: #force_inline proc(p: ^Packer, length: u32) {
+	encode_tag(p, Array{int(length)})
+	// switch length {
+	// case 0 ..< (1 << 4):
+	// 	write_byte(p, 0b10010000 | u8(length))
+	// case (1 << 4) ..< (1 << 16):
+	// 	write_byte(p, 0xdc)
+	// 	write_nbytes_r(p, transmute([2]u8)u16(length))
+	// case (1 << 16) ..= ((1 << 32) - 1):
+	// 	write_byte(p, 0xdd)
+	// 	write_nbytes_r(p, transmute([4]u8)length)
+	// }
 }
 
 write_nil :: proc(p: ^Packer) {
 	write_bytes(p, {0xc0})
 }
 
-// NOTE: TSolberg: this isn't right...
-write_rawptr :: proc(p: ^Packer, n: rawptr) {
-	if n == nil {
-		write_bytes(p, {0xc0})
-	} else {
-		panic("attempting to write rawptr value, don't know how to proceed.")
-	}
-}
 
 write_number :: proc(p: ^Packer, num: $T) where intrinsics.type_is_integer(T) {
 	if num >= 0 {
@@ -405,8 +402,8 @@ write_map :: proc(p: ^Packer, v: map[$K]$V) {
 	if .StableMaps in p.flags {
 		assert(intrinsics.type_is_ordered(K), ".StableMaps requires that keys are orderable.")
 
-		keys := make([]K, len(v))
-		defer delete(keys)
+		keys := make([]K, len(v), p.temp_allocator)
+		defer delete(keys, p.temp_allocator)
 
 		offset := 0
 		for k in v {
@@ -491,13 +488,46 @@ pack_array_specialized :: proc(
 ) -> (
 	err: Pack_Error,
 ) {
-	for i in 0 ..< count {
-		data := uintptr(base_ptr) + uintptr(i * size_of(T))
-		when T == f32 || T == f64 {
-			write_generic_float(p, ((^T)(data))^)
-		} else {
-			write_number(p, ((^T)(data))^)
+	STEP :: size_of(T)
+	data := ([^]T)(base_ptr)
+	count := count
+
+	for count >= 4 {
+		#unroll for i in 0 ..< 4 {
+			when T == f32 || T == f64 {
+				write_generic_float(p, ((^T)(&data[i]))^)
+			} else {
+				write_number(p, ((^T)(&data[i]))^)
+			}
 		}
+		data = &data[4]
+		count -= 4
+	}
+
+	switch count {
+	case 3:
+		#unroll for i in 0 ..< 3 {
+			when T == f32 || T == f64 {
+				write_generic_float(p, ((^T)(&data[i]))^)
+			} else {
+				write_number(p, ((^T)(&data[i]))^)
+			}
+		}
+	case 2:
+		#unroll for i in 0 ..< 2 {
+			when T == f32 || T == f64 {
+				write_generic_float(p, ((^T)(&data[i]))^)
+			} else {
+				write_number(p, ((^T)(&data[i]))^)
+			}
+		}
+	case 1:
+		when T == f32 || T == f64 {
+			write_generic_float(p, ((^T)(&data[0]))^)
+		} else {
+			write_number(p, ((^T)(&data[0]))^)
+		}
+
 	}
 
 	return nil
@@ -513,7 +543,11 @@ pack_struct :: proc(
 	begin_map(p, u32(info.field_count))
 
 	for name, i in info.names[:info.field_count] {
-		write_str(p, name)
+		if .FieldNames in p.flags {
+			write_str(p, name)
+		} else {
+			write_number(p, i)
+		}
 		id := info.types[i].id
 		data := rawptr(uintptr(base_ptr) + info.offsets[i])
 		the_value := any{data, id}
@@ -537,8 +571,21 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 		unreachable()
 
 
-	case runtime.Type_Info_Pointer, runtime.Type_Info_Multi_Pointer, runtime.Type_Info_Procedure:
-		if (^rawptr)(data.data)^ == nil {
+	case runtime.Type_Info_Pointer:
+		ptr := (^rawptr)(data.data)^
+		if ti.id == rawptr && .RawptrAsNumber in p.flags {
+			write_number(p, u64(uintptr(ptr)))
+		} else if ptr == nil || ti.id == rawptr {
+			write_nil(p)
+		} else {
+			write(p, any{ptr, info.elem.id}) or_return
+		}
+
+	case runtime.Type_Info_Multi_Pointer, runtime.Type_Info_Procedure:
+		ptr := (^rawptr)(data.data)^
+		if ti.id == rawptr && .RawptrAsNumber in p.flags {
+			write_number(p, u64(uintptr(ptr)))
+		} else {
 			write_nil(p)
 		}
 	case runtime.Type_Info_Integer:
@@ -596,8 +643,6 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 	     runtime.Type_Info_Parameters,
 	     runtime.Type_Info_Bit_Set,
 	     runtime.Type_Info_Simd_Vector,
-	     runtime.Type_Info_Relative_Pointer,
-	     runtime.Type_Info_Relative_Multi_Pointer,
 	     runtime.Type_Info_Matrix,
 	     runtime.Type_Info_Soa_Pointer,
 	     runtime.Type_Info_Type_Id,
@@ -609,8 +654,8 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 			tag := Bin{da.len}
 			encode_tag(p, tag)
 
-			s := slice.from_ptr(cast(^u8)data.data, da.len)
-			bufio.writer_write(&p.bw, s) or_return
+			s := slice.from_ptr(cast(^u8)da.data, da.len)
+			write_bytes(p, s) or_return
 		} else {
 			begin_array(p, u32(da.len))
 

@@ -38,6 +38,7 @@ test_timestamp_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (time.Time)(time.unix(171798691, 69)))
+
 }
 
 @(test)
@@ -74,5 +75,6 @@ test_timestamp_no_ns_de_into :: proc(t: ^testing.T) {
 
     testing.expect_value(t, err, nil)
     testing.expect_value(t, out, (time.Time)(time.unix(171798691, 0)))
+
 }
 
