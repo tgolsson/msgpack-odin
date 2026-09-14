@@ -13,6 +13,7 @@ Foo :: struct {
 test_write_struct :: proc(t: ^testing.T) {
     p, buf := make_packer()
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	m.write(&p, Foo { 1, 2 })
@@ -31,6 +32,7 @@ test_write_struct :: proc(t: ^testing.T) {
 test_write_false :: proc(t: ^testing.T) {
     p, buf := make_packer()
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	m.write(&p, false)
@@ -45,6 +47,7 @@ test_write_false :: proc(t: ^testing.T) {
 test_write_true :: proc(t: ^testing.T) {
     p, buf := make_packer()
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	m.write(&p, true)

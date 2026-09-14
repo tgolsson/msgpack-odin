@@ -15,6 +15,7 @@ test_write_union :: proc(t: ^testing.T) {
 
 	p, buf := make_packer({.UnionNames})
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(Hello{}))
@@ -42,6 +43,7 @@ test_write_union_variant :: proc(t: ^testing.T) {
 
 	p, buf := make_packer({.UnionNames})
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(Goodbye{120}))
@@ -70,6 +72,7 @@ test_write_union_variant_numeric :: proc(t: ^testing.T) {
 
 	p, buf := make_packer()
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(Goodbye{120}))
@@ -94,6 +97,7 @@ test_write_union_one_variant_numeric :: proc(t: ^testing.T) {
 
 	p, buf := make_packer()
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(Hello{}))
@@ -118,6 +122,7 @@ test_write_union_one_variant_s :: proc(t: ^testing.T) {
 
 	p, buf := make_packer({.UnionNames})
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(Hello{}))
@@ -142,6 +147,7 @@ test_write_union_nil :: proc(t: ^testing.T) {
 
 	p, buf := make_packer({.UnionNames})
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	m.write(&p, Example(nil))
@@ -149,8 +155,8 @@ test_write_union_nil :: proc(t: ^testing.T) {
 	m.flush_packer(&p)
 
 	example: Example
-	u, r := make_unpacker_from_bytes(buf.buf[:])
-	defer free(r)
+	u, _ := make_unpacker_from_bytes(buf.buf[:])
+	defer m.unpacker_destroy(u)
 	err := m.read_into(&u, &example)
 
 	num: u8

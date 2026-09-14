@@ -32,6 +32,7 @@ def write_test_generic(
     extras="",
     delete_expected=False,
     de_into_cleanup="",
+    de_cleanup="",
 ):
     expectation = str(list(msgpack.packb(python_value, use_single_float=usf)))[1:-1]
     comp = f"testing.expect_value(t, res.({output_cast}), expected)"
@@ -56,6 +57,8 @@ def write_test_generic(
 
     if delete_expected:
         delete += "; delete(expected.(map[m.ObjectKey]m.Object))"
+
+    delete += de_cleanup
 
     f.write(
         dedent(
@@ -270,6 +273,7 @@ with open(TESTS_PATH / "string.odin", "w") as f:
         'expected := "hello world"',
         "string",
         de_into_cleanup="delete(out)",
+        de_cleanup="delete(res.(string))",
     )
 
     v = "hello world" * 10
@@ -282,6 +286,7 @@ with open(TESTS_PATH / "string.odin", "w") as f:
         f'expected := "{v}"',
         "string",
         de_into_cleanup="delete(out)",
+        de_cleanup="delete(res.(string))",
     )
 
     v = "hello world" * 25
@@ -294,6 +299,7 @@ with open(TESTS_PATH / "string.odin", "w") as f:
         f'expected := "{v}"',
         "string",
         de_into_cleanup="delete(out)",
+        de_cleanup="delete(res.(string))",
     )
 
 with open(TESTS_PATH / "bytes.odin", "w") as f:
@@ -309,6 +315,7 @@ with open(TESTS_PATH / "bytes.odin", "w") as f:
         "[]m.bin",
         is_slice_comp=True,
         de_into_cleanup="delete(out)",
+        de_cleanup="delete(res.([]m.bin))",
     )
 
     b = "hello world" * 10
@@ -322,6 +329,7 @@ with open(TESTS_PATH / "bytes.odin", "w") as f:
         "[]m.bin",
         is_slice_comp=True,
         de_into_cleanup="delete(out)",
+        de_cleanup="delete(res.([]m.bin))",
     )
 
     b = "hello world" * 25
@@ -335,6 +343,7 @@ with open(TESTS_PATH / "bytes.odin", "w") as f:
         "[]m.bin",
         is_slice_comp=True,
         de_into_cleanup="delete(out)",
+        de_cleanup="delete(res.([]m.bin))",
     )
 
 with open(TESTS_PATH / "array.odin", "w") as f:
@@ -407,7 +416,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         "map[u8]u8",
         is_obj_comp=True,
         delete_expected=True,
-        de_into_cleanup="delete(out)",
+        de_into_cleanup="delete(out); delete(v)",
     )
 
     m = {0: 10}
@@ -421,7 +430,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         "map[u8]u8",
         is_obj_comp=True,
         delete_expected=True,
-        de_into_cleanup="delete(out)",
+        de_into_cleanup="delete(out); delete(v)",
     )
 
     m = {"foo": "bar"}
@@ -435,7 +444,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         "map[string]string",
         is_obj_comp=True,
         delete_expected=True,
-        de_into_cleanup="for k, v in out { delete(k); delete(v) }\n            delete(out)",
+        de_into_cleanup="for k, val in out { delete(k); delete(val) }\n            delete(out)\n            delete(v)",
     )
 
     m = {"foo": bytes([1, 2, 3])}
@@ -450,7 +459,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         is_obj_comp=True,
         extras="bd := [?]m.bin{1, 2, 3}",
         delete_expected=True,
-        de_into_cleanup="for k, v in out { delete(k); delete(v) }\n            delete(out)",
+        de_into_cleanup="for k, val in out { delete(k); delete(val) }\n            delete(out)\n            delete(v)",
     )
 
     m = {"foo": [1, 2, 3]}
@@ -465,7 +474,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         is_obj_comp=True,
         extras="bd := [?]u16{1, 2, 3}",
         delete_expected=True,
-        de_into_cleanup="for k, v in out { delete(k); delete(v) }\n            delete(out)",
+        de_into_cleanup="for k, val in out { delete(k); delete(val) }\n            delete(out)\n            delete(v)",
     )
 
     def fmt(m):
@@ -495,7 +504,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         flags=".StableMaps",
         usf=True,
         delete_expected=True,
-        de_into_cleanup="for k in out { delete(k) }\n            delete(out)",
+        de_into_cleanup="for k in out { delete(k) }\n            delete(out)\n            delete(v)",
     )
 
     m = {"a": 1.1, "b": 2.3, "c": 3.4, "d": 4.5, "e": 5.1}
@@ -511,7 +520,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         flags=".StableMaps",
         usf=True,
         delete_expected=True,
-        de_into_cleanup="for k in out { delete(k) }\n            delete(out)",
+        de_into_cleanup="for k in out { delete(k) }\n            delete(out)\n            delete(v)",
     )
 
     m = {"a": 1.1, "b": 2.3, "c": 3.4, "d": 4.5, "e": 5.1, "f": 1.3}
@@ -527,7 +536,7 @@ with open(TESTS_PATH / "map.odin", "w") as f:
         flags=".StableMaps",
         usf=True,
         delete_expected=True,
-        de_into_cleanup="for k in out { delete(k) }\n            delete(out)",
+        de_into_cleanup="for k in out { delete(k) }\n            delete(out)\n            delete(v)",
     )
 
 with open(TESTS_PATH / "timestamp.odin", "w") as f:

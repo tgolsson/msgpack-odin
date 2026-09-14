@@ -10,6 +10,7 @@ import "core:strings"
 test_nil_ser :: proc(t: ^testing.T) {
     p, buf := make_packer()
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
     value := rawptr(nil)
@@ -49,6 +50,7 @@ test_rawptr_nonnnil_no_flag :: proc(t: ^testing.T) {
 	// non-nil rawptr without RawptrAsNumber → msgpack nil
 	p, buf := make_packer()
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	value := rawptr(uintptr(42))
@@ -63,6 +65,7 @@ test_rawptr_nil_as_number :: proc(t: ^testing.T) {
 	// nil rawptr with RawptrAsNumber → u64(0)
 	p, buf := make_packer({.RawptrAsNumber})
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	value := rawptr(nil)
@@ -77,6 +80,7 @@ test_rawptr_nonnil_as_number :: proc(t: ^testing.T) {
 	// non-nil rawptr with RawptrAsNumber → u64(42) as fixint
 	p, buf := make_packer({.RawptrAsNumber})
 	defer m.destroy_packer(&p)
+	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
 	value := rawptr(uintptr(42))

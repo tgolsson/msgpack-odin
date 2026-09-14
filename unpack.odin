@@ -713,13 +713,30 @@ read_array_into_specialized_dispatch :: proc(
 
 	#partial switch info in info.variant {
 	case runtime.Type_Info_Array:
+		elem_info = info.elem
+	case runtime.Type_Info_Slice:
+		elem_info = info.elem
+	case runtime.Type_Info_Dynamic_Array:
+		elem_info = info.elem
+	case:
+		return false, Unexpected{"an array, slice, or dynamic array", "not an array-like type"}
+	}
+
+	switch elem_info.id {
+	case i8, i16, i32, i64, u8, u16, u32, u64, f32, f64:
+	// supported by the specialized fast-path below
+	case:
+		return false, nil
+	}
+
+	#partial switch info in info.variant {
+	case runtime.Type_Info_Array:
 		target_length := info.count
 		if length != target_length {
 			return false, Slice_Length_Mismatch{target_length, length}
 		}
 
 		base_ptr = v.data
-		elem_info = info.elem
 
 	case runtime.Type_Info_Slice:
 		raw_slice := (^mem.Raw_Slice)(v.data)
