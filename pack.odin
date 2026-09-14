@@ -646,6 +646,7 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 	     runtime.Type_Info_Matrix,
 	     runtime.Type_Info_Soa_Pointer,
 	     runtime.Type_Info_Type_Id,
+	     runtime.Type_Info_Fixed_Capacity_Dynamic_Array,
 	     runtime.Type_Info_Any:
 		unreachable()
 	case runtime.Type_Info_Dynamic_Array:
