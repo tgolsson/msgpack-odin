@@ -70,6 +70,7 @@ def write_test_generic(
             data, err := m.pack_into_bytes(value, {{ {flags} }})
             defer delete(data)
 
+            testing.expect_value(t, err, nil)
             {"delete(value)" if 'map' in str(odin_value) else ""}
             slice_eq(t, data[:], []u8{{{expectation}}})
 
@@ -105,7 +106,6 @@ def write_test_generic(
 def header(f):
     f.write("package tests\n")
     f.write('import "core:testing"\n')
-    f.write('import "core:fmt"\n')
     f.write('import m "../"\n\n')
 
 

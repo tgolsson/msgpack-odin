@@ -1,22 +1,20 @@
 package tests
 
-import "core:testing"
 import m "../"
-import "core:fmt"
-import "core:strings"
+import "core:testing"
 
 Foo :: struct {
-	foo, bar: i32
+	foo, bar: i32,
 }
 
 @(test)
 test_write_struct :: proc(t: ^testing.T) {
-    p, buf := make_packer()
+	p, buf := make_packer()
 	defer m.destroy_packer(&p)
 	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
 
-	m.write(&p, Foo { 1, 2 })
+	m.write(&p, Foo{1, 2})
 	m.flush_packer(&p)
 
 	f: Foo
@@ -30,7 +28,7 @@ test_write_struct :: proc(t: ^testing.T) {
 
 @(test)
 test_write_false :: proc(t: ^testing.T) {
-    p, buf := make_packer()
+	p, buf := make_packer()
 	defer m.destroy_packer(&p)
 	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)
@@ -45,7 +43,7 @@ test_write_false :: proc(t: ^testing.T) {
 
 @(test)
 test_write_true :: proc(t: ^testing.T) {
-    p, buf := make_packer()
+	p, buf := make_packer()
 	defer m.destroy_packer(&p)
 	defer free(p.string_builder)
 	defer delete(p.string_builder.buf)

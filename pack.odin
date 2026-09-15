@@ -3,14 +3,12 @@ package msgpack
 import "base:intrinsics"
 import "base:runtime"
 import "core:bufio"
-import "core:encoding/endian"
 import "core:fmt"
 import "core:io"
 import "core:math"
 import "core:mem"
 import "core:reflect"
 import "core:slice"
-import "core:sort"
 import "core:strings"
 import "core:time"
 
@@ -272,43 +270,43 @@ write_nil :: proc(p: ^Packer) {
 
 write_number :: proc(p: ^Packer, num: $T) where intrinsics.type_is_integer(T) {
 	if num >= 0 {
-		num := u64(num)
-		switch num {
+		unum := u64(num)
+		switch unum {
 		case 0 ..= 127:
-			write_byte(p, u8(num))
+			write_byte(p, u8(unum))
 
 		case 128 ..< 256:
 			write_byte(p, 0xCC)
-			write_byte(p, u8(num))
+			write_byte(p, u8(unum))
 		case 256 ..< (1 << 16):
 			write_byte(p, 0xCD)
-			write_multibyte(p, transmute([2]u8)u16(num))
+			write_multibyte(p, transmute([2]u8)u16(unum))
 
 		case (1 << 16) ..< (1 << 32):
 			write_byte(p, 0xCE)
-			write_multibyte(p, transmute([4]u8)u32(num))
+			write_multibyte(p, transmute([4]u8)u32(unum))
 		case u64(1 << 32) ..= u64(1 << 64 - 1):
 			write_byte(p, 0xCF)
-			write_multibyte(p, transmute([8]u8)num)
+			write_multibyte(p, transmute([8]u8)unum)
 		}
 	} else {
-		num := i64(num)
-		switch num {
+		inum := i64(num)
+		switch inum {
 
 		case -32 ..< 0:
-			write_byte(p, u8(0b11100000) | u8(num) & 0b11111)
+			write_byte(p, u8(0b11100000) | u8(inum) & 0b11111)
 		case -128 ..< 0:
 			write_byte(p, 0xd0)
-			write_byte(p, (u8)(i8(num)))
+			write_byte(p, (u8)(i8(inum)))
 		case -32768 ..< 0:
 			write_byte(p, 0xd1)
-			write_multibyte(p, transmute([2]u8)i16(num))
+			write_multibyte(p, transmute([2]u8)i16(inum))
 		case -(1 << 31) ..< 0:
 			write_byte(p, 0xd2)
-			write_multibyte(p, transmute([4]u8)i32(num))
+			write_multibyte(p, transmute([4]u8)i32(inum))
 		case -(1 << 63) ..< 0:
 			write_byte(p, 0xD3)
-			write_multibyte(p, transmute([8]u8)num)
+			write_multibyte(p, transmute([8]u8)inum)
 		}
 	}
 }
@@ -430,23 +428,23 @@ write_map :: proc(p: ^Packer, v: map[$K]$V) {
 write_ext :: proc(p: ^Packer, type: i8, size: u32) {
 	switch size {
 	case 1:
-		write_bytes(p, {0xd4, transmute(u8)type})
+		write_bytes(p, {0xd4, cast(u8)type})
 	case 2:
-		write_bytes(p, {0xd5, transmute(u8)type})
+		write_bytes(p, {0xd5, cast(u8)type})
 	case 4:
-		write_bytes(p, {0xd6, transmute(u8)type})
+		write_bytes(p, {0xd6, cast(u8)type})
 	case 8:
-		write_bytes(p, {0xd7, transmute(u8)type})
+		write_bytes(p, {0xd7, cast(u8)type})
 	case 16:
-		write_bytes(p, {0xd8, transmute(u8)type})
+		write_bytes(p, {0xd8, cast(u8)type})
 	case 0 ..< (1 << 8):
-		write_bytes(p, {0xc7, u8(size), transmute(u8)type})
+		write_bytes(p, {0xc7, u8(size), cast(u8)type})
 	case (1 << 8) ..< (1 << 16):
 		bytes := transmute([2]u8)u16(size)
-		write_bytes(p, {0xc8, bytes[1], bytes[0], transmute(u8)type})
+		write_bytes(p, {0xc8, bytes[1], bytes[0], cast(u8)type})
 	case (1 << 16) ..= (1 << 32 - 1):
 		bytes := transmute([4]u8)u32(size)
-		write_bytes(p, {0xc9, bytes[3], bytes[2], bytes[1], bytes[0], transmute(u8)type})
+		write_bytes(p, {0xc9, bytes[3], bytes[2], bytes[1], bytes[0], cast(u8)type})
 	}
 
 }
@@ -826,7 +824,6 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 		}
 		begin_map(p, u32(count_valid))
 		if .StableMaps not_in p.flags {
-			i := 0
 			for bucket_index in 0 ..< map_cap {
 				runtime.map_hash_is_valid(hs[bucket_index]) or_continue
 
@@ -868,7 +865,7 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 				slice.sort_by(sorted[:], proc(i, j: Entry(T)) -> bool {return i.key < j.key})
 
 
-				for s, i in sorted {
+				for s in sorted {
 					write(p, s.key)
 					write(p, s.value)
 				}

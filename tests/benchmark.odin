@@ -6,9 +6,6 @@ import "core:math/rand"
 import "core:mem"
 import "core:strings"
 import "core:time"
-import "core:bytes"
-import "core:io"
-import "core:testing"
 
 Vec2 :: [2]f32
 Vec3 :: [3]f32
@@ -144,7 +141,7 @@ bench_mpack_unpack :: proc(
 	bytes := 0
 	for _ in 0 ..< options.rounds {
 		mesh: Mesh
-		err := m.unpack_into_from_bytes(options.input, &mesh)
+		_ = m.unpack_into_from_bytes(options.input, &mesh)
 		bytes += len(options.input)
 
 		delete(mesh.indices)

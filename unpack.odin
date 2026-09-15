@@ -8,7 +8,6 @@ import "core:encoding/endian"
 import "core:io"
 import "core:mem"
 import "core:reflect"
-import "core:slice"
 import "core:strings"
 import "core:time"
 
@@ -155,7 +154,7 @@ read_number_swapped :: proc(u: ^Unpacker, $T: typeid) -> (number: T, err: Unpack
 }
 
 read_size :: proc(u: ^Unpacker, width: u64) -> (size: u64, err: Unpack_Error) {
-	for i in 0 ..< width {
+	for _ in 0 ..< width {
 		b := read_byte(u) or_return
 		size = size << 8 | u64(b)
 	}
@@ -387,7 +386,6 @@ read :: proc(u: ^Unpacker) -> (item: Object, err: Unpack_Error) {
 }
 
 assign_num :: proc(v: any, t: typeid, value: $T) where intrinsics.type_is_numeric(T) {
-	data := v.data
 	switch t {
 	case i8:
 		(^i8)(v.data)^ = i8(value)
@@ -490,13 +488,13 @@ read_map_into :: proc(
 	defer mem.free(raw_data(value_temp), context.temp_allocator)
 	value_value := any{raw_data(value_temp), value_type}
 
-	for i in 0 ..< length {
+	for _ in 0 ..< length {
 		mem.zero_slice(key_temp[:])
 		mem.zero_slice(value_temp[:])
 		read_into_value(u, key_value) or_return
 		read_into_value(u, value_value) or_return
 
-		set_ptr := runtime.__dynamic_map_set_without_hash(
+		runtime.__dynamic_map_set_without_hash(
 			raw_map,
 			info.map_info,
 			key_value.data,
@@ -516,7 +514,7 @@ read_struct_into :: proc(
 	info: runtime.Type_Info_Struct,
 	length: u64,
 ) -> Unpack_Error {
-	for i in 0 ..< length {
+	for _ in 0 ..< length {
 		key := read_key(u) or_return
 
 		field_type: ^runtime.Type_Info
@@ -541,7 +539,6 @@ read_struct_into :: proc(
 			data = field_data,
 			id   = field_type.id,
 		}
-		field_type_info := type_info_of(field_type.id)
 		read_into_value(u, field_any) or_return
 	}
 
@@ -641,7 +638,7 @@ read_bytes_into :: proc(
 		raw_dynamic_array := (^mem.Raw_Dynamic_Array)(v.data)
 
 		slice := make([]byte, length, u.allocator) or_return
-		defer if err != nil { delete(slice, u.allocator) }
+		defer if err != nil {delete(slice, u.allocator)}
 
 		read_bytes_into_slice(u, slice) or_return
 
@@ -667,7 +664,7 @@ read_array_into_specialized :: proc(
 ) {
 	base := uintptr(base_ptr)
 	ti := typeid_of(T)
-	for i in 0 ..< length {
+	for _ in 0 ..< length {
 		elem := any{rawptr(base), ti}
 
 		next_elem := decode_tag(u) or_return
@@ -740,7 +737,6 @@ read_array_into_specialized_dispatch :: proc(
 
 	case runtime.Type_Info_Slice:
 		raw_slice := (^mem.Raw_Slice)(v.data)
-		target_length := raw_slice.len
 
 		if length > raw_slice.len / info.elem_size {
 			data := mem.alloc_bytes_non_zeroed(

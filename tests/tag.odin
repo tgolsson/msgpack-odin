@@ -1,15 +1,13 @@
 package tests
 
 import "core:bytes"
-import "core:fmt"
-import "core:io"
 import "core:strings"
 import "core:testing"
 
 import m "../"
 
 make_packer :: proc(flags: m.PackerFlags_Set = {}) -> (p: m.Packer, b: ^strings.Builder) {
-	p, _ =m .packer_for_bytes(flags)
+	p, _ = m.packer_for_bytes(flags)
 	return p, p.string_builder
 }
 
@@ -39,7 +37,7 @@ test_array_tag :: proc(t: ^testing.T) {
 		m.flush_packer(&packer)
 		testing.expect_value(t, len(packer.string_builder.buf), expected_length)
 
-		u, r := make_unpacker_from_bytes(packer.string_builder.buf[:])
+		u, _ := make_unpacker_from_bytes(packer.string_builder.buf[:])
 		defer m.unpacker_destroy(u)
 		decoded, err := m.decode_tag(&u)
 		testing.expect_value(t, err, nil)
@@ -68,7 +66,7 @@ test_map_tag :: proc(t: ^testing.T) {
 		m.encode_tag(&packer, m.Map{length})
 		m.flush_packer(&packer)
 		testing.expect_value(t, len(buf.buf), expected_length)
-		u, r := make_unpacker_from_bytes(buf.buf[:])
+		u, _ := make_unpacker_from_bytes(buf.buf[:])
 		defer m.unpacker_destroy(u)
 
 		decoded, err := m.decode_tag(&u)

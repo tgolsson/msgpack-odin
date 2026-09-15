@@ -3,11 +3,7 @@ package msgpack
 import "base:intrinsics"
 import "base:runtime"
 import "core:encoding/endian"
-import "core:fmt"
 import "core:io"
-import "core:math"
-import "core:reflect"
-import "core:sort"
 import "core:time"
 
 // @TODO[TSolberg]:
@@ -47,7 +43,7 @@ Object :: union {
 
 Unexpected :: struct {
 	wanted: string,
-	found: string,
+	found:  string,
 }
 
 Unhandled_Tag :: struct {
@@ -159,7 +155,8 @@ object_equals :: proc(left: ^Object, right: ^Object) -> bool {
 
 object_key_delete :: proc(object: ObjectKey) {
 	#partial switch l in object {
-	case string: delete(l)
+	case string:
+		delete(l)
 	}
 }
 object_delete :: proc(object: Object) {

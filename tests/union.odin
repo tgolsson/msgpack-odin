@@ -1,6 +1,5 @@
 package tests
 import m "../"
-import "core:strings"
 import "core:testing"
 
 @(test)
@@ -79,7 +78,7 @@ test_write_union_variant_numeric :: proc(t: ^testing.T) {
 	m.flush_packer(&p)
 
 	example: Example
-	err := m.unpack_into_from_bytes(buf.buf[:], &example)
+	_ = m.unpack_into_from_bytes(buf.buf[:], &example)
 
 	// testing.expect_value(t, err, nil)
 	// testing.expect_value(t, example.(Goodbye), Goodbye{120})
