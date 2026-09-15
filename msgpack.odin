@@ -59,11 +59,23 @@ Slice_Length_Mismatch :: struct {
 	source_length: int,
 }
 
+Unknown_Enum_Ordinal :: struct {
+	type:    typeid,
+	ordinal: i64,
+}
+
+Unknown_Enum_Name :: struct {
+	type: typeid,
+	name: string,
+}
+
 Error :: union {
 	Unexpected,
 	Unhandled_Tag,
 	Invalid_Parameter,
 	Slice_Length_Mismatch,
+	Unknown_Enum_Ordinal,
+	Unknown_Enum_Name,
 	runtime.Allocator_Error,
 	io.Error,
 }

@@ -24,6 +24,8 @@ Unpack_Error :: union {
 	Invalid_Parameter,
 	Slice_Length_Mismatch,
 	Unhandled_Tag,
+	Unknown_Enum_Ordinal,
+	Unknown_Enum_Name,
 	runtime.Allocator_Error,
 }
 
@@ -427,6 +429,62 @@ assign_str :: proc(v: any, t: typeid, value: $T) {
 		case cstring:
 			(^cstring)(v.data)^ = value
 		}
+	}
+}
+
+resolve_enum_ordinal :: proc(
+	info: runtime.Type_Info_Enum,
+	type: typeid,
+	ordinal: i64,
+) -> (
+	runtime.Type_Info_Enum_Value,
+	Unpack_Error,
+) {
+	ev := runtime.Type_Info_Enum_Value(ordinal)
+	for v in info.values {
+		if v == ev {
+			return ev, nil
+		}
+	}
+	return 0, Unknown_Enum_Ordinal{type, ordinal}
+}
+
+resolve_enum_name :: proc(
+	type: typeid,
+	name: string,
+) -> (
+	runtime.Type_Info_Enum_Value,
+	Unpack_Error,
+) {
+	value, ok := reflect.enum_from_name_any(type, name)
+	if !ok {
+		return 0, Unknown_Enum_Name{type, name}
+	}
+	return value, nil
+}
+
+assign_enum :: proc(v: any, info: runtime.Type_Info_Enum, value: runtime.Type_Info_Enum_Value) {
+	switch info.base.id {
+	case i8:
+		(^i8)(v.data)^ = i8(value)
+	case i16:
+		(^i16)(v.data)^ = i16(value)
+	case i32:
+		(^i32)(v.data)^ = i32(value)
+	case i64:
+		(^i64)(v.data)^ = i64(value)
+	case u8:
+		(^u8)(v.data)^ = u8(value)
+	case u16:
+		(^u16)(v.data)^ = u16(value)
+	case u32:
+		(^u32)(v.data)^ = u32(value)
+	case u64:
+		(^u64)(v.data)^ = u64(value)
+	case int:
+		(^int)(v.data)^ = int(value)
+	case uint:
+		(^uint)(v.data)^ = uint(value)
 	}
 }
 
@@ -873,22 +931,52 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 
 	switch variant in tag {
 	case Positive_Fixint:
-		assign_num(v, v.id, variant.value)
+		#partial switch info in ti.variant {
+		case runtime.Type_Info_Enum:
+			ev := resolve_enum_ordinal(info, v.id, i64(variant.value)) or_return
+			assign_enum(v, info, ev)
+		case:
+			assign_num(v, v.id, variant.value)
+		}
 
 	case Negative_Fixint:
-		assign_num(v, v.id, variant.value)
+		#partial switch info in ti.variant {
+		case runtime.Type_Info_Enum:
+			ev := resolve_enum_ordinal(info, v.id, i64(variant.value)) or_return
+			assign_enum(v, info, ev)
+		case:
+			assign_num(v, v.id, variant.value)
+		}
 
 	case Str:
 		str := read_string(u, variant.length) or_return
-		assign_str(v, v.id, str)
+		#partial switch info in ti.variant {
+		case runtime.Type_Info_Enum:
+			ev := resolve_enum_name(v.id, str) or_return
+			assign_enum(v, info, ev)
+		case:
+			assign_str(v, v.id, str)
+		}
 
 	case Uint:
 		number := (read_uint(u, variant) or_return).(u64)
-		assign_num(v, v.id, number)
+		#partial switch info in ti.variant {
+		case runtime.Type_Info_Enum:
+			ev := resolve_enum_ordinal(info, v.id, i64(number)) or_return
+			assign_enum(v, info, ev)
+		case:
+			assign_num(v, v.id, number)
+		}
 
 	case Int:
 		number := (read_sint(u, variant) or_return).(i64)
-		assign_num(v, v.id, number)
+		#partial switch info in ti.variant {
+		case runtime.Type_Info_Enum:
+			ev := resolve_enum_ordinal(info, v.id, number) or_return
+			assign_enum(v, info, ev)
+		case:
+			assign_num(v, v.id, number)
+		}
 
 	case Bool:
 		if v.id == bool {
@@ -930,10 +1018,15 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 			}
 		}
 	case Float:
-		if variant.is_double {
-			assign_num(v, v.id, read_number_swapped(u, f64) or_return)
-		} else {
-			assign_num(v, v.id, read_number_swapped(u, f32) or_return)
+		#partial switch info in ti.variant {
+		case runtime.Type_Info_Enum:
+			return Unexpected{"an int or string for an enum", "a float"}
+		case:
+			if variant.is_double {
+				assign_num(v, v.id, read_number_swapped(u, f64) or_return)
+			} else {
+				assign_num(v, v.id, read_number_swapped(u, f32) or_return)
+			}
 		}
 	case Array:
 		read_array_into(u, v, ti, variant.length) or_return
