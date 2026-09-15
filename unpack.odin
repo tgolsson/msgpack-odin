@@ -952,7 +952,13 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 		str := read_string(u, variant.length) or_return
 		#partial switch info in ti.variant {
 		case runtime.Type_Info_Enum:
-			ev := resolve_enum_name(v.id, str) or_return
+			ev, resolve_err := resolve_enum_name(v.id, str)
+			if resolve_err != nil {
+				// str is held by the Unknown_Enum_Name error for diagnostics;
+				// it is not freed here since the error carries it by reference.
+				return resolve_err
+			}
+			delete(str, u.allocator)
 			assign_enum(v, info, ev)
 		case:
 			assign_str(v, v.id, str)

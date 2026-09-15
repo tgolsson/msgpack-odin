@@ -16,7 +16,6 @@ A few notes on compatibility:
 
 # Missing functionality
 
-- There's no support for enums (yet)
 - No support for `using` in structs
 
 # Performance
