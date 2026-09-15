@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install imp
+        uses: imp-build/actions/setup-imp@main
+        with:
+          version: latest
+
+      - name: Check generated tests are up to date
+        run: imp generate --check //...
+
+      - name: Test
+        run: imp test //tests:msgpack_tests
+
+      - name: Check formatting
+        run: imp fmt --check //...
+
+      - name: Lint
+        run: imp lint //...
