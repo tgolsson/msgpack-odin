@@ -565,9 +565,17 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 	a := any{data.data, ti.id}
 
 	switch info in ti.variant {
-	case runtime.Type_Info_Named, runtime.Type_Info_Enum, runtime.Type_Info_Bit_Field:
+	case runtime.Type_Info_Named, runtime.Type_Info_Bit_Field:
 		unreachable()
 
+	case runtime.Type_Info_Enum:
+		if .EnumNames in p.flags {
+			name, _ := reflect.enum_name_from_value_any(a)
+			write_str(p, name)
+		} else {
+			value, _ := reflect.as_i64(a)
+			write_number(p, value)
+		}
 
 	case runtime.Type_Info_Pointer:
 		ptr := (^rawptr)(data.data)^
