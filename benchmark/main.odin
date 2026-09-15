@@ -1,15 +1,15 @@
 package benchmark
 
 import m "../"
+import "core:bytes"
 import "core:encoding/cbor"
 import "core:encoding/json"
 import "core:fmt"
+import "core:io"
 import "core:math/rand"
 import "core:mem"
 import "core:strings"
 import "core:time"
-import "core:bytes"
-import "core:io"
 
 ROUNDS :: 10000
 Vec2 :: [2]f32
@@ -614,7 +614,11 @@ main :: proc() {
 		mesh := generate_mesh(100, 40)
 		defer delete(mesh.vertices)
 		defer delete(mesh.indices)
-		file, _ := os.open("small.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, os.Permissions_Default_File)
+		file, _ := os.open(
+			"small.mp",
+			os.O_CREATE | os.O_WRONLY | os.O_TRUNC,
+			os.Permissions_Default_File,
+		)
 		defer os.close(file)
 		stream := os.to_stream(file)
 		m.pack_into_writer(stream, &mesh, {.UnionNames, .FieldNames})
@@ -623,7 +627,11 @@ main :: proc() {
 		mesh := generate_mesh(1000, 400)
 		defer delete(mesh.vertices)
 		defer delete(mesh.indices)
-		file, _ := os.open("medium.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, os.Permissions_Default_File)
+		file, _ := os.open(
+			"medium.mp",
+			os.O_CREATE | os.O_WRONLY | os.O_TRUNC,
+			os.Permissions_Default_File,
+		)
 		defer os.close(file)
 		stream := os.to_stream(file)
 		m.pack_into_writer(stream, &mesh, {.UnionNames, .FieldNames})
@@ -633,7 +641,11 @@ main :: proc() {
 		defer delete(mesh.vertices)
 		defer delete(mesh.indices)
 
-		file, _ := os.open("large.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, os.Permissions_Default_File)
+		file, _ := os.open(
+			"large.mp",
+			os.O_CREATE | os.O_WRONLY | os.O_TRUNC,
+			os.Permissions_Default_File,
+		)
 		defer os.close(file)
 
 		stream := os.to_stream(file)
@@ -644,7 +656,11 @@ main :: proc() {
 		defer delete(mesh.vertices)
 		defer delete(mesh.indices)
 
-		file, _ := os.open("massive.mp", os.O_CREATE | os.O_WRONLY | os.O_TRUNC, os.Permissions_Default_File)
+		file, _ := os.open(
+			"massive.mp",
+			os.O_CREATE | os.O_WRONLY | os.O_TRUNC,
+			os.Permissions_Default_File,
+		)
 		defer os.close(file)
 
 		stream := os.to_stream(file)
@@ -652,6 +668,6 @@ main :: proc() {
 	}
 
 
-		bench_unpack()
+	bench_unpack()
 	// bench_pack()
 }
