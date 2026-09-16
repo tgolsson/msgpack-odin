@@ -11,11 +11,14 @@ import "core:reflect"
 import "core:strings"
 import "core:time"
 
+DEFAULT_UNPACK_MAX_LENGTH :: 1 << 20
+
 Unpacker :: struct {
 	r:            io.Reader,
 	reader:       ^bufio.Reader,
 	allocator:    runtime.Allocator,
 	bytes_reader: ^bytes.Reader,
+	max_length:   int,
 }
 
 Unpack_Error :: union {
@@ -26,26 +29,35 @@ Unpack_Error :: union {
 	Unhandled_Tag,
 	Unknown_Enum_Ordinal,
 	Unknown_Enum_Name,
+	Length_Limit_Exceeded,
 	runtime.Allocator_Error,
 }
 
 // Note: this will allocate a reader on the allocator, that has to be freed.
-unpacker_from_bytes :: proc(b: []u8, allocator := context.allocator) -> Unpacker {
+unpacker_from_bytes :: proc(
+	b: []u8,
+	allocator := context.allocator,
+	max_length: int = DEFAULT_UNPACK_MAX_LENGTH,
+) -> Unpacker {
 	reader := new(bytes.Reader, allocator)
 	stream := bytes.reader_init(reader, b)
 	io_reader := io.to_reader(stream)
 
-	u := unpacker_from_reader(io_reader, allocator)
+	u := unpacker_from_reader(io_reader, allocator, max_length)
 	u.bytes_reader = reader
 
 	return u
 }
 
-unpacker_from_reader :: proc(reader: io.Reader, allocator := context.allocator) -> Unpacker {
+unpacker_from_reader :: proc(
+	reader: io.Reader,
+	allocator := context.allocator,
+	max_length: int = DEFAULT_UNPACK_MAX_LENGTH,
+) -> Unpacker {
 	buffered_reader := new(bufio.Reader)
 	bufio.reader_init(buffered_reader, reader, allocator = allocator)
 
-	return Unpacker{reader, buffered_reader, allocator, nil}
+	return Unpacker{reader, buffered_reader, allocator, nil, max_length}
 }
 
 unpacker_destroy :: proc(u: Unpacker) {
@@ -60,10 +72,11 @@ unpack_into_from_bytes :: proc(
 	b: []u8,
 	ptr: ^$T,
 	allocator := context.allocator,
+	max_length: int = DEFAULT_UNPACK_MAX_LENGTH,
 ) -> (
 	err: Unpack_Error,
 ) {
-	u := unpacker_from_bytes(b, allocator)
+	u := unpacker_from_bytes(b, allocator, max_length)
 	defer unpacker_destroy(u)
 
 	return read_into(&u, ptr)
@@ -73,10 +86,11 @@ unpack_into_from_reader :: proc(
 	reader: io.Reader,
 	ptr: ^$T,
 	temp_allocator := context.allocator,
+	max_length: int = DEFAULT_UNPACK_MAX_LENGTH,
 ) -> (
 	err: Unpack_Error,
 ) {
-	u := unpacker_from_reader(reader, temp_allocator)
+	u := unpacker_from_reader(reader, temp_allocator, max_length)
 	defer unpacker_destroy(u)
 
 	return read_into(&u, ptr)
@@ -85,11 +99,12 @@ unpack_into_from_reader :: proc(
 unpack_from_bytes :: proc(
 	b: []u8,
 	allocator := context.allocator,
+	max_length: int = DEFAULT_UNPACK_MAX_LENGTH,
 ) -> (
 	obj: Object,
 	err: Unpack_Error,
 ) {
-	u := unpacker_from_bytes(b, allocator)
+	u := unpacker_from_bytes(b, allocator, max_length)
 	defer unpacker_destroy(u)
 
 	return read(&u)
@@ -98,11 +113,12 @@ unpack_from_bytes :: proc(
 unpack_from_reader :: proc(
 	reader: io.Reader,
 	allocator := context.allocator,
+	max_length: int = DEFAULT_UNPACK_MAX_LENGTH,
 ) -> (
 	obj: Object,
 	err: Unpack_Error,
 ) {
-	unpacker := unpacker_from_reader(reader, allocator)
+	unpacker := unpacker_from_reader(reader, allocator, max_length)
 	return read(&unpacker)
 }
 
@@ -162,6 +178,19 @@ read_size :: proc(u: ^Unpacker, width: u64) -> (size: u64, err: Unpack_Error) {
 	}
 
 	return
+}
+
+read_unpack_length :: proc(u: ^Unpacker, length: u64) -> (value: int, err: Unpack_Error) {
+	max_length := u.max_length
+	if max_length < 0 {
+		max_length = 0
+	}
+
+	if length > u64(max_length) {
+		return 0, Length_Limit_Exceeded{length, u64(max_length)}
+	}
+
+	return int(length), nil
 }
 
 read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {

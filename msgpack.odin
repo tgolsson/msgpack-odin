@@ -59,6 +59,11 @@ Slice_Length_Mismatch :: struct {
 	source_length: int,
 }
 
+Length_Limit_Exceeded :: struct {
+	length:     u64,
+	max_length: u64,
+}
+
 Unknown_Enum_Ordinal :: struct {
 	type:    typeid,
 	ordinal: i64,

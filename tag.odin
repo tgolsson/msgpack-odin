@@ -264,26 +264,23 @@ decode_tag :: #force_no_inline proc(u: ^Unpacker) -> (t: Tag, err: Unpack_Error)
 		return Bool{true}, nil
 
 	case BIN_8:
-		return Bin{int(read_byte(u) or_return)}, nil
+		return Bin{read_unpack_length(u, u64(read_byte(u) or_return)) or_return}, nil
 	case BIN_16:
-		return Bin{int(read_number_swapped(u, u16) or_return)}, nil
+		return Bin{read_unpack_length(u, u64(read_number_swapped(u, u16) or_return)) or_return},
+			nil
 	case BIN_32:
-		return Bin{int(read_number_swapped(u, u32) or_return)}, nil
+		return Bin{read_unpack_length(u, u64(read_number_swapped(u, u32) or_return)) or_return},
+			nil
 
 	case EXT_8:
-		return Ext{int(read_byte(u) or_return), read_number_swapped(u, i8) or_return}, nil
+		length := read_unpack_length(u, u64(read_byte(u) or_return)) or_return
+		return Ext{length, read_number_swapped(u, i8) or_return}, nil
 	case EXT_16:
-		return Ext {
-				int(read_number_swapped(u, u16) or_return),
-				read_number_swapped(u, i8) or_return,
-			},
-			nil
+		length := read_unpack_length(u, u64(read_number_swapped(u, u16) or_return)) or_return
+		return Ext{length, read_number_swapped(u, i8) or_return}, nil
 	case EXT_32:
-		return Ext {
-				int(read_number_swapped(u, u32) or_return),
-				read_number_swapped(u, i8) or_return,
-			},
-			nil
+		length := read_unpack_length(u, u64(read_number_swapped(u, u32) or_return)) or_return
+		return Ext{length, read_number_swapped(u, i8) or_return}, nil
 
 	case FLOAT_32:
 		return Float{false}, nil
@@ -309,44 +306,55 @@ decode_tag :: #force_no_inline proc(u: ^Unpacker) -> (t: Tag, err: Unpack_Error)
 		return Int{8}, nil
 
 	case FIXEXT_1:
-		return Ext{1, read_number_swapped(u, i8) or_return}, nil
+		length := read_unpack_length(u, 1) or_return
+		return Ext{length, read_number_swapped(u, i8) or_return}, nil
 	case FIXEXT_2:
-		return Ext{2, read_number_swapped(u, i8) or_return}, nil
+		length := read_unpack_length(u, 2) or_return
+		return Ext{length, read_number_swapped(u, i8) or_return}, nil
 	case FIXEXT_4:
-		return Ext{4, read_number_swapped(u, i8) or_return}, nil
+		length := read_unpack_length(u, 4) or_return
+		return Ext{length, read_number_swapped(u, i8) or_return}, nil
 	case FIXEXT_8:
-		return Ext{8, read_number_swapped(u, i8) or_return}, nil
+		length := read_unpack_length(u, 8) or_return
+		return Ext{length, read_number_swapped(u, i8) or_return}, nil
 	case FIXEXT_16:
-		return Ext{16, read_number_swapped(u, i8) or_return}, nil
+		length := read_unpack_length(u, 16) or_return
+		return Ext{length, read_number_swapped(u, i8) or_return}, nil
 
 	case STR_8:
-		return Str{int(read_byte(u) or_return)}, nil
+		return Str{read_unpack_length(u, u64(read_byte(u) or_return)) or_return}, nil
 	case STR_16:
-		return Str{int(read_number_swapped(u, u16) or_return)}, nil
+		return Str{read_unpack_length(u, u64(read_number_swapped(u, u16) or_return)) or_return},
+			nil
 	case STR_32:
-		return Str{int(read_number_swapped(u, u32) or_return)}, nil
+		return Str{read_unpack_length(u, u64(read_number_swapped(u, u32) or_return)) or_return},
+			nil
 
 	case ARRAY_16:
-		return Array{int(read_number_swapped(u, u16) or_return)}, nil
+		return Array{read_unpack_length(u, u64(read_number_swapped(u, u16) or_return)) or_return},
+			nil
 	case ARRAY_32:
-		return Array{int(read_number_swapped(u, u32) or_return)}, nil
+		return Array{read_unpack_length(u, u64(read_number_swapped(u, u32) or_return)) or_return},
+			nil
 
 	case MAP_16:
-		return Map{int(read_number_swapped(u, u16) or_return)}, nil
+		return Map{read_unpack_length(u, u64(read_number_swapped(u, u16) or_return)) or_return},
+			nil
 	case MAP_32:
-		return Map{int(read_number_swapped(u, u32) or_return)}, nil
+		return Map{read_unpack_length(u, u64(read_number_swapped(u, u32) or_return)) or_return},
+			nil
 
 	case 0 ..< POSITIVE_FIXINT_MASK:
 		return Positive_Fixint{raw}, nil
 
 	case POSITIVE_FIXINT_MASK ..< FIXARRAY_VALUE:
-		return Map{int(raw & ~u8(FIXMAP_MASK))}, nil
+		return Map{read_unpack_length(u, u64(raw & ~u8(FIXMAP_MASK))) or_return}, nil
 
 	case FIXARRAY_VALUE ..< FIXSTR_VALUE:
-		return Array{int(raw & ~u8(FIXARRAY_MASK))}, nil
+		return Array{read_unpack_length(u, u64(raw & ~u8(FIXARRAY_MASK))) or_return}, nil
 
 	case FIXSTR_VALUE ..< NIL:
-		return Str{int(raw & ~u8(FIXSTR_MASK))}, nil
+		return Str{read_unpack_length(u, u64(raw & ~u8(FIXSTR_MASK))) or_return}, nil
 
 	case NEGATIVE_FIXINT_MASK ..= 0xFF:
 		return Negative_Fixint{-32 + i8(raw & ~u8(NEGATIVE_FIXINT_MASK))}, nil

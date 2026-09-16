@@ -10,6 +10,7 @@ A few notes on compatibility:
 * Integers are packed into the smallest possible variant
 * ~Floats are packed as is and deserialized as is~ TODO: Unit tests assume efficient packing so right now, anything < F32_MAX is packed as f32. This is temporary.
 * `[]u8` and friends are packed as Array[Number]. This is also true for `[]byte`, which is a soft alias for the former. For true binary data, use `[]m.bin` or `m.binary`.
+* Unpacking limits each map/array length and string/bin/ext payload to 1 MiB by default. Override `max_length` on the byte/reader unpacking APIs when larger values are expected.
 * Packing internally uses a `bufio.Writer`. `pack_into_from_` will flush this, but manual packing requires flushing this explicitly. See `packer_flush`.
 * Unions are packed as `{variant_name_or_index: variant_value}`
 * `.StableMaps` do not apply to structs, only actual maps.
