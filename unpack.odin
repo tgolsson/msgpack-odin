@@ -379,8 +379,7 @@ read_key :: proc(u: ^Unpacker) -> (item: ObjectKey, err: Unpack_Error) {
 		return ObjectKey(variant.value), nil
 
 	case:
-		panic("xxx")
-	// return nil, Unexpected{"a valid key type", tag_name(tag)}
+		return nil, Unexpected{"a valid key type", tag_name(tag)}
 	}
 
 	unreachable()
