@@ -49,6 +49,9 @@ unpacker_from_bytes :: proc(
 	return u
 }
 
+// Creates a buffered unpacker for a stream of consecutive MessagePack values.
+// Keep the returned Unpacker alive and call read or read_into repeatedly to
+// decode multiple messages without discarding bytes buffered from the reader.
 unpacker_from_reader :: proc(
 	reader: io.Reader,
 	allocator := context.allocator,
