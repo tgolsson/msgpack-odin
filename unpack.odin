@@ -1024,7 +1024,7 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 		}
 
 	case Nil:
-	// TODO: not sure how to handle consistently.
+		mem.zero(v.data, ti.size)
 	case Map:
 		length := u64(variant.length)
 
