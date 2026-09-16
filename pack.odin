@@ -91,18 +91,22 @@ pack_into_bytes :: proc(
 	{
 		defer destroy_packer(&packer, err != nil)
 		pack_any(&packer, v) or_return
-		bufio.writer_flush(&packer.bw)
+		flush_packer(&packer) or_return
 	}
 
 	return packer.string_builder.buf[:], nil
 }
 
-flush_packer :: proc(p: ^Packer) {
-	bufio.writer_flush(&p.bw)
+flush_packer :: proc(p: ^Packer) -> Pack_Error {
+	err := bufio.writer_flush(&p.bw)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 destroy_packer :: proc(p: ^Packer, clear_buffer := false) {
-	flush_packer(p)
+	_ = flush_packer(p)
 	bufio.writer_destroy(&p.bw)
 	if clear_buffer {
 		strings.builder_destroy(p.string_builder)
@@ -120,9 +124,12 @@ pack_into_builder :: proc(
 	err: Pack_Error,
 ) {
 	packer := packer_for_builder(builder, flags, temp_allocator)
-	defer destroy_packer(&packer, false)
-
-	return pack_any(&packer, v)
+	err = pack_any(&packer, v)
+	if err == nil {
+		err = flush_packer(&packer)
+	}
+	destroy_packer(&packer, false)
+	return
 }
 
 pack_into_writer :: proc(
@@ -135,9 +142,12 @@ pack_into_writer :: proc(
 	err: Pack_Error,
 ) {
 	packer := packer_for_writer(writer, flags, temp_allocator)
-	defer destroy_packer(&packer, false)
-
-	return pack_any(&packer, v)
+	err = pack_any(&packer, v)
+	if err == nil {
+		err = flush_packer(&packer)
+	}
+	destroy_packer(&packer, false)
+	return
 }
 
 pack_any :: proc(p: ^Packer, value: any) -> (err: Pack_Error) {
