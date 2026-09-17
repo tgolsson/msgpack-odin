@@ -597,6 +597,75 @@ read_map_into :: proc(
 }
 
 
+read_struct_field_by_index :: proc(
+	v: any,
+	info: runtime.Type_Info_Struct,
+	index: ^u64,
+) -> (
+	field: any,
+	found: bool,
+) {
+	for _, i in info.names[:info.field_count] {
+		field_data := rawptr(uintptr(v.data) + info.offsets[i])
+		field_type := info.types[i]
+
+		if info.usings[i] {
+			ti := runtime.type_info_base(type_info_of(field_type.id))
+			nested_info := ti.variant.(runtime.Type_Info_Struct)
+			field, found = read_struct_field_by_index(
+				any{field_data, field_type.id},
+				nested_info,
+				index,
+			)
+			if found {
+				return
+			}
+			continue
+		}
+
+		if index^ == 0 {
+			return any{field_data, field_type.id}, true
+		}
+		index^ -= 1
+	}
+
+	return nil, false
+}
+
+read_struct_field_by_name :: proc(
+	v: any,
+	info: runtime.Type_Info_Struct,
+	name: string,
+) -> (
+	field: any,
+	found: bool,
+) {
+	for _, i in info.names[:info.field_count] {
+		field_data := rawptr(uintptr(v.data) + info.offsets[i])
+		field_type := info.types[i]
+
+		if info.usings[i] {
+			ti := runtime.type_info_base(type_info_of(field_type.id))
+			nested_info := ti.variant.(runtime.Type_Info_Struct)
+			field, found = read_struct_field_by_name(
+				any{field_data, field_type.id},
+				nested_info,
+				name,
+			)
+			if found {
+				return
+			}
+			continue
+		}
+
+		if info.names[i] == name {
+			return any{field_data, field_type.id}, true
+		}
+	}
+
+	return nil, false
+}
+
 read_struct_into :: proc(
 	u: ^Unpacker,
 	v: any,
@@ -606,29 +675,25 @@ read_struct_into :: proc(
 	for _ in 0 ..< length {
 		key := read_key(u) or_return
 
-		field_type: ^runtime.Type_Info
-		field_offset: uintptr
+		field: any
+		found: bool
 
 		field_name, ok := key.(string)
 		if ok {
 			defer delete(field_name)
-			field_info := reflect.struct_field_by_name(v.id, field_name)
-
-			field_offset = field_info.offset
-			field_type = field_info.type
+			field, found = read_struct_field_by_name(v, info, field_name)
+			if !found {
+				return Unexpected{"a known struct field name", "unknown struct field name"}
+			}
 		} else {
 			field_index := key.(u64)
-			field_offset = uintptr(info.offsets[field_index])
-			field_type = info.types[field_index]
+			field, found = read_struct_field_by_index(v, info, &field_index)
+			if !found {
+				return Unexpected{"a valid struct field index", "out-of-range struct field index"}
+			}
 		}
 
-
-		field_data := rawptr(uintptr(v.data) + uintptr(field_offset))
-		field_any := any {
-			data = field_data,
-			id   = field_type.id,
-		}
-		read_into_value(u, field_any) or_return
+		read_into_value(u, field) or_return
 	}
 
 	return nil

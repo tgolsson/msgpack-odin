@@ -168,6 +168,50 @@ test_using_field_pack_named_keys :: proc(t: ^testing.T) {
 }
 
 @(test)
+test_using_field_unpack_numeric_keys :: proc(t: ^testing.T) {
+	value := Using_Outer{7, Using_Nested{Using_Base{11, "base"}, true}, -3}
+	data, pack_err := m.pack_into_bytes(value, {})
+	defer delete(data)
+	testing.expect_value(t, pack_err, nil)
+
+	decoded: Using_Outer
+	defer delete(decoded.named.name)
+	unpack_err := m.unpack_into_from_bytes(data, &decoded)
+
+	testing.expect_value(t, unpack_err, nil)
+	testing.expect_value(t, decoded, value)
+}
+
+@(test)
+test_using_field_unpack_named_keys :: proc(t: ^testing.T) {
+	value := Using_Outer{7, Using_Nested{Using_Base{11, "base"}, true}, -3}
+	data, pack_err := m.pack_into_bytes(value, {.FieldNames})
+	defer delete(data)
+	testing.expect_value(t, pack_err, nil)
+
+	decoded: Using_Outer
+	defer delete(decoded.named.name)
+	unpack_err := m.unpack_into_from_bytes(data, &decoded)
+
+	testing.expect_value(t, unpack_err, nil)
+	testing.expect_value(t, decoded, value)
+}
+
+@(test)
+test_using_field_unpack_missing_fields :: proc(t: ^testing.T) {
+	// Only the first and last flattened fields are present. The omitted
+	// embedded fields must retain their existing destination values.
+	data := []u8{0x82, 0x00, 0x07, 0x04, 0xfa}
+	decoded := Using_Outer{99, Using_Nested{Using_Base{88, "keep"}, false}, 77}
+
+	err := m.unpack_into_from_bytes(data, &decoded)
+
+	expected := Using_Outer{7, Using_Nested{Using_Base{88, "keep"}, false}, -6}
+	testing.expect_value(t, err, nil)
+	testing.expect_value(t, decoded, expected)
+}
+
+@(test)
 test_using_field_collision_boundary :: proc(t: ^testing.T) {
 	names: [8]string
 	offsets: [8]uintptr
