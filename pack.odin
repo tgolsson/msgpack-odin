@@ -541,6 +541,51 @@ pack_array_specialized :: proc(
 	return nil
 }
 
+pack_struct_field_count :: proc(info: runtime.Type_Info_Struct) -> int {
+	count := 0
+	for _, i in info.names[:info.field_count] {
+		if info.usings[i] {
+			ti := runtime.type_info_base(type_info_of(info.types[i].id))
+			nested_info := ti.variant.(runtime.Type_Info_Struct)
+			count += pack_struct_field_count(nested_info)
+		} else {
+			count += 1
+		}
+	}
+	return count
+}
+
+pack_struct_fields :: proc(
+	p: ^Packer,
+	info: runtime.Type_Info_Struct,
+	base_ptr: rawptr,
+	field_index: ^int,
+) -> (
+	err: Pack_Error,
+) {
+	for name, i in info.names[:info.field_count] {
+		id := info.types[i].id
+		data := rawptr(uintptr(base_ptr) + info.offsets[i])
+
+		if info.usings[i] {
+			ti := runtime.type_info_base(type_info_of(id))
+			nested_info := ti.variant.(runtime.Type_Info_Struct)
+			pack_struct_fields(p, nested_info, data, field_index) or_return
+			continue
+		}
+
+		if .FieldNames in p.flags {
+			write_str(p, name)
+		} else {
+			write_number(p, field_index^)
+		}
+		field_index^ += 1
+		write(p, any{data, id}) or_return
+	}
+
+	return nil
+}
+
 pack_struct :: proc(
 	p: ^Packer,
 	info: runtime.Type_Info_Struct,
@@ -548,25 +593,9 @@ pack_struct :: proc(
 ) -> (
 	err: Pack_Error,
 ) {
-	begin_map(p, u32(info.field_count))
-
-	for name, i in info.names[:info.field_count] {
-		if .FieldNames in p.flags {
-			write_str(p, name)
-		} else {
-			write_number(p, i)
-		}
-		id := info.types[i].id
-		data := rawptr(uintptr(base_ptr) + info.offsets[i])
-		the_value := any{data, id}
-		// TODO
-		// if info.usings[i] && name == "_" {
-		// 	write_struct_fields(p, the_value, opt)
-		// } else {
-		write(p, the_value) or_return
-		//}
-	}
-
+	begin_map(p, u32(pack_struct_field_count(info)))
+	field_index := 0
+	pack_struct_fields(p, info, base_ptr, &field_index) or_return
 	return nil
 }
 
