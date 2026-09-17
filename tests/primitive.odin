@@ -10,8 +10,6 @@ slice_eq :: proc(t: ^testing.T, a: []$T, b: []T) {
 	}
 }
 
-// CI generated-file drift regression marker.
-
 map_eq :: proc(t: ^testing.T, a: map[$K]$T, b: map[K]T) {
 	testing.expectf(t, len(a) == len(b), "mismatch: %v != %v", a, b)
 	for k, v in a {
