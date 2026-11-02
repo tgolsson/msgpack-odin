@@ -321,8 +321,9 @@ write_number :: proc(p: ^Packer, num: $T) where intrinsics.type_is_integer(T) {
 	}
 }
 
+// Writes a float32 when that holds the value exactly, otherwise a float64.
 write_generic_float :: proc(p: ^Packer, num: $T) where intrinsics.type_is_float(T) {
-	if abs(num) <= math.F32_MAX {
+	if f64(f32(num)) == f64(num) {
 		write_number_swapped(p, Float{false}, f32(num))
 	} else {
 		write_number_swapped(p, Float{true}, f64(num))
@@ -634,7 +635,7 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 			write_nil(p)
 		}
 	case runtime.Type_Info_Integer:
-		switch data.id {
+		switch ti.id {
 		case i8:
 			write_number(p, a.(i8))
 		case i16:
@@ -836,7 +837,7 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 		write_bool(p, a.(bool))
 
 	case runtime.Type_Info_String:
-		switch s in data {
+		switch s in a {
 		case string:
 			write_str(p, s)
 		case cstring:
@@ -844,7 +845,7 @@ write :: proc(p: ^Packer, data: any) -> (err: Pack_Error) {
 		}
 
 	case runtime.Type_Info_Float:
-		if data.id == f32 {
+		if ti.id == f32 {
 			write_generic_float(p, a.(f32))
 		} else {
 			write_generic_float(p, a.(f64))

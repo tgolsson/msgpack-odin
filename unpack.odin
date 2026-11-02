@@ -57,7 +57,7 @@ unpacker_from_reader :: proc(
 	allocator := context.allocator,
 	max_length: int = DEFAULT_UNPACK_MAX_LENGTH,
 ) -> Unpacker {
-	buffered_reader := new(bufio.Reader)
+	buffered_reader := new(bufio.Reader, allocator)
 	bufio.reader_init(buffered_reader, reader, allocator = allocator)
 
 	return Unpacker{reader, buffered_reader, allocator, nil, max_length}
@@ -65,10 +65,10 @@ unpacker_from_reader :: proc(
 
 unpacker_destroy :: proc(u: Unpacker) {
 	if u.bytes_reader != nil {
-		free(u.bytes_reader)
+		free(u.bytes_reader, u.allocator)
 	}
 	bufio.reader_destroy(u.reader)
-	free(u.reader)
+	free(u.reader, u.allocator)
 }
 
 unpack_into_from_bytes :: proc(
@@ -219,7 +219,7 @@ read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {
 read_string :: proc(u: ^Unpacker, size: int) -> (value: string, err: Unpack_Error) {
 	buffer := make([]u8, size, u.allocator)
 	defer if err != nil {
-		delete(buffer)
+		delete(buffer, u.allocator)
 	}
 	read_bytes_into_slice(u, buffer[:]) or_return
 
@@ -237,7 +237,7 @@ read_bin :: proc(u: ^Unpacker, size: int) -> (value: []bin, err: Unpack_Error) {
 read_array :: proc(u: ^Unpacker, size: int) -> (item: []Object, err: Unpack_Error) {
 	out := make([]Object, size, u.allocator)
 	defer if err != nil {
-		delete(out)
+		delete(out, u.allocator)
 	}
 
 	for i in 0 ..< size {
@@ -287,8 +287,9 @@ read_sint :: proc(u: ^Unpacker, tag: Int) -> (item: Object, err: Unpack_Error) {
 	unreachable()
 }
 
-read_timestamp_ext1 :: proc(b: []u8) -> time.Time {
-	defer delete(b)
+// Consumes `b`, which must have been allocated with `allocator`.
+read_timestamp_ext1 :: proc(b: []u8, allocator := context.allocator) -> time.Time {
+	defer delete(b, allocator)
 
 	count := len(b)
 	t: time.Time
@@ -315,15 +316,15 @@ read_timestamp_ext1 :: proc(b: []u8) -> time.Time {
 read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpack_Error) {
 	bytes := make([]u8, size, u.allocator)
 	defer if err != nil {
-		delete(bytes)
+		delete(bytes, u.allocator)
 	}
 
 	read_bytes_into_slice(u, bytes) or_return
 
 	if type == -1 {
-		return read_timestamp_ext1(bytes), nil
+		return read_timestamp_ext1(bytes, u.allocator), nil
 	} else {
-		delete(bytes)
+		delete(bytes, u.allocator)
 		err = Unexpected{"a known ext", "unknown ext"}
 	}
 
@@ -419,7 +420,7 @@ read :: proc(u: ^Unpacker) -> (item: Object, err: Unpack_Error) {
 }
 
 assign_num :: proc(v: any, t: typeid, value: $T) where intrinsics.type_is_numeric(T) {
-	switch t {
+	switch runtime.type_info_base(type_info_of(t)).id {
 	case i8:
 		(^i8)(v.data)^ = i8(value)
 	case i16:
@@ -447,14 +448,14 @@ assign_num :: proc(v: any, t: typeid, value: $T) where intrinsics.type_is_numeri
 
 assign_str :: proc(v: any, t: typeid, value: $T) {
 	when T == string {
-		switch t {
+		switch runtime.type_info_base(type_info_of(t)).id {
 		case string:
 			(^string)(v.data)^ = value
 		case cstring:
 			(^cstring)(v.data)^ = strings.unsafe_string_to_cstring(value)
 		}
 	} else when T == cstring {
-		switch t {
+		switch runtime.type_info_base(type_info_of(t)).id {
 		case string:
 			(^string)(v.data)^ = string(value)
 		case cstring:
@@ -680,7 +681,7 @@ read_struct_into :: proc(
 
 		field_name, ok := key.(string)
 		if ok {
-			defer delete(field_name)
+			defer delete(field_name, u.allocator)
 			field, found = read_struct_field_by_name(v, info, field_name)
 			if !found {
 				return Unexpected{"a known struct field name", "unknown struct field name"}
@@ -784,7 +785,7 @@ read_bytes_into :: proc(
 		raw_slice := (^mem.Raw_Slice)(v.data)
 
 		slice := make([]byte, length, u.allocator)
-		defer if err != nil do delete(slice)
+		defer if err != nil do delete(slice, u.allocator)
 		read_bytes_into_slice(u, slice) or_return
 		raw_slice^ = transmute(mem.Raw_Slice)slice
 
@@ -1113,9 +1114,9 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 			read_bytes_into_slice(u, bytes) or_return
 
 			if v.id == time.Time {
-				(^time.Time)(v.data)^ = read_timestamp_ext1(bytes)
+				(^time.Time)(v.data)^ = read_timestamp_ext1(bytes, u.allocator)
 			} else {
-				delete(bytes)
+				delete(bytes, u.allocator)
 				return Unexpected{"a time.Time", "not a time.Time"}
 			}
 		}

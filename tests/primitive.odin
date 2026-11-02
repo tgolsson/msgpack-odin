@@ -20774,7 +20774,7 @@ test_sint_pow2_4611686018427387904_1_de_into :: proc(t: ^testing.T) {
 @(test)
 test_float_exp0_ser :: proc(t: ^testing.T) {
 
-	value := 1.0
+	value := f32(1.0)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -20805,14 +20805,14 @@ test_float_exp0_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(1.0))
+	testing.expect_value(t, out, (f32)(f32(1.0)))
 
 }
 
 @(test)
 test_float_nexp0_ser :: proc(t: ^testing.T) {
 
-	value := -1.0
+	value := f32(-1.0)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -20843,14 +20843,14 @@ test_float_nexp0_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(-1.0))
+	testing.expect_value(t, out, (f32)(f32(-1.0)))
 
 }
 
 @(test)
 test_float_exp10_ser :: proc(t: ^testing.T) {
 
-	value := 22026.465794806703
+	value := f32(22026.465794806703)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -20881,14 +20881,14 @@ test_float_exp10_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(22026.465794806703))
+	testing.expect_value(t, out, (f32)(f32(22026.465794806703)))
 
 }
 
 @(test)
 test_float_nexp10_ser :: proc(t: ^testing.T) {
 
-	value := -22026.465794806703
+	value := f32(-22026.465794806703)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -20919,14 +20919,14 @@ test_float_nexp10_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(-22026.465794806703))
+	testing.expect_value(t, out, (f32)(f32(-22026.465794806703)))
 
 }
 
 @(test)
 test_float_exp20_ser :: proc(t: ^testing.T) {
 
-	value := 485165195.40978974
+	value := f32(485165195.40978974)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -20957,14 +20957,14 @@ test_float_exp20_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(485165195.40978974))
+	testing.expect_value(t, out, (f32)(f32(485165195.40978974)))
 
 }
 
 @(test)
 test_float_nexp20_ser :: proc(t: ^testing.T) {
 
-	value := -485165195.40978974
+	value := f32(-485165195.40978974)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -20995,14 +20995,14 @@ test_float_nexp20_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(-485165195.40978974))
+	testing.expect_value(t, out, (f32)(f32(-485165195.40978974)))
 
 }
 
 @(test)
 test_float_exp30_ser :: proc(t: ^testing.T) {
 
-	value := 10686474581524.445
+	value := f32(10686474581524.445)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21033,14 +21033,14 @@ test_float_exp30_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(10686474581524.445))
+	testing.expect_value(t, out, (f32)(f32(10686474581524.445)))
 
 }
 
 @(test)
 test_float_nexp30_ser :: proc(t: ^testing.T) {
 
-	value := -10686474581524.445
+	value := f32(-10686474581524.445)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21071,14 +21071,14 @@ test_float_nexp30_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(-10686474581524.445))
+	testing.expect_value(t, out, (f32)(f32(-10686474581524.445)))
 
 }
 
 @(test)
 test_float_exp40_ser :: proc(t: ^testing.T) {
 
-	value := 2.353852668370195e+17
+	value := f32(2.353852668370195e+17)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21109,14 +21109,14 @@ test_float_exp40_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(2.353852668370195e+17))
+	testing.expect_value(t, out, (f32)(f32(2.353852668370195e+17)))
 
 }
 
 @(test)
 test_float_nexp40_ser :: proc(t: ^testing.T) {
 
-	value := -2.353852668370195e+17
+	value := f32(-2.353852668370195e+17)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21147,14 +21147,14 @@ test_float_nexp40_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(-2.353852668370195e+17))
+	testing.expect_value(t, out, (f32)(f32(-2.353852668370195e+17)))
 
 }
 
 @(test)
 test_float_exp50_ser :: proc(t: ^testing.T) {
 
-	value := 5.184705528587058e+21
+	value := f32(5.184705528587058e+21)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21185,14 +21185,14 @@ test_float_exp50_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(5.184705528587058e+21))
+	testing.expect_value(t, out, (f32)(f32(5.184705528587058e+21)))
 
 }
 
 @(test)
 test_float_nexp50_ser :: proc(t: ^testing.T) {
 
-	value := -5.184705528587058e+21
+	value := f32(-5.184705528587058e+21)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21223,14 +21223,14 @@ test_float_nexp50_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(-5.184705528587058e+21))
+	testing.expect_value(t, out, (f32)(f32(-5.184705528587058e+21)))
 
 }
 
 @(test)
 test_float_exp60_ser :: proc(t: ^testing.T) {
 
-	value := 1.1420073898156806e+26
+	value := f32(1.1420073898156806e+26)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21261,14 +21261,14 @@ test_float_exp60_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(1.1420073898156806e+26))
+	testing.expect_value(t, out, (f32)(f32(1.1420073898156806e+26)))
 
 }
 
 @(test)
 test_float_nexp60_ser :: proc(t: ^testing.T) {
 
-	value := -1.1420073898156806e+26
+	value := f32(-1.1420073898156806e+26)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21299,14 +21299,14 @@ test_float_nexp60_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(-1.1420073898156806e+26))
+	testing.expect_value(t, out, (f32)(f32(-1.1420073898156806e+26)))
 
 }
 
 @(test)
 test_float_exp70_ser :: proc(t: ^testing.T) {
 
-	value := 2.5154386709191576e+30
+	value := f32(2.5154386709191576e+30)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21337,14 +21337,14 @@ test_float_exp70_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(2.5154386709191576e+30))
+	testing.expect_value(t, out, (f32)(f32(2.5154386709191576e+30)))
 
 }
 
 @(test)
 test_float_nexp70_ser :: proc(t: ^testing.T) {
 
-	value := -2.5154386709191576e+30
+	value := f32(-2.5154386709191576e+30)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21375,14 +21375,14 @@ test_float_nexp70_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(-2.5154386709191576e+30))
+	testing.expect_value(t, out, (f32)(f32(-2.5154386709191576e+30)))
 
 }
 
 @(test)
 test_float_exp80_ser :: proc(t: ^testing.T) {
 
-	value := 5.540622384393487e+34
+	value := f32(5.540622384393487e+34)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21413,14 +21413,14 @@ test_float_exp80_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(5.540622384393487e+34))
+	testing.expect_value(t, out, (f32)(f32(5.540622384393487e+34)))
 
 }
 
 @(test)
 test_float_nexp80_ser :: proc(t: ^testing.T) {
 
-	value := -5.540622384393487e+34
+	value := f32(-5.540622384393487e+34)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21451,14 +21451,14 @@ test_float_nexp80_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f32)(-5.540622384393487e+34))
+	testing.expect_value(t, out, (f32)(f32(-5.540622384393487e+34)))
 
 }
 
 @(test)
 test_float_exp90_ser :: proc(t: ^testing.T) {
 
-	value := 1.220403294317835e+39
+	value := f64(1.220403294317835e+39)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21489,14 +21489,14 @@ test_float_exp90_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(1.220403294317835e+39))
+	testing.expect_value(t, out, (f64)(f64(1.220403294317835e+39)))
 
 }
 
 @(test)
 test_float_nexp90_ser :: proc(t: ^testing.T) {
 
-	value := -1.220403294317835e+39
+	value := f64(-1.220403294317835e+39)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21527,14 +21527,14 @@ test_float_nexp90_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(-1.220403294317835e+39))
+	testing.expect_value(t, out, (f64)(f64(-1.220403294317835e+39)))
 
 }
 
 @(test)
 test_float_exp100_ser :: proc(t: ^testing.T) {
 
-	value := 2.6881171418161212e+43
+	value := f64(2.6881171418161212e+43)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21565,14 +21565,14 @@ test_float_exp100_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(2.6881171418161212e+43))
+	testing.expect_value(t, out, (f64)(f64(2.6881171418161212e+43)))
 
 }
 
 @(test)
 test_float_nexp100_ser :: proc(t: ^testing.T) {
 
-	value := -2.6881171418161212e+43
+	value := f64(-2.6881171418161212e+43)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21603,14 +21603,14 @@ test_float_nexp100_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(-2.6881171418161212e+43))
+	testing.expect_value(t, out, (f64)(f64(-2.6881171418161212e+43)))
 
 }
 
 @(test)
 test_float_exp110_ser :: proc(t: ^testing.T) {
 
-	value := 5.920972027664636e+47
+	value := f64(5.920972027664636e+47)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21641,14 +21641,14 @@ test_float_exp110_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(5.920972027664636e+47))
+	testing.expect_value(t, out, (f64)(f64(5.920972027664636e+47)))
 
 }
 
 @(test)
 test_float_nexp110_ser :: proc(t: ^testing.T) {
 
-	value := -5.920972027664636e+47
+	value := f64(-5.920972027664636e+47)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21679,14 +21679,14 @@ test_float_nexp110_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(-5.920972027664636e+47))
+	testing.expect_value(t, out, (f64)(f64(-5.920972027664636e+47)))
 
 }
 
 @(test)
 test_float_exp120_ser :: proc(t: ^testing.T) {
 
-	value := 1.304180878393624e+52
+	value := f64(1.304180878393624e+52)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21717,14 +21717,14 @@ test_float_exp120_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(1.304180878393624e+52))
+	testing.expect_value(t, out, (f64)(f64(1.304180878393624e+52)))
 
 }
 
 @(test)
 test_float_nexp120_ser :: proc(t: ^testing.T) {
 
-	value := -1.304180878393624e+52
+	value := f64(-1.304180878393624e+52)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21755,14 +21755,14 @@ test_float_nexp120_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(-1.304180878393624e+52))
+	testing.expect_value(t, out, (f64)(f64(-1.304180878393624e+52)))
 
 }
 
 @(test)
 test_float_exp130_ser :: proc(t: ^testing.T) {
 
-	value := 2.872649550817812e+56
+	value := f64(2.872649550817812e+56)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21793,14 +21793,14 @@ test_float_exp130_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(2.872649550817812e+56))
+	testing.expect_value(t, out, (f64)(f64(2.872649550817812e+56)))
 
 }
 
 @(test)
 test_float_nexp130_ser :: proc(t: ^testing.T) {
 
-	value := -2.872649550817812e+56
+	value := f64(-2.872649550817812e+56)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21831,14 +21831,14 @@ test_float_nexp130_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(-2.872649550817812e+56))
+	testing.expect_value(t, out, (f64)(f64(-2.872649550817812e+56)))
 
 }
 
 @(test)
 test_float_exp140_ser :: proc(t: ^testing.T) {
 
-	value := 6.327431707155538e+60
+	value := f64(6.327431707155538e+60)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21869,14 +21869,14 @@ test_float_exp140_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(6.327431707155538e+60))
+	testing.expect_value(t, out, (f64)(f64(6.327431707155538e+60)))
 
 }
 
 @(test)
 test_float_nexp140_ser :: proc(t: ^testing.T) {
 
-	value := -6.327431707155538e+60
+	value := f64(-6.327431707155538e+60)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21907,14 +21907,14 @@ test_float_nexp140_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(-6.327431707155538e+60))
+	testing.expect_value(t, out, (f64)(f64(-6.327431707155538e+60)))
 
 }
 
 @(test)
 test_float_exp150_ser :: proc(t: ^testing.T) {
 
-	value := 1.3937095806663685e+65
+	value := f64(1.3937095806663685e+65)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21945,14 +21945,14 @@ test_float_exp150_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(1.3937095806663685e+65))
+	testing.expect_value(t, out, (f64)(f64(1.3937095806663685e+65)))
 
 }
 
 @(test)
 test_float_nexp150_ser :: proc(t: ^testing.T) {
 
-	value := -1.3937095806663685e+65
+	value := f64(-1.3937095806663685e+65)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -21983,14 +21983,14 @@ test_float_nexp150_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(-1.3937095806663685e+65))
+	testing.expect_value(t, out, (f64)(f64(-1.3937095806663685e+65)))
 
 }
 
 @(test)
 test_float_exp160_ser :: proc(t: ^testing.T) {
 
-	value := 3.0698496406442164e+69
+	value := f64(3.0698496406442164e+69)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -22021,14 +22021,14 @@ test_float_exp160_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(3.0698496406442164e+69))
+	testing.expect_value(t, out, (f64)(f64(3.0698496406442164e+69)))
 
 }
 
 @(test)
 test_float_nexp160_ser :: proc(t: ^testing.T) {
 
-	value := -3.0698496406442164e+69
+	value := f64(-3.0698496406442164e+69)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -22059,14 +22059,14 @@ test_float_nexp160_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(-3.0698496406442164e+69))
+	testing.expect_value(t, out, (f64)(f64(-3.0698496406442164e+69)))
 
 }
 
 @(test)
 test_float_exp170_ser :: proc(t: ^testing.T) {
 
-	value := 6.761793810484949e+73
+	value := f64(6.761793810484949e+73)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -22097,14 +22097,14 @@ test_float_exp170_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(6.761793810484949e+73))
+	testing.expect_value(t, out, (f64)(f64(6.761793810484949e+73)))
 
 }
 
 @(test)
 test_float_nexp170_ser :: proc(t: ^testing.T) {
 
-	value := -6.761793810484949e+73
+	value := f64(-6.761793810484949e+73)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -22135,14 +22135,14 @@ test_float_nexp170_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(-6.761793810484949e+73))
+	testing.expect_value(t, out, (f64)(f64(-6.761793810484949e+73)))
 
 }
 
 @(test)
 test_float_exp180_ser :: proc(t: ^testing.T) {
 
-	value := 1.4893842007818241e+78
+	value := f64(1.4893842007818241e+78)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -22173,14 +22173,14 @@ test_float_exp180_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(1.4893842007818241e+78))
+	testing.expect_value(t, out, (f64)(f64(1.4893842007818241e+78)))
 
 }
 
 @(test)
 test_float_nexp180_ser :: proc(t: ^testing.T) {
 
-	value := -1.4893842007818241e+78
+	value := f64(-1.4893842007818241e+78)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -22211,14 +22211,14 @@ test_float_nexp180_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(-1.4893842007818241e+78))
+	testing.expect_value(t, out, (f64)(f64(-1.4893842007818241e+78)))
 
 }
 
 @(test)
 test_float_exp190_ser :: proc(t: ^testing.T) {
 
-	value := 3.280587015384637e+82
+	value := f64(3.280587015384637e+82)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -22249,14 +22249,14 @@ test_float_exp190_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(3.280587015384637e+82))
+	testing.expect_value(t, out, (f64)(f64(3.280587015384637e+82)))
 
 }
 
 @(test)
 test_float_nexp190_ser :: proc(t: ^testing.T) {
 
-	value := -3.280587015384637e+82
+	value := f64(-3.280587015384637e+82)
 	data, err := m.pack_into_bytes(value, {})
 	defer delete(data)
 
@@ -22287,6 +22287,6 @@ test_float_nexp190_de_into :: proc(t: ^testing.T) {
 
 
 	testing.expect_value(t, err, nil)
-	testing.expect_value(t, out, (f64)(-3.280587015384637e+82))
+	testing.expect_value(t, out, (f64)(f64(-3.280587015384637e+82)))
 
 }
