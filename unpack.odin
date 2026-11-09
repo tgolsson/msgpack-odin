@@ -14,11 +14,21 @@ import "core:time"
 DEFAULT_UNPACK_MAX_LENGTH :: 1 << 20
 
 Unpacker :: struct {
-	r:            io.Reader,
-	reader:       ^bufio.Reader,
-	allocator:    runtime.Allocator,
-	bytes_reader: ^bytes.Reader,
-	max_length:   int,
+	r:                                     io.Reader,
+	reader:                                ^bufio.Reader,
+	allocator:                             runtime.Allocator,
+	bytes_reader:                          ^bytes.Reader,
+	max_length:                            int,
+	// Optional limits for untrusted input, enforced by read when bounded is
+	// set: element counts for arrays and maps, string length, nesting depth,
+	// and an allocation budget in remaining_bytes that read draws down.
+	// Callers reset remaining_bytes before each top-level read. Bounded
+	// reads also reject duplicate map keys and extension values.
+	max_collection, max_string, max_depth: int,
+	depth, remaining_bytes:                int,
+	bounded:                               bool,
+	// Total bytes consumed from the reader, for detecting trailing data.
+	wire_bytes:                            int,
 }
 
 Unpack_Error :: union {
@@ -60,7 +70,12 @@ unpacker_from_reader :: proc(
 	buffered_reader := new(bufio.Reader, allocator)
 	bufio.reader_init(buffered_reader, reader, allocator = allocator)
 
-	return Unpacker{reader, buffered_reader, allocator, nil, max_length}
+	return Unpacker {
+		r = reader,
+		reader = buffered_reader,
+		allocator = allocator,
+		max_length = max_length,
+	}
 }
 
 unpacker_destroy :: proc(u: Unpacker) {
@@ -128,6 +143,7 @@ unpack_from_reader :: proc(
 read_byte :: proc(u: ^Unpacker) -> (b: u8, err: Unpack_Error) {
 	ioerr: io.Error
 	b, ioerr = bufio.reader_read_byte(u.reader)
+	if ioerr == .None do u.wire_bytes += 1
 	if intrinsics.expect(ioerr != .None, false) {
 		err = ioerr
 	}
@@ -140,6 +156,7 @@ read_bytes :: proc(u: ^Unpacker, $bytes: u64) -> (out: [bytes]u8, err: Unpack_Er
 	for n < bytes {
 		nn, ioerr := bufio.reader_read(u.reader, out[n:])
 		n += u64(nn)
+		u.wire_bytes += int(nn)
 		if ioerr != .None {
 			err = ioerr
 			break
@@ -154,6 +171,7 @@ read_bytes_into_slice :: proc(u: ^Unpacker, out: []u8) -> (err: Unpack_Error) {
 	for n < len(out) {
 		nn, ioerr := bufio.reader_read(u.reader, out[n:])
 		n += nn
+		u.wire_bytes += nn
 		if ioerr != .None {
 			err = ioerr
 			break
@@ -197,8 +215,16 @@ read_unpack_length :: proc(u: ^Unpacker, length: u64) -> (value: int, err: Unpac
 }
 
 read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {
+	map_cost := size * (size_of(Object) + size_of(ObjectKey))
+	if u.bounded && (size > u.max_collection || !decode_charge(u, map_cost)) {
+		return nil, Invalid_Parameter{"map allocation limit"}
+	}
 	out := make(map[ObjectKey]Object, 0, u.allocator)
 	defer if err != nil {
+		for key, value in out {
+			object_key_delete(key)
+			object_delete(value)
+		}
 		delete(out)
 	}
 
@@ -208,8 +234,17 @@ read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {
 
 		value: Object
 		key = read_key(u) or_return
-		value = read(u) or_return
+		value, err = read(u)
+		if err != nil {
+			object_key_delete(key)
+			return nil, err
+		}
 
+		if _, exists := out[key]; exists && u.bounded {
+			object_key_delete(key)
+			object_delete(value)
+			return nil, Invalid_Parameter{"duplicate map key"}
+		}
 		map_insert(&out, key, value)
 	}
 
@@ -217,6 +252,9 @@ read_map :: proc(u: ^Unpacker, size: int) -> (item: Object, err: Unpack_Error) {
 }
 
 read_string :: proc(u: ^Unpacker, size: int) -> (value: string, err: Unpack_Error) {
+	if u.bounded && (size > u.max_string || !decode_charge(u, size)) {
+		return "", Invalid_Parameter{"string allocation limit"}
+	}
 	buffer := make([]u8, size, u.allocator)
 	defer if err != nil {
 		delete(buffer, u.allocator)
@@ -228,15 +266,23 @@ read_string :: proc(u: ^Unpacker, size: int) -> (value: string, err: Unpack_Erro
 }
 
 read_bin :: proc(u: ^Unpacker, size: int) -> (value: []bin, err: Unpack_Error) {
+	if u.bounded && !decode_charge(u, size) {
+		return nil, Invalid_Parameter{"binary allocation limit"}
+	}
 	buffer := make([]u8, size, u.allocator)
+	defer if err != nil do delete(buffer, u.allocator)
 	read_bytes_into_slice(u, buffer[:]) or_return
 
 	return transmute([]bin)buffer, nil
 }
 
 read_array :: proc(u: ^Unpacker, size: int) -> (item: []Object, err: Unpack_Error) {
+	if u.bounded && (size > u.max_collection || !decode_charge(u, size * size_of(Object))) {
+		return nil, Invalid_Parameter{"array allocation limit"}
+	}
 	out := make([]Object, size, u.allocator)
 	defer if err != nil {
+		for value in out do object_delete(value)
 		delete(out, u.allocator)
 	}
 
@@ -314,6 +360,7 @@ read_timestamp_ext1 :: proc(b: []u8, allocator := context.allocator) -> time.Tim
 }
 
 read_ext :: proc(u: ^Unpacker, type: i8, size: int) -> (item: Object, err: Unpack_Error) {
+	if u.bounded do return nil, Invalid_Parameter{"extensions are not allowed when bounded"}
 	bytes := make([]u8, size, u.allocator)
 	defer if err != nil {
 		delete(bytes, u.allocator)
@@ -387,6 +434,11 @@ read_key :: proc(u: ^Unpacker) -> (item: ObjectKey, err: Unpack_Error) {
 }
 
 read :: proc(u: ^Unpacker) -> (item: Object, err: Unpack_Error) {
+	if u.bounded && u.depth >= u.max_depth {
+		return nil, Invalid_Parameter{"nesting limit"}
+	}
+	u.depth += 1
+	defer u.depth -= 1
 	tag := decode_tag(u) or_return
 
 	switch variant in tag {
@@ -1136,4 +1188,12 @@ read_into_value :: proc(u: ^Unpacker, t: any) -> (err: Unpack_Error) {
 	}
 
 	return err
+}
+
+// Draws amount from a bounded unpacker's allocation budget.
+@(private)
+decode_charge :: proc(u: ^Unpacker, amount: int) -> bool {
+	if amount < 0 || amount > u.remaining_bytes do return false
+	u.remaining_bytes -= amount
+	return true
 }
