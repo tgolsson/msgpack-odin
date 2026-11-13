@@ -13,9 +13,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install imp
-        uses: imp-build/actions/setup-imp@main
+        uses: imp-build/actions/setup-imp@v1
         with:
-          version: latest
+          version: v0.4.0
 
       - name: Check generated tests are up to date
         run: imp generate --check //...
